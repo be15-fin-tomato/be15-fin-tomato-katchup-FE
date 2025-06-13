@@ -139,7 +139,7 @@ function selectSubMenu(menu, subMenu) {
           :class="[
               'transition-colors duration-200 hover:text-header-text',
               'w-max',
-              selectedSubMenu === subLabel ? 'text-header-text' : 'text-gray-light'
+              selectedSubMenu === subLabel ? 'text-header-text' : 'text-gray-medium'
           ]"
         >
           {{ subLabel }}
