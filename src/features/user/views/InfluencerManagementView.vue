@@ -92,7 +92,7 @@ const saveInfluencer = (updated) => {
               @delete="deleteInfluencer"
             />
             <div
-              class="w-[480px] min-h-[240px] flex items-center justify-center border border-gray-dark rounded-xl bg-white cursor-pointer"
+              class="relative w-full max-w-[480px] min-h-[240px] p-5 border border-[color:var(--color-gray-dark)] rounded-xl bg-white font-sans flex flex-col items-center justify-center"
               @click="openModal"
             >
               <Icon icon="mynaui:plus-solid" width="50" height="50" />
