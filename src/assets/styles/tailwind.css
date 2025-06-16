@@ -76,7 +76,7 @@
   }
 
   .card-style {
-    @apply w-[631px] h-[400px] px-12 pt-7 pb-4 rounded-[24px] bg-white flex-1 ml-8;
+    @apply w-[631px] h-[526px] px-12 pt-7 pb-4 rounded-[24px] bg-white;
     box-shadow: 0px 4px 20px rgba(124, 124, 124, 0.25);
   }
 

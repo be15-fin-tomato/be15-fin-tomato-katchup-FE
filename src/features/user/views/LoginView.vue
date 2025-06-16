@@ -15,7 +15,7 @@ const password = ref('');
 
 <template>
   <div class = "login-layout">
-    <MainLogo />
+  <MainLogo />
 
     <div class = "card-style">
       <div class="title text-center mb-8">
