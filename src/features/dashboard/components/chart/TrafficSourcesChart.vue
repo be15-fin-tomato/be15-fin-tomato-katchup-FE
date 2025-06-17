@@ -87,7 +87,8 @@ const chartOptions = computed(() => ({
 
 <template>
   <div class="dashboard-section w-full flex flex-wrap justify-around items-start gap-5">
-    <div class="flex flex-col gap-10">
+    <div class="flex flex-col gap-5">
+      <div class="dashboard-title">유입 분석</div>
       <div class="flex gap-5">
         <div class="bg-background rounded-xl px-6 py-4 shadow text-center w-[200px] h-[85px] flex flex-col justify-between">
           <div class="text-sm">구독자 수</div>

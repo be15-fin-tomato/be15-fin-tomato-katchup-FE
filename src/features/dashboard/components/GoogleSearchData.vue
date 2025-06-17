@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import ApexCharts from 'vue3-apexcharts'
+import { Icon } from '@iconify/vue'
 
 const props = defineProps({
     data: { type: Object, required: true },
@@ -35,7 +36,7 @@ const chartOptions = {
     },
     title: {
         text: `검색 트렌드 (${props.title})`,
-        align: 'left'
+        align: 'right'
     },
     xaxis: {
         type: 'category',
@@ -71,6 +72,7 @@ const chartOptions = {
 
 <template>
     <div class="dashboard-section">
+        <Icon icon="devicon:google" class="w-11 h-11 ml-2" />
         <ApexCharts type="line" height="300" :options="chartOptions" :series="series" />
     </div>
 </template>
