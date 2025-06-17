@@ -9,8 +9,14 @@ const props = defineProps({
     title: {
         type: String,
         required: true
+    },
+    publishedAt: {
+        type: String,
+        required: true
     }
 })
+
+const formattedPublishedAt = props.publishedAt.slice(0, 10)
 
 const series = [{
     name: '네이버 검색 트렌드',
@@ -45,6 +51,18 @@ const chartOptions = {
         x: {
             format: 'yyyy-MM-dd'
         }
+    },
+    annotations: {
+        xaxis: [
+            {
+                x: formattedPublishedAt,
+                borderColor: '#1CAFFF',
+                label: {
+                    style: { color: '#fff', background: '#83D4FF' },
+                    text: '업로드일',
+                },
+            }
+        ]
     }
 }
 </script>

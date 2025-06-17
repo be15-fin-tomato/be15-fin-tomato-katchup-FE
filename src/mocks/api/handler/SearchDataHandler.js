@@ -65,95 +65,64 @@ const searchDataMock = {
   }
 };
 
-const googleSearchDataMock = {
-  kind: "customsearch#search",
-  url: {
-    type: "application/json",
-    template: "https://www.googleapis.com/customsearch/v1?q={searchTerms}&start={startIndex?}&num={count?}&key={yourAPIKey}&cx={cx}"
-  },
-  queries: {
-    request: [
-      {
-        title: "Google Custom Search - 다이어트",
-        totalResults: "19091506",
-        searchTerms: "다이어트",
-        count: 10,
-        startIndex: 1
-      }
-    ]
-  },
-  searchInformation: {
-    searchTime: 0.456,
-    formattedSearchTime: "0.46",
-    totalResults: "19091506",
-    formattedTotalResults: "19,091,506"
-  },
-  items: [
-    {
-      title: "스위치온 다이어트 후기 식단 영양제 꿀팁",
-      link: "https://blog.naver.com/hynam88/223882421206",
-      snippet: "다이어트가 살이 잘 빠진다고 엄청 핫하더라고요. 저도 정독하고 도전해봤는데 2주만에 5kg 감량에 성공했어요!",
-      displayLink: "blog.naver.com",
-      pagemap: {
-        metatags: [
-          {
-            bloggername: "보리여니맘의 기억저장소",
-            postdate: "20250529"
-          }
-        ]
-      }
-    },
-    {
-      title: "스위치온 다이어트 후기 3일 4주차 -6kg",
-      link: "https://blog.naver.com/eunbyeol11/223881792394",
-      snippet: "이번만큼은 독하게 살을 한번 빼야겠다 싶어서 시작해보았어요. 3일만에 바로 감량 시작...",
-      displayLink: "blog.naver.com",
-      pagemap: {
-        metatags: [
-          {
-            bloggername: "반짝벼리별",
-            postdate: "20250529"
-          }
-        ]
-      }
-    }
-  ]
-}
-
 const googleTrendsDataMock = {
   default: {
     timelineData: [
       {
-        time: 1715817600,
-        formattedTime: "2024년 5월 16일",
-        formattedAxisTime: "2024년 5월 16일",
-        value: [78],
+        time: 1748812800,
+        formattedTime: "2025년 6월 2일",
+        formattedAxisTime: "2025년 6월 2일",
+        value: [80],
         hasData: [true],
-        formattedValue: ["78"]
+        formattedValue: ["80"]
       },
       {
-        time: 1716422400,
-        formattedTime: "2024년 5월 23일",
-        formattedAxisTime: "2024년 5월 23일",
-        value: [82],
+        time: 1748899200,
+        formattedTime: "2025년 6월 3일",
+        formattedAxisTime: "2025년 6월 3일",
+        value: [85],
         hasData: [true],
-        formattedValue: ["82"]
+        formattedValue: ["85"]
       },
       {
-        time: 1717027200,
-        formattedTime: "2024년 5월 30일",
-        formattedAxisTime: "2024년 5월 30일",
+        time: 1748985600,
+        formattedTime: "2025년 6월 4일",
+        formattedAxisTime: "2025년 6월 4일",
         value: [90],
         hasData: [true],
         formattedValue: ["90"]
       },
       {
-        time: 1717632000,
-        formattedTime: "2024년 6월 6일",
-        formattedAxisTime: "2024년 6월 6일",
+        time: 1749072000,
+        formattedTime: "2025년 6월 5일",
+        formattedAxisTime: "2025년 6월 5일",
         value: [95],
         hasData: [true],
         formattedValue: ["95"]
+      },
+      {
+        time: 1749158400,
+        formattedTime: "2025년 6월 6일",
+        formattedAxisTime: "2025년 6월 6일",
+        value: [93],
+        hasData: [true],
+        formattedValue: ["93"]
+      },
+      {
+        time: 1749244800,
+        formattedTime: "2025년 6월 7일",
+        formattedAxisTime: "2025년 6월 7일",
+        value: [89],
+        hasData: [true],
+        formattedValue: ["89"]
+      },
+      {
+        time: 1749331200,
+        formattedTime: "2025년 6월 8일",
+        formattedAxisTime: "2025년 6월 8일",
+        value: [91],
+        hasData: [true],
+        formattedValue: ["91"]
       }
     ]
   }

@@ -149,8 +149,8 @@ const summary = computed(() => {
             </div>
 
             <div class="flex flex-col w-full">
-                <NaverSearchData :rows="searchDataRows" :title="campaign.productName" />
-                <GoogleSearchData v-if="googleTrendsData" :data="googleTrendsData"  :title="campaign.productName"/>
+                <NaverSearchData :rows="searchDataRows" :title="campaign.productName" :publishedAt="meta.publishedAt" />
+                <GoogleSearchData v-if="googleTrendsData" :data="googleTrendsData"  :title="campaign.productName" :publishedAt="meta.publishedAt"/>
             </div>
         </div>
     </div>

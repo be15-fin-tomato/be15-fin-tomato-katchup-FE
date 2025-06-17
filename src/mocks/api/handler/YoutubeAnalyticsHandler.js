@@ -6,6 +6,7 @@ const youtubeMock = {
       id: "abc123",
       thumbnail: "/mock/thumbnail.jpg",
       title: "테스트 영상 제목",
+      publishedAt: "2025-06-05T12:00:00Z",
       statistics: {
         viewCount: 302000,
         likeCount: 54000,
