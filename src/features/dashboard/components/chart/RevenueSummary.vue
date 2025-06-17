@@ -22,7 +22,8 @@ const formatDate = (val) => {
 
 <template>
   <div class="dashboard-section">
-    <div class="flex flex-col gap-10 justify-around">
+    <div class="flex flex-col gap-5 justify-around">
+      <div class="dashboard-title">수익 요약</div>
       <div class="flex gap-5">
         <div class="bg-background rounded-xl px-6 py-4 shadow text-center w-[230px] h-[85px] flex flex-col justify-between">
           <div class="text-sm">총 이익</div>
@@ -45,7 +46,7 @@ const formatDate = (val) => {
         </div>
       </div>
 
-      <div class="mb-11 text-xs text-gray-medium leading-relaxed">
+      <div class="text-xs text-gray-medium leading-relaxed mt-5">
         ※ 평균 단가 : 총 수익 / 판매 수량
       </div>
     </div>

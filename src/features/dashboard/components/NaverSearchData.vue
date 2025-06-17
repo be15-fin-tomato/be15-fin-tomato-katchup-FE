@@ -1,5 +1,6 @@
 <script setup>
 import ApexCharts from 'vue3-apexcharts'
+import { Icon } from '@iconify/vue';
 
 const props = defineProps({
     rows: {
@@ -34,7 +35,7 @@ const chartOptions = {
     },
     title: {
         text: `검색 트렌드 (${props.title})`,
-        align: 'left',
+        align: 'right',
       labels: { style: { fontSize: '14px', colors: '#333' } }
     },
     xaxis: {
@@ -69,6 +70,9 @@ const chartOptions = {
 
 <template>
     <div class="dashboard-section">
+        <div class="flex gap-4 items-center">
+            <Icon icon="simple-icons:naver" class="text-[#00AC4F] w-9 h-9 ml-3" />
+        </div>
         <ApexCharts type="line" height="300" :options="chartOptions" :series="series" />
     </div>
 </template>
