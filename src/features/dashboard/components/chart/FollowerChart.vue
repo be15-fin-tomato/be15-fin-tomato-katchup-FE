@@ -22,6 +22,10 @@ const chartData = computed(() => {
   const series = trend.map(item => item.value / 10000);
   return { categories, series };
 });
+
+const chartOptions = {
+
+}
 </script>
 
 <template>
@@ -54,7 +58,7 @@ const chartData = computed(() => {
         markers: { size: 5, colors: ['#328E6F'], strokeColors: '#fff', strokeWidth: 2 },
         xaxis: {
           categories: chartData.categories,
-          labels: { style: { fontSize: '14px', colors: '#333' } }
+          labels: { rotate: -45 }
         },
         yaxis: {
           labels: { formatter: val => `${val}만` }

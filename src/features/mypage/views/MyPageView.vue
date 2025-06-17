@@ -7,11 +7,11 @@ import { useRouter } from 'vue-router';
 const influencers = ref([
   { id: 1, name: '차은우', img: '/src/assets/images/mock/profile.png' },
   { id: 2, name: '헬로키티', img: '/src/assets/images/mock/kitty.png' },
-  { id: 3, name: '기우', img: '/src/assets/images/mock/kiu.png' },
+  { id: 3, name: '기우쌤', img: '/src/assets/images/mock/kiu.png' },
   { id: 4, name: '토끼', img: '/src/assets/images/mock/rabbit.png' },
   { id: 5, name: '토끼2', img: '/src/assets/images/mock/rabbit2.png' },
   { id: 6, name: '숏박스', img: '/src/assets/images/mock/shortbox.png' },
-  { id: 7, name: '예다노', img: '/src/assets/images/mock/yeodano.png' },
+  { id: 7, name: '여단오', img: '/src/assets/images/mock/yeodano.png' },
   { id: 8, name: '냥냥이', img: '/src/assets/images/mock/냥냥이.png' },
   { id: 9, name: '물딸기', img: '/src/assets/images/mock/물딸기.png' },
   { id: 10, name: '물토마토', img: '/src/assets/images/mock/물토마토.png' },

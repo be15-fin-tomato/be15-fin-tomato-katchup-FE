@@ -19,9 +19,14 @@
     "apexcharts": "^4.7.0",
     "axios": "^1.9.0",
     "bootstrap-icons": "^1.13.1",
+    "chart.js": "^4.5.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "google-trends-api": "^4.9.2",
     "pinia": "^3.0.1",
     "v-drag": "^3.0.9",
     "vue": "^3.5.16",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "^4.5.0",
     "vue-toastification": "^2.0.0-rc.5",
     "vue3-apexcharts": "^1.8.0"
@@ -47,5 +52,10 @@
     "workerDirectory": [
       "public"
     ]
-  }
+  },
+  "description": "This template should help get you started developing with Vue 3 in Vite.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

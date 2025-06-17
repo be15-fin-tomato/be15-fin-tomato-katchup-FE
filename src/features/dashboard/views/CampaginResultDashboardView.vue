@@ -7,6 +7,8 @@ import TrafficSourcesChart from '@/features/dashboard/components/chart/TrafficSo
 import RevenueSummary from '@/features/dashboard/components/chart/RevenueSummary.vue'
 import CampaignVideoSummary from '@/features/dashboard/components/chart/CampaignVideoSummary.vue'
 import CampaignHeaderCard from '@/features/dashboard/components/CampaignHeaderCard.vue'
+import NaverSearchData from '@/features/dashboard/components/NaverSearchData.vue';
+import GoogleSearchData from '@/features/dashboard/components/GoogleSearchData.vue';
 
 const route = useRoute()
 
@@ -17,6 +19,8 @@ const meta = ref(null)
 const isLoading = ref(true)
 const isError = ref(false)
 const campaignId = route.query.id || '1'
+const searchDataRows = ref([])
+const googleTrendsData = ref(null)
 
 const campaign = ref(null)
 const influencer = ref(null)
@@ -53,6 +57,18 @@ const fetchMeta = async () => {
     meta.value = resData
 }
 
+const fetchNaverSearchData = async () => {
+    const res = await fetch(`/api/v1/dashboard/naver?id=${campaignId}`)
+    const resData = await res.json()
+    searchDataRows.value = resData.results[0].data
+}
+
+const fetchGoogleData = async () => {
+    const res = await fetch(`/api/v1/dashboard/google/trends`)
+    const resData = await res.json()
+    googleTrendsData.value = resData
+}
+
 const fetchAllData = async () => {
     isLoading.value = true
     isError.value = false
@@ -60,7 +76,9 @@ const fetchAllData = async () => {
         await Promise.all([
             fetchCampaign(),
             fetchAnalytics(),
-            fetchMeta()
+            fetchMeta(),
+            fetchNaverSearchData(),
+            fetchGoogleData()
         ])
     } catch (err) {
         isError.value = true
@@ -94,37 +112,47 @@ const summary = computed(() => {
 
 <template>
     <div class="w-full min-h-screen flex flex-col">
+        <!-- 로딩 상태 -->
+        <div v-if="isLoading" class="flex justify-center items-center w-full h-full">
+            Loading...
+        </div>
 
-        <CampaignHeaderCard :campaign="campaign" :influencer="influencer" />
+        <!-- 에러 상태 -->
+        <div v-else-if="isError" class="flex justify-center items-center w-full h-full">
+            데이터를 불러오지 못했습니다.
+        </div>
 
-        <CampaignVideoSummary :meta="meta" />
+        <!-- 정상 렌더링 -->
+        <div v-else>
+            <CampaignHeaderCard :campaign="campaign" :influencer="influencer" />
+            <CampaignVideoSummary :meta="meta" />
 
-        <div class="dashboard-section">
-            <div class="mb-4">
-                <AnalyticsFilters
-                    :activeMetric="activeMetric"
-                    :activePeriod="activePeriod"
-                    @update:metric="activeMetric = $event"
-                    @update:period="onPeriodChange"
-                />
+            <div class="dashboard-section">
+                <div class="mb-4">
+                    <AnalyticsFilters
+                        :activeMetric="activeMetric"
+                        :activePeriod="activePeriod"
+                        @update:metric="activeMetric = $event"
+                        @update:period="onPeriodChange"
+                    />
+                </div>
+                <YoutubeAnalyticsChart :rows="rows" :activeMetric="activeMetric" />
             </div>
-            <div>
-                <div v-if="isLoading" class="flex justify-center items-center w-full h-full">Loading...</div>
-                <div v-else-if="isError" class="flex justify-center items-center w-full h-full">데이터를 불러오지 못했습니다.</div>
-                <div v-else class="w-full">
-                    <YoutubeAnalyticsChart :rows="rows" :activeMetric="activeMetric" />
+
+            <div class="flex gap-8">
+                <div class="w-[65%]">
+                    <TrafficSourcesChart />
+                </div>
+                <div class="w-[35%]">
+                    <RevenueSummary :summary="summary" />
                 </div>
             </div>
-        </div>
 
-        <div class="flex gap-8">
-            <div class="w-[65%]">
-                <TrafficSourcesChart />
-            </div>
-            <div class="w-[35%]">
-                <RevenueSummary :summary="summary" />
+            <div class="flex flex-col w-full">
+                <NaverSearchData :rows="searchDataRows" :title="campaign.productName" />
+                <GoogleSearchData v-if="googleTrendsData" :data="googleTrendsData"  :title="campaign.productName"/>
             </div>
         </div>
-
     </div>
 </template>
+

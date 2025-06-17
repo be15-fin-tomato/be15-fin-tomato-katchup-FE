@@ -1,0 +1,58 @@
+<script setup>
+import ApexCharts from 'vue3-apexcharts'
+
+const props = defineProps({
+    rows: {
+        type: Array,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true
+    }
+})
+
+const series = [{
+    name: '네이버 검색 트렌드',
+    data: props.rows.map(item => ({ x: item.period, y: item.ratio }))
+}]
+
+const chartOptions = {
+    chart: { toolbar: { show: false } },
+    stroke: { curve: 'straight', width: 3 },
+    markers: {
+      size: 5,
+      colors: ['#FFEA00'],
+      strokeColors: '#fff',
+      strokeWidth: 2
+    },
+    title: {
+        text: `검색 트렌드 (${props.title})`,
+        align: 'left',
+      labels: { style: { fontSize: '14px', colors: '#333' } }
+    },
+    xaxis: {
+        type: 'category',
+        labels: { rotate: -45 }
+    },
+    yaxis: {
+        min: 0,
+        max: 100,
+        tickAmount: 5
+    },
+    colors: ['#FFEA00'],
+    tooltip: {
+        x: {
+            format: 'yyyy-MM-dd'
+        }
+    }
+}
+</script>
+
+<template>
+    <div class="dashboard-section">
+        <ApexCharts type="line" height="300" :options="chartOptions" :series="series" />
+    </div>
+</template>
+
+
