@@ -36,11 +36,13 @@ const chartOptions = {
     title: {
         text: `검색 트렌드 (${props.title})`,
         align: 'right',
-      labels: { style: { fontSize: '14px', colors: '#333' } }
+        labels: { style: { fontSize: '14px', colors: '#333' } }
     },
     xaxis: {
         type: 'category',
-        labels: { rotate: -45 }
+        labels: {
+          style: { fontSize: '14px', colors: '#333' }
+        }
     },
     yaxis: {
         min: 0,
@@ -49,9 +51,7 @@ const chartOptions = {
     },
     colors: ['#FFEA00'],
     tooltip: {
-        x: {
-            format: 'yyyy-MM-dd'
-        }
+        x: { format: 'yyyy-MM-dd' }
     },
     annotations: {
         xaxis: [
@@ -60,7 +60,7 @@ const chartOptions = {
                 borderColor: '#1CAFFF',
                 label: {
                     style: { color: '#fff', background: '#83D4FF' },
-                    text: '업로드일',
+                    text: '업로드일'
                 },
             }
         ]
@@ -70,9 +70,7 @@ const chartOptions = {
 
 <template>
     <div class="dashboard-section">
-        <div class="flex gap-4 items-center">
-            <Icon icon="simple-icons:naver" class="text-[#00AC4F] w-9 h-9 ml-3" />
-        </div>
+        <Icon icon="simple-icons:naver" class="text-[#00AC4F] w-9 h-9 ml-3" />
         <ApexCharts type="line" height="300" :options="chartOptions" :series="series" />
     </div>
 </template>

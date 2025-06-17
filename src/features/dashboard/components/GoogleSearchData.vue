@@ -9,11 +9,11 @@ const props = defineProps({
     publishedAt: { type: String, required: true }
 })
 
-const publishedDateStr = props.publishedAt.slice(0, 10)
+const formattedPublishedAt = props.publishedAt.slice(0, 10)
 
 const parsedData = computed(() => {
     return props.data.default.timelineData.map(item => ({
-        x: new Date(item.time * 1000).toISOString().slice(0, 10),  // ISO날짜 -> yyyy-MM-dd
+        x: new Date(item.time * 1000).toISOString().slice(0, 10),
         y: item.value[0]
     }))
 })
@@ -36,7 +36,8 @@ const chartOptions = {
     },
     title: {
         text: `검색 트렌드 (${props.title})`,
-        align: 'right'
+        align: 'right',
+        labels: { style: { fontSize: '14px', colors: '#333' } }
     },
     xaxis: {
         type: 'category',
@@ -56,13 +57,12 @@ const chartOptions = {
     annotations: {
         xaxis: [
             {
-                x: publishedDateStr,
+                x: formattedPublishedAt,
                 borderColor: '#1CAFFF',
                 label: {
                     style: { color: '#fff', background: '#83D4FF' },
                     text: '업로드일',
-                    position: 'top',
-                    offsetY: 10
+                    position: 'top'
                 }
             }
         ]
