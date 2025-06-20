@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Icon } from '@iconify/vue'
 import UserPanel from '@/components/common/UserPanel.vue';
 
 const router = useRouter()
@@ -9,7 +8,6 @@ const route = useRoute()
 
 const hoveredMenu = ref('')
 const activeMenu = ref('')
-const isNotificationOpen = ref(false)
 
 const menuMap = {
   influencer: {
@@ -48,14 +46,6 @@ const menuMap = {
   }
 }
 
-const notifications = ref([
-  { id: 1, content: '파이프라인 단계가 변경되었습니다.', isRead: false, createdAt: '2025.06.16' },
-  { id: 2, content: '계약 마감일이 하루 남았습니다.', isRead: true, createdAt: '2025.06.15' },
-  { id: 3, content: '계약 실패했습니다.', isRead: false, createdAt: '2025.06.14' },
-])
-
-const unreadCount = computed(() => notifications.value.filter(n => !n.isRead).length)
-
 const selectedMenu = computed(() => {
   const path = route.path
   for (const [menu, { routes }] of Object.entries(menuMap)) {
@@ -83,27 +73,10 @@ function navigateTo(menu, subMenu) {
   router.push(menuMap[menu].routes[subMenu])
 }
 
-function toggleNotification() {
-  isNotificationOpen.value = !isNotificationOpen.value
+function handleTopMenuClick(menu) {
+  const firstSubMenu = Object.keys(menuMap[menu].routes)[0]
+  navigateTo(menu, firstSubMenu)
 }
-function handleClickOutside(event) {
-  const dropdown = document.getElementById('notification-dropdown')
-  if (isNotificationOpen.value && dropdown && !dropdown.contains(event.target)) {
-    isNotificationOpen.value = false
-  }
-}
-function markAsRead(index) {
-  notifications.value[index].isRead = true
-}
-function deleteNotification(index) {
-  notifications.value.splice(index, 1)
-}
-function clearAllNotifications() {
-  notifications.value = []
-}
-
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 
@@ -126,6 +99,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
             >
               <button
                 @mouseenter="hoveredMenu = menu"
+                @click="handleTopMenuClick(menu)"
                 :class="[
                   'transition-colors duration-200 w-48 h-50',
                   (selectedMenu === menu || hoveredMenu === menu)
@@ -151,7 +125,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
     >
       <div class="flex flex-row gap-20">
         <button
-          v-for="subLabel in menuMap[currentMenu].routes"
+          v-for="(subPath, subLabel) in menuMap[currentMenu].routes"
           :key="subLabel"
           @click="navigateTo(currentMenu, subLabel)"
           :class="[
