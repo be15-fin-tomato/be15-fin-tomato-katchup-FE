@@ -1,7 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { onMounted, onBeforeUnmount } from 'vue'
 import { Icon } from '@iconify/vue'
 
 const router = useRouter()
@@ -15,19 +14,15 @@ const menuMap = {
   influencer: {
     label: '인플루언서',
     routes: {
-      '인플루언서 목록': '/influencer/list',
+      '대시보드': '/influencer/list',
       'AI 추천 매칭': '/influencer/recommendation',
+      '인플루언서 관리': '/management/influencer',
     }
   },
   campaign: {
     label: '캠페인',
     routes: {
-      '파이프라인': '/campaign'
-    }
-  },
-  sales: {
-    label: '영업관리',
-    routes: {
+      '파이프라인': '/sales/pipeline',
       '리스트업': '/sales/listup',
       '제안': '/sales/proposal',
       '견적': '/sales/quotation',
@@ -46,7 +41,6 @@ const menuMap = {
     label: '관리',
     routes: {
       '고객사': '/management/client',
-      '인플루언서 관리': '/management/influencer',
       '이메일 시스템': '/management/email',
       '만족도 조사': '/management/survey'
     }
@@ -54,39 +48,18 @@ const menuMap = {
 }
 
 const notifications = ref([
-  {
-    id: 1,
-    content: '파이프라인 단계가 변경되었습니다.',
-    isRead: false,
-    createdAt: '2025.06.16',
-  },
-  {
-    id: 2,
-    content: '계약 마감일이 하루 남았습니다.',
-    isRead: true,
-    createdAt: '2025.06.15',
-  },
-  {
-    id: 3,
-    content: '계약 실패했습니다.',
-    isRead: false,
-    createdAt: '2025.06.14',
-  }
+  { id: 1, content: '파이프라인 단계가 변경되었습니다.', isRead: false, createdAt: '2025.06.16' },
+  { id: 2, content: '계약 마감일이 하루 남았습니다.', isRead: true, createdAt: '2025.06.15' },
+  { id: 3, content: '계약 실패했습니다.', isRead: false, createdAt: '2025.06.14' },
 ])
 
-function markAsRead(index) {
-  notifications.value[index].isRead = true
-}
-
-const unreadCount = computed(() =>
-  notifications.value.filter(noti => !noti.isRead).length
-)
+const unreadCount = computed(() => notifications.value.filter(n => !n.isRead).length)
 
 const selectedMenu = computed(() => {
   const path = route.path
   for (const [menu, { routes }] of Object.entries(menuMap)) {
-    for (const [subMenu, subPath] of Object.entries(routes)) {
-      if (path.startsWith(subPath)) return menu
+    for (const pathValue of Object.values(routes)) {
+      if (path.startsWith(pathValue)) return menu
     }
   }
   return ''
@@ -95,14 +68,16 @@ const selectedMenu = computed(() => {
 const selectedSubMenu = computed(() => {
   const path = route.path
   for (const { routes } of Object.values(menuMap)) {
-    for (const [subMenu, subPath] of Object.entries(routes)) {
-      if (path.startsWith(subPath)) return subMenu
+    for (const [label, pathValue] of Object.entries(routes)) {
+      if (path.startsWith(pathValue)) return label
     }
   }
   return ''
 })
 
-function selectSubMenu(menu, subMenu) {
+const currentMenu = computed(() => hoveredMenu.value || selectedMenu.value)
+
+function navigateTo(menu, subMenu) {
   activeMenu.value = menu
   router.push(menuMap[menu].routes[subMenu])
 }
@@ -116,21 +91,20 @@ function handleClickOutside(event) {
     isNotificationOpen.value = false
   }
 }
+function markAsRead(index) {
+  notifications.value[index].isRead = true
+}
 function deleteNotification(index) {
   notifications.value.splice(index, 1)
 }
-
 function clearAllNotifications() {
   notifications.value = []
 }
 
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
+
 
 <template>
   <div class="relative w-full font-semibold text-gray-medium" @mouseleave="hoveredMenu = ''">
@@ -225,19 +199,18 @@ onBeforeUnmount(() => {
 
     <!-- 드롭다운 -->
     <div
-      v-if="hoveredMenu || selectedMenu"
+      v-if="currentMenu"
       class="absolute top-[90px] left-0 w-full bg-white border-t border-gray-medium py-5 px-[310px] text-md"
     >
       <div class="flex flex-row gap-20">
         <button
-          v-for="(subPath, subLabel) in menuMap[hoveredMenu || selectedMenu].routes"
+          v-for="(subPath, subLabel) in menuMap[currentMenu].routes"
           :key="subLabel"
-          @click="selectSubMenu(hoveredMenu || selectedMenu, subLabel)"
+          @click="navigateTo(currentMenu, subLabel)"
           :class="[
-              'transition-colors duration-200 hover:text-header-text' ,
-              'w-max',
-              selectedSubMenu === subLabel ? 'text-header-text' : 'text-gray-medium'
-          ]"
+        'transition-colors duration-200 hover:text-header-text w-max',
+        selectedSubMenu === subLabel ? 'text-header-text' : 'text-gray-medium'
+      ]"
         >
           {{ subLabel }}
         </button>
