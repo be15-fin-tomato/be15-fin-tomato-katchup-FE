@@ -1,12 +1,11 @@
-<div align="center">
 <table>
   <tr>
-    <td align="center"><img src="https://github.com/user-attachments/assets/1dd37956-9ff1-4a43-8652-ead470144481" width="1300" /></td>
-    <td align="center"><img src="https://github.com/user-attachments/assets/b7e55152-6493-4e2b-8bcb-96805c3b6ed3" width="1300"/></td>
-    <td align="center"><img src="https://github.com/user-attachments/assets/9feae13f-adfb-4d48-91f0-d0e1109f99ea" width="1300"/></td>
-    <td align="center"><img src="https://github.com/user-attachments/assets/c56abfa9-75e8-494d-8471-60037347f94b" width="1300"/></td>
-    <td align="center"><img src="https://github.com/user-attachments/assets/a3d657f2-6a50-41ca-a6e6-8bcc85a2e349" width="1300"/></td>
-    <td align="center"><img src="https://github.com/user-attachments/assets/a3fc268f-be83-4cdb-beae-641897ee6e96" width="1300"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/16718841-7a79-4187-86f9-4134cd4aae6c" width="1300" /></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/12bbb73f-0bcf-40bc-ba8b-62eb5d9a2d83" width="1300"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/a5947ee8-37e2-4173-a958-75f46a2d2df7" width="1300"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/4d70299d-f045-464c-bbb7-270c0b316086" width="1300"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/d09d3065-f01a-415c-8c6c-492f6a966d10" width="1300"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/4f097953-3860-4d2e-8203-fc791a10ac71" width="1300"/></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/Jangwoo0710">박장우</a></td>
