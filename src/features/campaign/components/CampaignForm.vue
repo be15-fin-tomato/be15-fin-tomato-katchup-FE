@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue';
+import { nextTick, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
     modelValue: Object,
@@ -13,12 +13,18 @@ const currentFieldKey = ref(null);
 
 const form = props.modelValue;
 
-const expectedProfitAmount = computed(() => {
-    const revenue = Number(form.expectedRevenue) || 0;
-    const margin = Number(form.expectedProfitMargin) || 0;
-    return (revenue * margin) / 100;
-});
+const expectedProfitAmount = ref(0);
 
+watch(
+    () => [form.expectedRevenue, form.expectedProfitMargin],
+    ([revenue, margin]) => {
+        const rev = Number(revenue || 0);
+        const mar = Number(margin || 0);
+        expectedProfitAmount.value = Math.round((rev * mar) / 100);
+        console.log('💸 예상 이익 금액:', expectedProfitAmount.value);
+    },
+    { immediate: true }, // 초기값 계산까지 포함
+);
 const formatNumber = (value) => {
     if (value === null || value === undefined || isNaN(value)) return '';
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -26,7 +32,7 @@ const formatNumber = (value) => {
 
 const parseNumberInput = (e, key) => {
     const raw = e.target.value.replace(/[^0-9]/g, '');
-    form.value[key] = raw ? parseInt(raw, 10) : 0;
+    form[key] = raw ? parseInt(raw, 10) : 0;
 };
 
 function openPostcodeSearch() {
@@ -61,6 +67,24 @@ const openSearchPopup = (key, type) => {
         popup.close();
     };
 };
+
+const dropdownStates = reactive({
+    category: false,
+});
+
+const categories = [
+    { id: 1, name: '엔터테인먼트' },
+    { id: 2, name: '일상' },
+    { id: 3, name: '푸드' },
+    { id: 4, name: '게임' },
+    { id: 5, name: '뷰티/패션' },
+    { id: 6, name: '여행' },
+    { id: 7, name: '교육' },
+    { id: 8, name: '기술' },
+    { id: 9, name: '건강/피트니스' },
+    { id: 10, name: '가족/키즈' },
+];
+
 // FormGroups
 const groups = [
     {
@@ -114,6 +138,7 @@ const groups = [
     {
         type: 'single',
         fields: [
+            { key: 'category', label: '카테고리', type: 'category', inputType: 'text' },
             { key: 'expectedRevenue', label: '예상 매출', type: 'input', inputType: 'number' },
             {
                 key: 'expectedProfitMargin',
@@ -193,6 +218,38 @@ const groups = [
                                 >
                                     검색
                                 </button>
+                            </div>
+                        </div>
+
+                        <div v-else-if="field.type === 'category'">
+                            <div class="relative">
+                                <button
+                                    class="input-form-box w-full text-left px-3 py-2"
+                                    @click="dropdownStates.category = !dropdownStates.category"
+                                >
+                                    {{
+                                        categories.find((c) => c.id === form.category)?.name ||
+                                        '카테고리 선택'
+                                    }}
+                                </button>
+                                <ul
+                                    v-if="dropdownStates.category"
+                                    class="absolute w-full mt-1 bg-white border rounded shadow z-10 max-h-40 overflow-y-auto"
+                                >
+                                    <li
+                                        v-for="c in categories"
+                                        :key="c.id"
+                                        class="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                        @click="
+                                            () => {
+                                                form.category = c.id;
+                                                dropdownStates.category = false;
+                                            }
+                                        "
+                                    >
+                                        {{ c.name }}
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                         <div v-else-if="field.type?.startsWith('search-')" class="flex gap-2">
