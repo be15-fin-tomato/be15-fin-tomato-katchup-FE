@@ -1,7 +1,10 @@
 <script setup>
+import { reactive } from 'vue';
+
+const emit = defineEmits(['update:form']);
 const props = defineProps({
-    group: Object,
     form: Object,
+    group: Object,
     isEditing: Boolean,
     expectedProfitAmount: Number,
     formatNumber: Function,
@@ -9,6 +12,21 @@ const props = defineProps({
     openPostcodeSearch: Function,
     openSearchPopup: Function,
 });
+
+const categories = [
+    { id: 1, name: '엔터테인먼트' },
+    { id: 2, name: '일상' },
+    { id: 3, name: '푸드' },
+    { id: 4, name: '게임' },
+    { id: 5, name: '뷰티/패션' },
+    { id: 6, name: '여행' },
+    { id: 7, name: '교육' },
+    { id: 8, name: '기술' },
+    { id: 9, name: '건강/피트니스' },
+    { id: 10, name: '가족/키즈' },
+];
+
+const dropdownStates = reactive({});
 </script>
 
 <template>
@@ -18,32 +36,48 @@ const props = defineProps({
             <template v-for="field in group.fields" :key="field.key">
                 <div :class="field.width || 'flex-1'">
                     <label class="input-form-label">{{ field.label }}</label>
+
                     <template v-if="field.inputType === 'number'">
                         <input
                             type="text"
                             :value="formatNumber(form[field.key])"
-                            @input="parseNumberInput($event, field.key)"
+                            @input="
+                                (e) => {
+                                    parseNumberInput(e, field.key);
+                                    emit('update:form', { ...form });
+                                }
+                            "
                             class="input-form-box"
                         />
                     </template>
 
                     <template v-else-if="field.type === 'select'">
-                        <select v-model="form[field.key]" class="input-form-box">
+                        <select
+                            v-model="form[field.key]"
+                            @change="emit('update:form', { ...form })"
+                            class="input-form-box"
+                        >
                             <option v-for="option in field.options" :key="option" :value="option">
                                 {{ option }}
                             </option>
                         </select>
                     </template>
-                    <!-- 날짜 -->
+
                     <input
                         v-else-if="field.inputType === 'date'"
                         type="date"
                         v-model="form[field.key]"
+                        @change="emit('update:form', { ...form })"
                         class="input-form-box"
                     />
 
                     <template v-else>
-                        <input type="text" v-model="form[field.key]" class="input-form-box" />
+                        <input
+                            type="text"
+                            v-model="form[field.key]"
+                            @input="emit('update:form', { ...form })"
+                            class="input-form-box"
+                        />
                     </template>
                 </div>
             </template>
@@ -85,10 +119,44 @@ const props = defineProps({
                         </button>
                     </div>
 
+                    <!-- 카테고리 선택 -->
+                    <div v-else-if="field.type === 'category-select'" class="relative">
+                        <button
+                            type="button"
+                            class="input-form-box w-full text-left px-3 py-2 text-sm"
+                            @click="dropdownStates[field.key] = !dropdownStates[field.key]"
+                        >
+                            {{
+                                categories.find((c) => c.id === form[field.key])?.name ||
+                                '카테고리를 선택하세요'
+                            }}
+                        </button>
+                        <ul
+                            v-if="dropdownStates[field.key]"
+                            class="absolute w-full mt-1 bg-white border border-gray-300 shadow rounded max-h-40 overflow-y-auto z-10"
+                        >
+                            <li
+                                v-for="category in categories"
+                                :key="category.id"
+                                @click="
+                                    () => {
+                                        form[field.key] = category.id;
+                                        dropdownStates[field.key] = false;
+                                        emit('update:form', { ...form });
+                                    }
+                                "
+                                class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                            >
+                                {{ category.name }}
+                            </li>
+                        </ul>
+                    </div>
+
                     <!-- 텍스트에어리어 -->
                     <textarea
                         v-else-if="field.type === 'textarea'"
                         v-model="form[field.key]"
+                        @input="emit('update:form', { ...form })"
                         rows="3"
                         class="input-form-box"
                     />
@@ -98,14 +166,20 @@ const props = defineProps({
                         v-else-if="field.inputType === 'number'"
                         type="text"
                         :value="formatNumber(form[field.key])"
-                        @input="parseNumberInput($event, field.key)"
+                        @input="
+                            (e) => {
+                                parseNumberInput(e, field.key);
+                                emit('update:form', { ...form });
+                            }
+                        "
                         class="input-form-box"
                     />
 
-                    <!-- 셀렉트 -->
+                    <!-- 기본 셀렉트 -->
                     <select
                         v-else-if="field.type === 'select'"
                         v-model="form[field.key]"
+                        @change="emit('update:form', { ...form })"
                         class="input-form-box"
                     >
                         <option v-for="option in field.options" :key="option" :value="option">
@@ -113,10 +187,16 @@ const props = defineProps({
                         </option>
                     </select>
 
-                    <!-- 기본 인풋 -->
-                    <input v-else type="text" v-model="form[field.key]" class="input-form-box" />
+                    <!-- 기본 input -->
+                    <input
+                        v-else
+                        type="text"
+                        v-model="form[field.key]"
+                        @input="emit('update:form', { ...form })"
+                        class="input-form-box"
+                    />
 
-                    <!-- 예상 이익 금액 자동계산 -->
+                    <!-- 예상 이익 금액 -->
                     <div v-if="field.key === 'expectedProfitMargin'" class="mt-2">
                         <label class="input-form-label">예상 이익 금액</label>
                         <input
