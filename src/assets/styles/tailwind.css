@@ -148,6 +148,13 @@
   .dashboard-title {
     @apply font-bold text-lg mb-4
   }
+
+  /* 상단 필터링 바 */
+  .custom-horizontal-filter{
+    @apply w-full bg-white rounded-2xl mb-8 px-6 py-4 flex;
+    box-shadow: 0px 4px 20px rgba(124, 124, 124, 0.25);
+  }
+
   /* === 사이드 바 === */
   .custom-sidebar {
     @apply sticky top-10 w-[304px] h-[630px] bg-white rounded-2xl p-6 mr-8;

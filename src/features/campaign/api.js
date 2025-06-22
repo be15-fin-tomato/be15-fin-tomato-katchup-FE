@@ -1,12 +1,14 @@
 import api from '@/plugin/axios.js';
+import qs from 'qs';
 
-export const getCampaignList = async (page, size, company) => {
+export const getCampaignList = async (page, size, filtering) => {
     return await api.get('/campaign', {
         params: {
             page,
             size,
-            ...(company && { company }),
+            ...filtering,
         },
+        paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
     });
 };
 
@@ -81,7 +83,7 @@ export const getUser = async () => {
 };
 
 export const getUserNameAndEmail = async () => {
-  return await api.get('/popup/user/email');
+    return await api.get('/popup/user/email');
 };
 
 export const getClientCompany = async () => {

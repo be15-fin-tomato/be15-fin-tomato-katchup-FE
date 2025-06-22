@@ -8,25 +8,64 @@ const router = useRouter();
 const form = reactive({
     title: '',
     requestDate: '',
+    announcementDate: '',
+    period: '',
+    pipeline: '',
+    status: 2,
     clientCompany: null,
     clientManager: null,
-    period: '',
-    announcementDate: '',
-    pipeline: '',
     username: '',
+    address: '',
+    addressDetail: '',
+    awarenessPath: '',
+    productName: '',
+    productPrice: 0,
+    category: null,
+    expectedRevenue: 0,
+    expectedProfitMargin: 0,
+    notes: '',
     influencer: [],
     price: 0,
     supplyAmount: 0,
     extraProfit: 0,
     content: '',
-    notes: '',
+    user: [],
 });
+
+const buildRequestPayload = () => {
+    const getId = (obj) => (typeof obj === 'object' && obj !== null ? obj.id : (obj ?? null));
+    const getListOfIds = (list) =>
+        Array.isArray(list) ? list.map(getId).filter((id) => id !== null) : [];
+
+    return {
+        campaignName: form.title,
+        campaignStatusId: form.status,
+        clientCompanyId: getId(form.clientCompany),
+        clientManagerId: getId(form.clientManager),
+        startedAt: form.requestDate,
+        endedAt: form.announcementDate,
+        userList: getListOfIds(form.user),
+        awarenessPath: form.awarenessPath,
+        productName: form.productName,
+        productPrice: form.productPrice,
+        expectedRevenue: form.expectedRevenue,
+        expectedProfitMargin: form.expectedProfitMargin,
+        notes: form.notes,
+        categoryList: Array.isArray(form.category)
+            ? form.category.map(getId)
+            : form.category !== null
+              ? [getId(form.category)]
+              : [],
+    };
+};
 
 const save = async () => {
     try {
-        const res = await createCampaign(form); // ← 등록 API 호출
+        const payload = buildRequestPayload();
+        console.log('📦 최종 전송 페이로드:', payload);
+        const res = await createCampaign(payload);
         alert('캠페인이 생성되었습니다!');
-        router.push('/campaign'); // 목록으로 이동
+        router.push('/campaign');
     } catch (e) {
         console.error(e);
         alert('캠페인 생성 실패');
@@ -44,16 +83,10 @@ const save = async () => {
             </div>
         </div>
         <div class="blue-line"></div>
-        <!--        <div class="pipeline flex items-center w-full mb-4">-->
-        <!--            <PipelineDiagram :diagramInfo="null" />-->
-        <!--        </div>-->
         <div class="flex">
             <div class="w-full">
-                <CreateCampaignForm v-model="form" :isEditing="true" />
+                <CreateCampaignForm v-model:form="form" :isEditing="true" />
             </div>
-            <!--            <div class="w-1/2 bg-gray-50 p-4 rounded shadow">-->
-            <!--                <CampaignHistory :campaignHistory="[]" />-->
-            <!--            </div>-->
         </div>
     </div>
 </template>
