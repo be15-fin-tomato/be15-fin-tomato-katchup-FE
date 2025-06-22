@@ -21,7 +21,7 @@ const menuMap = {
   campaign: {
     label: '캠페인',
     routes: {
-      '파이프라인': '/sales/pipeline',
+      '파이프라인': '/campaign',
       '리스트업': '/sales/listup',
       '제안': '/sales/proposal',
       '견적': '/sales/quotation',
@@ -37,9 +37,9 @@ const menuMap = {
     }
   },
   management: {
-    label: '관리',
+    label: '고객사',
     routes: {
-      '고객사': '/management/client',
+      '고객사 목록': '/management/client',
       '이메일 시스템': '/management/email',
       '만족도 조사': '/management/survey'
     }
@@ -83,7 +83,7 @@ function handleTopMenuClick(menu) {
 <template>
   <div class="relative w-full font-semibold text-gray-medium" @mouseleave="hoveredMenu = ''">
     <header class="w-full bg-white border-b border-gray-medium text-lg">
-      <div class="flex justify-between items-center h-[90px]">
+      <div class="flex justify-between items-center h-[100px]">
         <!-- 로고 -->
         <button class="ml-10 cursor-pointer" @click="router.push('/')">
           <img src="@/assets/images/logo.png" alt="logo" class="h-[220px] select-none" />
