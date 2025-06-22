@@ -2,8 +2,9 @@
 import { reactive, ref, nextTick, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
-import PipelineCard from '@/features/campaign/components/PipelineCard.vue';
 import { RouterLink } from 'vue-router';
+import PipelineCard from '@/features/campaign/components/PipelineCard.vue';
+import PdfViewerModal from '@/features/contract/components/PdfViewerModal.vue';
 
 /* 고객, 사원 더미 데이터 */
 const clientList = [
@@ -242,6 +243,10 @@ const communicationList = ref([
 const route = useRoute();
 const router = useRouter();
 
+// PDF 파일 상태
+const isPdfModalOpen = ref(false);
+const selectedPdfFile = ref('');
+
 // 상세조회용 ID
 // const clientId = route.params.id
 
@@ -331,6 +336,11 @@ function initUserSelectHandler() {
         }
     };
     window.__userSelectHandlerRegistered = true;
+}
+
+function openPdfViewer(fileName) {
+  selectedPdfFile.value = fileName;
+  isPdfModalOpen.value = true;
 }
 
 const openUserSearch = () => {
@@ -519,7 +529,8 @@ function selectCampaign(id) {
                 <div
                     v-for="(employee, index) in employeeList"
                     :key="index"
-                    class="border rounded-lg p-4 flex items-center justify-between shadow-sm"
+                    class="rounded-lg p-4 flex items-center justify-between shadow-sm border"
+                    style="border-color: var(--color-gray-medium);"
                 >
                     <div>
                         <!-- 사원 목록에서 이름 옆 -->
@@ -783,7 +794,6 @@ function selectCampaign(id) {
                         </div>
                     </div>
 
-                    <!-- 단 하나의 구분선만 남기고 -->
                     <hr style="border-color: var(--color-gray-medium)" />
 
                     <!-- 담당자 -->
@@ -819,12 +829,14 @@ function selectCampaign(id) {
                     <!-- 첨부파일 -->
                     <div v-if="selectedMsg.file">
                         <h4 class="text-sm font-medium text-gray-600 mb-1">첨부파일</h4>
-                        <div
-                            class="flex items-center gap-2 rounded px-3 py-2 bg-white text-sm"
-                            style="border: 1px solid var(--color-gray-medium)"
+                        <button
+                          class="flex items-center gap-2 px-3 py-2 border rounded text-sm text-gray-700 hover:bg-[#f5faff] transition"
+                          style="border: 1px solid var(--color-gray-medium)"
+                          @click="openPdfViewer(selectedMsg.file)"
                         >
-                            📎 <a href="#" class="text-primary underline">{{ selectedMsg.file }}</a>
-                        </div>
+                          <Icon icon="material-symbols:attach-file" width="18" height="18" />
+                          {{ selectedMsg.file }}
+                        </button>
                     </div>
                 </div>
 
@@ -838,6 +850,12 @@ function selectCampaign(id) {
             </div>
         </div>
     </div>
+
+  <PdfViewerModal
+    v-if="isPdfModalOpen"
+    :pdf-url="`/pdf/${selectedPdfFile}`"
+    @close="isPdfModalOpen = false"
+  />
 </template>
 
 <style scoped></style>

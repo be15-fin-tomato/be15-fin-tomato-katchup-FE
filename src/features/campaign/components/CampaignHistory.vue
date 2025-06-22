@@ -15,7 +15,7 @@ const props = defineProps({
 const selectedFilters = ref(['all']);
 const startDate = ref('');
 const endDate = ref('');
-const createStep = ref('listUp');
+const createStep = ref('listup');
 const router = useRouter();
 
 // 리스트 할당
@@ -38,7 +38,7 @@ const sortedList = computed(() => {
 const filters = [
     { label: '전체', value: 'all', color: 'bg-gray-400' },
     { label: '기회 인지', value: 'chance', color: 'bg-pipeline-chance' },
-    { label: '리스트업', value: 'listUp', color: 'bg-pipeline-list-up' },
+    { label: '리스트업', value: 'listup', color: 'bg-pipeline-list-up' },
     { label: '제안', value: 'proposal', color: 'bg-pipeline-proposal' },
     { label: '견적', value: 'quotation', color: 'bg-pipeline-quotation' },
     { label: '매출', value: 'sales', color: 'bg-orange-400' },
@@ -48,7 +48,7 @@ const filters = [
 // URL 매핑
 const createUrlMap = {
     chance: '/pipeline/chance/create',
-    listUp: '/pipeline/list-up/create',
+    listup: '/pipeline/list-up/create',
     proposal: '/pipeline/proposal/create',
     quotation: '/pipeline/quotation/create',
     sales: '/pipeline/sales/create',
@@ -71,7 +71,7 @@ const toggleFilter = (value) => {
 
 const stepOrder = {
     chance: 1,
-    listUp: 2,
+    listup: 2,
     proposal: 3,
     quotation: 4,
     sales: 5,
@@ -103,11 +103,25 @@ const goToCreate = () => {
     else alert('URL 미정의');
 };
 
+const goToDetail = async (item) => {
+    let step = item.pipelineStep;
+    const id = item.id;
+
+    if (step === 'chance') {
+        step = 'influencer/recommendation';
+        await router.push(`/${step}/${id}`);
+    } else if (step && id) {
+        await router.push(`/sales/${step}/${id}`);
+    } else {
+        alert('잘못된 항목입니다.');
+    }
+};
+
 // 라벨 매핑
 const getStepLabel = (step) => {
     const map = {
         chance: '파이프라인 등록',
-        listUp: '리스트업',
+        listup: '리스트업',
         proposal: '제안',
         quotation: '견적',
         sales: '매출',
@@ -120,7 +134,7 @@ const getStepLabel = (step) => {
 const getStepIcon = (step) => {
     const iconMap = {
         chance: 'bxs:contact',
-        listUp: 'material-symbols:list-alt-check-rounded',
+        listup: 'material-symbols:list-alt-check-rounded',
         proposal: 'material-symbols:mic',
         quotation: 'material-symbols:calculate-outline-rounded',
         sales: 'material-symbols:local-atm-outline-sharp',
@@ -133,7 +147,7 @@ const getStepIcon = (step) => {
 const getIconColor = (step) => {
     const colorMap = {
         chance: 'bg-pipeline-chance',
-        listUp: 'bg-pipeline-list-up',
+        listup: 'bg-pipeline-list-up',
         proposal: 'bg-pipeline-proposal',
         quotation: 'bg-pipeline-quotation',
         sales: 'bg-orange-400',
@@ -242,6 +256,7 @@ const formatPrice = (price) => {
 
                 <div
                     class="flex-1 min-w-0 bg-white rounded border border-gray-medium py-3 px-5 ml-6 z-10 mb-4 hover:bg-dropdown/10 active:bg-dropdown/15"
+                    @click="goToDetail(item)"
                 >
                     <div class="flex justify-between mb-2">
                         <div class="font-bold text-sm text-black">

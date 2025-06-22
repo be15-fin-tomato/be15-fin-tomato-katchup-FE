@@ -52,7 +52,7 @@
         <!-- 유튜브 -->
         <div class="flex items-center justify-start">
           <div class="w-[85%]">
-            <label class="text-sm font-medium mb-1 block">유튜브명</label>
+            <label class="text-sm font-medium mb-1 block">유튜브 채널 ID</label>
             <input
               type="text"
               class="w-full h-[44px] border border-gray-medium rounded px-3 text-sm"
@@ -136,15 +136,25 @@
       </div>
     </div>
 
-    <!-- API 키 입력 모달 -->
+    <!-- API 연동 모달 -->
     <div v-if="showApiModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg w-[400px]">
-        <h3 class="text-lg font-semibold mb-4">{{ currentPlatform }} API 키 입력</h3>
+        <h3 class="text-lg font-semibold mb-4">{{ currentPlatform }} 연동 정보 입력</h3>
+
+        <label class="text-sm font-medium block mb-1">채널 ID <span class="text-red-500">*</span></label>
+        <input
+          v-model="channelIdInput"
+          placeholder="채널 ID를 입력하세요"
+          class="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-4"
+        />
+
+        <label class="text-sm font-medium block mb-1">API 키 (선택)</label>
         <input
           v-model="apiKeyInput"
           placeholder="API 키를 입력하세요"
           class="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-4"
         />
+
         <div class="flex justify-end gap-2">
           <button class="px-4 py-2 bg-gray-300 rounded" @click="closeApiModal">취소</button>
           <button class="px-4 py-2 bg-blue-500 text-white rounded" @click="submitApiKey">등록</button>
@@ -173,9 +183,11 @@ const form = ref({
 
 const youtubeToggle = ref(false)
 const instagramToggle = ref(false)
+
 const showApiModal = ref(false)
 const currentPlatform = ref('')
 const apiKeyInput = ref('')
+const channelIdInput = ref('')
 
 const toggleYoutube = () => {
   if (youtubeToggle.value) {
@@ -200,21 +212,23 @@ const toggleInstagram = () => {
 const closeApiModal = () => {
   showApiModal.value = false
   apiKeyInput.value = ''
+  channelIdInput.value = ''
 }
 
 const submitApiKey = () => {
-  if (!apiKeyInput.value.trim()) {
-    alert('API 키를 입력해주세요.')
+  if (!channelIdInput.value.trim()) {
+    alert('채널 ID를 입력해주세요.')
     return
   }
 
   if (currentPlatform.value === 'YouTube') {
-    form.value.youtubeName = apiKeyInput.value
+    form.value.youtubeName = channelIdInput.value
     youtubeToggle.value = true
   } else if (currentPlatform.value === 'Instagram') {
-    form.value.instagramId = apiKeyInput.value
+    form.value.instagramId = channelIdInput.value
     instagramToggle.value = true
   }
+
   closeApiModal()
 }
 
@@ -225,6 +239,7 @@ const moveTagToSelected = (tag) => {
   availableTags.value = availableTags.value.filter(t => t !== tag)
   selectedTags.value.push(tag)
 }
+
 const returnTag = (tag) => {
   selectedTags.value = selectedTags.value.filter(t => t !== tag)
   availableTags.value.push(tag)

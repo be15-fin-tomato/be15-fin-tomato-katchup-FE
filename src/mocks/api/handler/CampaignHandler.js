@@ -89,18 +89,21 @@ const opinionList = [
 
 const pipelineList = [
     {
+        id: 1,
         pipelineStep: 'chance',
         title: 'XYZ 패션 브랜드 시즌 프로모션 계약',
         createdAt: '2025-06-05',
     },
     {
-        pipelineStep: 'listUp',
+        id: 1,
+        pipelineStep: 'listup',
         title: 'XYZ 패션 브랜드 시즌 프로모션 캐스팅 리스트업',
         createdAt: '2025-06-06',
         clientCompany: 'XYZ 패션',
         ClientManagerName: '송강',
     },
     {
+        id: 1,
         pipelineStep: 'proposal',
         title: 'XYZ 패션 브랜드 시즌 프로모션 캐스팅 제안',
         createdAt: '2025-06-06',
@@ -111,6 +114,7 @@ const pipelineList = [
         username: '차은우',
     },
     {
+        id: 1,
         pipelineStep: 'quotation',
         title: ' XYZ 패션 브랜드 시즌 프로모션 캐스팅 견적 (1차)',
         createdAt: '2025-06-07',
@@ -119,6 +123,7 @@ const pipelineList = [
         adPrice: 9600000,
     },
     {
+        id: 2,
         pipelineStep: 'quotation',
         title: 'XYZ 패션 브랜드 시즌 프로모션 캐스팅 견적 (2차) 패션 브랜드 시즌 프로모션 캐스팅 견적 (2차)패션 브랜드 시즌 프로모션 캐스팅 견적 (2차)',
         createdAt: '2025-06-08',
@@ -127,6 +132,7 @@ const pipelineList = [
         adPrice: 9300000,
     },
     {
+        id: 3,
         pipelineStep: 'quotation',
         title: 'XYZ 패션 브랜드 시즌 프로모션 캐스팅 견적 (2차) 패션 브랜드 시즌 프로모션 캐스팅 견적 (2차)패션 브랜드 시즌 프로모션 캐스팅 견적 (2차)',
         createdAt: '2025-06-08',
@@ -135,6 +141,7 @@ const pipelineList = [
         adPrice: 9300000,
     },
     {
+        id: 4,
         pipelineStep: 'quotation',
         title: 'XYZ 패션 브랜드 시즌 프로모션 캐스팅 견적 (2차) 패션 브랜드 시즌 프로모션 캐스팅 견적 (2차)패션 브랜드 시즌 프로모션 캐스팅 견적 (2차)',
         createdAt: '2025-06-08',
@@ -143,6 +150,7 @@ const pipelineList = [
         adPrice: 9300000,
     },
     {
+        id: 1,
         pipelineStep: 'sales',
         title: ' 상품 이름 정보',
         createdAt: '2025-06-09',
@@ -151,6 +159,7 @@ const pipelineList = [
         adPrice: 9300000,
     },
     {
+        id: 1,
         pipelineStep: 'contract',
         title: 'XYZ 패션 브랜드 시즌 프로모션 계약',
         createdAt: '2025-06-11',
@@ -184,10 +193,10 @@ const campaignDetail = {
     awarenessPath: '지인 소개',
     notes: '1231231212123123',
     pipeLine: {
-        chance: { date: formatDate(new Date(baseDate.getFullYear(), 2, 20)) },
-        listUp: { date: formatDate(new Date(baseDate.getFullYear(), 2, 23)) },
-        proposal: { date: formatDate(new Date(baseDate.getFullYear(), 2, 25)) },
-        negotiation: { date: formatDate(new Date(baseDate.getFullYear(), 2, 27)) },
+        chance: { id: 1, date: formatDate(new Date(baseDate.getFullYear(), 2, 20)) },
+        listUp: { id: 2, date: formatDate(new Date(baseDate.getFullYear(), 2, 23)) },
+        proposal: { id: 1, date: formatDate(new Date(baseDate.getFullYear(), 2, 25)) },
+        negotiation: { id: 1, date: formatDate(new Date(baseDate.getFullYear(), 2, 27)) },
     },
     influencerId: 1,
 };
@@ -204,15 +213,15 @@ const userList = [
 ];
 
 const userListNameAndEmail = [
-  { id: 1, name: '차은우', email: 'lsj9057@daum.net' },
-  { id: 2, name: '아이유', email: 'lsj9057@namver.com,' },
-  { id: 3, name: '김수현', email: 'lsj9057@google.com' },
-  { id: 4, name: '장원영', email: 'lsj9057@nate.com' },
-  { id: 5, name: '전정국', email: 'dfdfd@naver.com' },
-  { id: 6, name: '박지민', email: 'fdsfasdfads@daum.net' },
-  { id: 7, name: '박보검', email: 'lsjdafdd9057@daum.net' },
-  { id: 8, name: '손흥민', email: 'lsjssfdsd9057@daum.net' },
-  { id: 9, name: '김정우', email: 'lsdfasdfj9057@daum.net' },
+    { id: 1, name: '차은우', email: 'lsj9057@daum.net' },
+    { id: 2, name: '아이유', email: 'lsj9057@namver.com,' },
+    { id: 3, name: '김수현', email: 'lsj9057@google.com' },
+    { id: 4, name: '장원영', email: 'lsj9057@nate.com' },
+    { id: 5, name: '전정국', email: 'dfdfd@naver.com' },
+    { id: 6, name: '박지민', email: 'fdsfasdfads@daum.net' },
+    { id: 7, name: '박보검', email: 'lsjdafdd9057@daum.net' },
+    { id: 8, name: '손흥민', email: 'lsjssfdsd9057@daum.net' },
+    { id: 9, name: '김정우', email: 'lsdfasdfj9057@daum.net' },
 ];
 
 const clientCompanyList = [
@@ -1735,10 +1744,10 @@ const CampaignHandler = [
         );
     }),
     http.get('/api/v1/popup/user/email', async () => {
-      return HttpResponse.json(
-        { data: userListNameAndEmail },
-        { status: 200, headers: { 'Cache-Control': 'no-store' } },
-      );
+        return HttpResponse.json(
+            { data: userListNameAndEmail },
+            { status: 200, headers: { 'Cache-Control': 'no-store' } },
+        );
     }),
 
     http.get('/api/v1/popup/client-company', async () => {
