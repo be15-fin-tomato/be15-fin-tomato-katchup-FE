@@ -13,7 +13,7 @@ export const userRoutes = [
         name: 'login',
         component: () => import('@/features/user/views/LoginView.vue'),
         meta: {
-            useLayout: 'none'
+            useLayout: 'none',
         },
     },
     {
@@ -35,5 +35,10 @@ export const userRoutes = [
         path: '/management/survey',
         name: 'surveyList',
         component: SurveyListView,
+    },
+    {
+        path: '/oauth2/callback/youtube',
+        component: () => import('@/features/user/components/YoutubeCallBackPopUp.vue'),
+        meta: { useLayout: 'none' },
     },
 ];

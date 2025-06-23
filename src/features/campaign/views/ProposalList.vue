@@ -5,6 +5,8 @@ import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
 import Pagination from '@/components/common/PagingBar.vue';
+import { categoryOptions, filterOptions } from '@/features/campaign/constants/filterOptions.js';
+import { cleanFilterObject } from '@/utils/CleanFilter.js';
 
 const router = useRouter();
 
@@ -13,19 +15,6 @@ const page = ref(1);
 const size = ref(10);
 const total = ref(0);
 const totalPages = computed(() => Math.ceil(total.value / size.value));
-
-const categoryOptions = [
-    { value: 'title', label: '제목' },
-    { value: 'clientCompany', label: '고객사' },
-    { value: 'user', label: '담당자' },
-];
-
-const filterOptions = [
-    { value: 'approved', label: '승인완료' },
-    { value: 'request', label: '승인요청' },
-    { value: 'onhold', label: '보류/대기' },
-    { value: 'rejected', label: '거절됨' },
-];
 
 const searchFilters = ref({
     category: '',
@@ -39,7 +28,8 @@ const searchFilters = ref({
 // 목록 불러오기
 const fetchProposalList = async () => {
     try {
-        const res = await getProposalList(page.value, size.value, searchFilters.value);
+        const cleanedFilters = cleanFilterObject(searchFilters.value);
+        const res = await getProposalList(page.value, size.value, cleanedFilters);
         proposalList.value = res.data.data;
         total.value = res.data.total;
     } catch (e) {
@@ -54,9 +44,9 @@ const handlePageChange = async (newPage) => {
     await fetchProposalList();
 };
 
-const handleSearch = () => {
+const handleSearch = async () => {
     page.value = 1;
-    fetchProposalList();
+    await fetchProposalList();
 };
 
 const goDetail = (id) => {

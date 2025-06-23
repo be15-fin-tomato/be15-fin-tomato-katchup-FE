@@ -33,6 +33,7 @@ export const getOpinion = async (targetId, targetType) => {
 export const getProposalList = async (page, size, filters = {}) => {
     return await api.get('/sales/proposal', {
         params: { page, size, ...filters },
+        paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
     });
 };
 
