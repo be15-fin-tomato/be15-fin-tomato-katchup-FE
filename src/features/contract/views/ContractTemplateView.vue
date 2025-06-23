@@ -109,23 +109,27 @@ function editItem(item) {
     showEditModal.value = true;
 }
 
-function deleteItem(item) {
+function deleteItem(item, type) {
+  if (type === 'big') {
     const bigIndex = bigList.value.findIndex((b) => b.id === item.id);
     if (bigIndex !== -1) {
-        bigList.value.splice(bigIndex, 1);
-        if (selectedBig.value.id === item.id) {
-            selectedBig.value = bigList.value[0] || null;
-        }
-        return;
-    }
+      bigList.value.splice(bigIndex, 1);
+      if (selectedBig.value?.id === item.id) {
+        selectedBig.value = bigList.value[0] || null;
+      }
 
+      // 해당 종류에 속한 small도 삭제
+      smallList.value = smallList.value.filter(s => s.parentId !== item.id);
+    }
+  } else if (type === 'small') {
     const smallIndex = smallList.value.findIndex((s) => s.id === item.id);
     if (smallIndex !== -1) {
-        smallList.value.splice(smallIndex, 1);
-        if (selectedSmall.value?.id === item.id) {
-            selectedSmall.value = null;
-        }
+      smallList.value.splice(smallIndex, 1);
+      if (selectedSmall.value?.id === item.id) {
+        selectedSmall.value = null;
+      }
     }
+  }
 }
 
 function confirmAddBig() {
@@ -206,7 +210,7 @@ function cancelAddBig() {
                                         <button @click="startEditBig(item)">
                                             <Icon icon="ei:pencil" class="w-5 h-5" />
                                         </button>
-                                        <button @click="deleteItem(item)">
+                                        <button @click="deleteItem(item,'big')">
                                             <Icon icon="iconoir:cancel" width="18" height="18" />
                                         </button>
                                     </div>
@@ -260,7 +264,7 @@ function cancelAddBig() {
                                     <button @click="editItem(item)">
                                         <Icon icon="ei:pencil" class="w-6 h-6" />
                                     </button>
-                                    <button @click="deleteItem(item)">
+                                    <button @click="deleteItem(item,'small')">
                                         <Icon icon="iconoir:cancel" width="20" height="20" />
                                     </button>
                                 </div>
