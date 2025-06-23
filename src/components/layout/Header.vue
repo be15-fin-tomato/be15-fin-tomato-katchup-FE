@@ -10,12 +10,11 @@ const hoveredMenu = ref('')
 const activeMenu = ref('')
 
 const menuMap = {
-  influencer: {
-    label: '인플루언서',
+  dashboard: {
+    label: '대시보드',
     routes: {
-      '대시보드': '/influencer/list',
-      'AI 추천 매칭': '/influencer/recommendation',
-      '인플루언서 관리': '/management/influencer',
+      '인플루언서 분석': '/influencer/list',
+      '캠페인 성과': '/campaign/dashboard',
     }
   },
   campaign: {
@@ -29,11 +28,11 @@ const menuMap = {
       '매출': '/sales/revenue'
     }
   },
-  contract: {
-    label: '전자계약',
+  influencer: {
+    label: '인플루언서',
     routes: {
-      '계약서 목록': '/contract/list',
-      '템플릿 목록': '/contract/template'
+      '인플루언서 관리': '/management/influencer',
+      'AI 추천 매칭': '/influencer/recommendation',
     }
   },
   management: {
@@ -43,7 +42,14 @@ const menuMap = {
       '이메일 시스템': '/management/email',
       '만족도 조사': '/management/survey'
     }
-  }
+  },
+  contract: {
+    label: '전자계약',
+    routes: {
+      '계약서 목록': '/contract/list',
+      '템플릿 목록': '/contract/template'
+    }
+  },
 }
 
 const selectedMenu = computed(() => {
