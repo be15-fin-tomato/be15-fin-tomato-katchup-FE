@@ -159,7 +159,7 @@ function cancelAddBig() {
                 <!-- 큰 틀 -->
                 <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
                     <div class="flex items-center justify-between px-4 pt-4 pb-2">
-                        <h3 class="font-bold text-sm">큰 틀</h3>
+                        <h3 class="font-bold text-sm">종류</h3>
                         <button
                             class="text-gray-dark text-sm cursor-pointer"
                             @click="showBigInput = true"
@@ -216,7 +216,7 @@ function cancelAddBig() {
                         <div v-if="showBigInput" class="flex items-center gap-2 mb-2">
                             <input
                                 v-model="newBigName"
-                                placeholder="큰 틀을 입력하세요."
+                                placeholder="종류를 입력하세요."
                                 class="w-full border border-gray-dark px-2 py-1 rounded text-sm"
                             />
                             <button @click="confirmAddBig">
@@ -232,7 +232,7 @@ function cancelAddBig() {
                 <!-- 작은 틀 -->
                 <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
                     <div class="flex items-center justify-between px-4 pt-4 pb-2">
-                        <h3 class="font-bold text-sm">작은 틀</h3>
+                        <h3 class="font-bold text-sm">목록</h3>
                         <button
                             class="text-gray-dark text-sm cursor-pointer"
                             @click="showSmallModal = true"
@@ -310,7 +310,7 @@ function cancelAddBig() {
                             </div>
                         </template>
                         <template v-else>
-                            <p class="text-gray-400">작은 틀을 선택해주세요.</p>
+                            <p class="text-gray-400">템플릿을 선택해주세요.</p>
                         </template>
                     </div>
                 </div>
