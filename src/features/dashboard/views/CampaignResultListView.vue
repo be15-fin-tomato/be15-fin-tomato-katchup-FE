@@ -104,7 +104,7 @@ onMounted(async () => {
                     :pageType="'campaignResult'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(campaignResult.id)"
+                    @click="() => goDetail(campaignResult.id)"
                 />
             </div>
 

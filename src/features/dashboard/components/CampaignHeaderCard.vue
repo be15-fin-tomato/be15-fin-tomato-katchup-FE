@@ -12,7 +12,7 @@ const props = defineProps({
 const router = useRouter()
 
 const campaignTitle = computed(() => props.campaign?.title ?? '-')
-const clientCompany = computed(() => props.campaign?.clientCompany ?? '-')
+const clientCompany = computed(() => props.campaign?.clientCompany?.name ?? '-')
 const productName = computed(() => props.campaign?.productName ?? '-')
 const startDate = computed(() => props.campaign?.startDate ?? '-')
 const endDate = computed(() => props.campaign?.endDate ?? '-')
