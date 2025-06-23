@@ -42,11 +42,11 @@ function submitTemplate() {
 <template>
   <div v-if="show" class="fixed inset-0 z-50 bg-black/50 flex justify-center items-center">
     <div class="bg-white w-[400px] rounded-lg shadow-lg p-6">
-      <div class="font-bold text-lg mb-4">작은 틀 등록</div>
+      <div class="font-bold text-lg mb-4">템플릿 등록</div>
 
       <!-- 큰 틀 (읽기전용) -->
       <div class="mb-4">
-        <label class="block font-semibold mb-1">큰 틀</label>
+        <label class="block font-semibold mb-1">종류</label>
         <input type="text" :value="selectedBig?.name" class="w-full border px-2 py-1 rounded text-sm bg-gray-100" disabled />
       </div>
 
