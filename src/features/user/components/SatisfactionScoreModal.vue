@@ -46,7 +46,7 @@ const emit = defineEmits(['close'])
       <div class="text-right">
         <button
           @click="emit('close')"
-          class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 text-sm"
+          class="btn-create"
         >
           확인
         </button>
