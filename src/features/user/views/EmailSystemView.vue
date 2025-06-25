@@ -70,7 +70,7 @@ const paginatedEmail = computed(() => {
 
 <template>
   <div class="w-full min-h-screen bg-background flex">
-    <CommonFiltering />
+    <CommonFiltering :showFilterSort="false" />
     <div class="flex flex-col flex-1 container bg-white">
       <!-- 제목 + 등록 버튼 -->
       <div class="page-header">
