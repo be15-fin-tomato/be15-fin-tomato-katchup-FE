@@ -17,10 +17,10 @@ async function bootstrap() {
     app.use(Toast);
     app.use(vDrag);
 
-    // if (import.meta.env.DEV) {
-    //     const { worker } = await import('@/mocks/api/browser.js');
-    //     await worker.start();
-    // }
+    if (import.meta.env.DEV) {
+        const { worker } = await import('@/mocks/api/browser.js');
+        await worker.start();
+    }
 
     app.mount('#app');
 }

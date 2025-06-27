@@ -1,72 +1,57 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router'
-import ApexCharts from 'vue3-apexcharts'
+import { useRoute } from 'vue-router';
+import ApexCharts from 'vue3-apexcharts';
 
-const route = useRoute()
-const campaignId = route.query.id || '1'
+const route = useRoute();
+const campaignId = route.query.id || '1';
 
-const campaign = ref(null)
-const meta = ref(null)
-const rows = ref([])
-const isLoading = ref(false)
-const isError = ref(false)
+const campaign = ref(null);
+const meta = ref(null);
+const rows = ref([]);
+const isLoading = ref(false);
+const isError = ref(false);
 
+// AI 댓글 요약 예시 (나중에 실제 API로 교체 가능)
+const aiCommentSummary = ref(`
+해당 영상에 대해 긍정적인 반응이 많았으며, 특히 콘텐츠의 신선함과 정보 전달력에 대해 호평이 이어졌습니다.
+몇몇 시청자는 영상 속 제품에 대한 자세한 설명에 감사의 댓글을 남기기도 했습니다.
+또한 영상의 편집 스타일, 배경 음악 선택, 그리고 전달 방식이 매우 효과적이라는 의견도 다수 있었습니다.
+일부 시청자들은 관련된 추가 정보나 링크를 요청하며, 해당 콘텐츠에 대한 깊은 관심을 보이기도 했습니다.
+특히 영상이 초보자에게도 이해하기 쉬운 구성으로 되어 있어 접근성이 높다는 의견이 많았으며,
+앞으로도 이런 유익한 콘텐츠가 지속되기를 바라는 목소리가 컸습니다.
+종합적으로, 영상의 퀄리티와 정보의 유익성에 대한 만족도가 상당히 높은 것으로 나타났습니다.
+`);
 const sourceLabelMap = {
   YT_SEARCH: '유튜브 검색',
   RELATED_VIDEO: '추천 동영상',
   EXTERNAL: '외부 유입',
   PLAYLIST: '재생목록',
-  NOTIFICATION: '알림'
-}
+  NOTIFICATION: '알림',
+};
 
 const fetchAllData = async () => {
-  isLoading.value = true
+  isLoading.value = true;
   try {
-    // 캠페인
-    const campaignRes = await fetch(`/api/v1/campaign/${campaignId}`)
-    const campaignData = await campaignRes.json()
-    campaign.value = campaignData.data
+    const campaignRes = await fetch(`/api/v1/campaign/${campaignId}`);
+    campaign.value = (await campaignRes.json()).data;
 
-    // 메타 데이터 (유튜브 영상 통계)
-    const metaRes = await fetch(`/api/v1/youtube/video?campaignId=${campaignId}`)
-    const metaData = await metaRes.json()
-    meta.value = metaData
+    const metaRes = await fetch(`/api/v1/youtube/video?campaignId=${campaignId}`);
+    meta.value = await metaRes.json();
 
-    // 유입경로 데이터
-    const trafficRes = await fetch(`/api/v1/youtube/traffic-sources?campaignId=${campaignId}&groupType=daily`)
-    const trafficData = await trafficRes.json()
-    rows.value = trafficData.rows
-
+    const trafficRes = await fetch(`/api/v1/youtube/traffic-sources?campaignId=${campaignId}&groupType=daily`);
+    rows.value = (await trafficRes.json()).rows;
   } catch (err) {
-    isError.value = true
+    isError.value = true;
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
-onMounted(fetchAllData)
+onMounted(fetchAllData);
 
-const metrics = computed(() => {
-  if (!campaign.value || !meta.value) return {}
-
-  const revenue = campaign.value.expectedRevenue ?? 0 // 예상 수익
-  const adCost = campaign.value.adCost ?? 3000000 // 광고 단가
-  const productPrice = campaign.value.productPrice ?? 1 // 상품 단가
-  const sales = productPrice ? Math.round(revenue / productPrice) : 0 // 판매 수량
-  const views = meta.value?.statistics?.viewCount ?? 0  // 해당 캠페인 영상 조회 수
-  const subscriberGrowth = meta.value?.statistics?.subscriberCount ?? 0 // 구독자 수 증가 : 종료날짜 구독자 - 시작날짜 구독자
-
-  return {
-    revenue,
-    roas: adCost ? (revenue / adCost).toFixed(1) : 0,
-    conversionRate: views ? ((sales / views) * 100).toFixed(1) : 0,
-    subscriberGrowth
-  }
-})
-
-const series = computed(() => rows.value.map(row => row[1]))
-const labels = computed(() => rows.value.map(row => sourceLabelMap[row[0]]))
+const series = computed(() => rows.value.map((row) => row[1]));
+const labels = computed(() => rows.value.map((row) => sourceLabelMap[row[0]]));
 
 const chartOptions = computed(() => ({
   labels: labels.value,
@@ -75,56 +60,44 @@ const chartOptions = computed(() => ({
   dataLabels: {
     enabled: true,
     formatter: (val) => `${val.toFixed(0)}%`,
-    style: { fontSize: '16px', fontWeight: 600, colors: ['#FFFFFF'] }
+    style: { fontSize: '18px', fontWeight: 700, colors: ['#ffffff'] },
   },
-  plotOptions: { pie: { donut: { size: '60%' } } },
+  plotOptions: {
+    pie: {
+      donut: { size: '65%' },
+    },
+  },
   stroke: { show: false },
   tooltip: {
-    y: { formatter: (val) => `${val.toLocaleString()}회` }
-  }
-}))
+    y: {
+      formatter: (val) => `${val.toLocaleString()}회`,
+    },
+  },
+}));
 </script>
 
 <template>
-  <div class="dashboard-section w-full flex flex-wrap justify-around items-start gap-5">
-    <div class="flex flex-col gap-5">
-      <div class="dashboard-title">유입 분석</div>
-      <div class="flex gap-5">
-        <div class="bg-background rounded-xl px-6 py-4 shadow text-center w-[200px] h-[85px] flex flex-col justify-between">
-          <div class="text-sm">구독자 수</div>
-          <div class="text-xl text-red-400 font-bold">{{ metrics.subscriberGrowth }} ↑</div>
-        </div>
-        <div class="bg-background rounded-xl px-6 py-4 shadow text-center w-[200px] h-[85px] flex flex-col justify-between">
-          <div class="text-sm">전환율</div>
-          <div class="text-xl text-red-400 font-bold">{{ metrics.conversionRate }}%</div>
-        </div>
-      </div>
-
-      <div class="flex gap-5">
-        <div class="bg-background rounded-xl px-6 py-4 shadow text-center w-[200px] h-[85px] flex flex-col justify-between">
-          <div class="text-sm">ROAS</div>
-          <div class="text-xl text-red-400 font-bold">x {{ metrics.roas }}</div>
-        </div>
-        <div class="bg-background rounded-xl px-6 py-4 shadow text-center w-[200px] h-[85px] flex flex-col justify-between">
-          <div class="text-sm">예상 수익</div>
-          <div class="text-xl text-red-400 font-bold">₩ {{ metrics.revenue?.toLocaleString() }}</div>
-        </div>
-      </div>
-
-      <div class="text-xs text-gray-medium leading-relaxed">
-        ※ 전환율: 콘텐츠를 시청한 사람이 실제 구매를 한 비율<br/>
-        ※ ROAS: 광고비 1원을 썼을 때 얼마 벌었는지 보여주는 지표
+  <div class="dashboard-section w-full flex justify-between items-start gap-6">
+    <!-- 왼쪽 : 유입 분석 텍스트 + AI 요약 -->
+    <div class="pl-6 pt-6 w-[45%]">
+      <div class="dashboard-title text-xl font-bold mb-4">유입 분석</div>
+      <div class="text-sm text-muted mb-1 font-semibold">댓글 요약 (AI)</div>
+      <div class="bg-muted/10 p-4 rounded-xl text-sm leading-relaxed text-gray-700 shadow-sm overflow-auto h-[200px]">
+        {{ aiCommentSummary }}
       </div>
     </div>
-
-    <div class="relative bg-background p-6 rounded-3xl shadow flex items-center justify-center">
-      <div class="relative w-[320px]">
-        <ApexCharts type="donut" width="320" :series="series" :options="chartOptions" />
-        <div class="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <div class="text-md font-medium">영상유입 경로</div>
+    <!-- 오른쪽 : 도넛 그래프 -->
+    <div
+      class="relative bg-background p-6 rounded-3xl shadow flex items-center justify-center h-[400px] w-[50%]"
+    >
+      <div class="relative w-[340px]">
+        <ApexCharts type="donut" width="340" :series="series" :options="chartOptions" />
+        <div
+          class="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
+        >
+          <div class="text-lg font-semibold">영상유입 경로</div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
