@@ -9,9 +9,12 @@
       <h2 class="text-lg font-semibold text-[--color-click]">
         {{ room?.name }}
       </h2>
-      <button @click="exitRoom" class="text-gray-400 hover:text-gray-600 transition">
-        <Icon icon="si:close-duotone" class="w-5 h-5" />
-      </button>
+      <div class="flex items-center gap-3">
+        <button @click="showInviteModal = true" class="text-[--color-request] text-xl hover:brightness-110">+</button>
+        <button @click="exitRoom" class="text-gray-400 hover:text-gray-600 transition">
+          <Icon icon="si:close-duotone" class="w-5 h-5" />
+        </button>
+      </div>
     </div>
 
     <!-- 메시지 리스트 -->
@@ -19,10 +22,8 @@
       <div
         v-for="(msg, index) in messages"
         :key="index"
-        :class="[
-          'flex flex-col max-w-[80%]',
-          msg.sender === 'ME' ? 'self-end items-end' : 'self-start items-start'
-        ]"
+        :class="[ 'flex flex-col max-w-[80%]',
+                 msg.sender === 'ME' ? 'self-end items-end' : 'self-start items-start']"
       >
         <span class="text-xs text-gray-400 mb-1">{{ msg.sender }} · {{ msg.time }}</span>
         <div class="px-4 py-2 rounded-xl text-sm bg-gray-100 text-gray-800">
@@ -40,8 +41,6 @@
           <span class="truncate max-w-[200px]">{{ attachedFile.name }}</span>
           <button @click="attachedFile = null" class="text-xs text-red-500 hover:underline">삭제</button>
         </div>
-
-        <!-- 업로드 진행률 표시 -->
         <div v-if="isUploading" class="h-2 bg-blue-100 rounded-full overflow-hidden">
           <div
             class="h-full bg-blue-500 transition-all duration-300"
@@ -50,20 +49,17 @@
         </div>
       </div>
 
+      <!-- 입력 및 전송 -->
       <div class="flex items-center gap-2">
-        <!-- 파일 업로드 버튼 -->
         <button @click="triggerFileUpload" class="text-[--color-btn-sky] text-xl">
           <Icon icon="codex:file" class="w-5 h-5" />
         </button>
-
         <input
           ref="fileInput"
           type="file"
           class="hidden"
           @change="handleFileChange"
         />
-
-        <!-- 텍스트 입력 -->
         <input
           v-model="newMessage"
           @keyup.enter="sendMessage"
@@ -71,7 +67,6 @@
           placeholder="메시지를 입력하세요"
           class="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-[--color-request]"
         />
-
         <button
           @click="sendMessage"
           :disabled="(!newMessage.trim() && !attachedFile) || isUploading"
@@ -81,11 +76,38 @@
         </button>
       </div>
     </div>
+
+    <!-- 초대 모달 -->
+    <div v-if="showInviteModal" class="absolute top-24 right-10 w-[360px] bg-white shadow-xl border rounded-xl p-4 z-50">
+      <h3 class="font-semibold text-base mb-2">참여자 초대</h3>
+      <input
+        v-model="inviteSearch"
+        type="text"
+        placeholder="이름 검색"
+        class="w-full text-sm px-3 py-2 border border-gray-300 rounded mb-3"
+      />
+      <ul class="max-h-48 overflow-y-auto space-y-2">
+        <li
+          v-for="name in filteredInviteList"
+          :key="name"
+          class="flex justify-between items-center text-sm px-3 py-2 border rounded hover:bg-gray-50"
+        >
+          <span>{{ name }}</span>
+          <button
+            @click="invite(name)"
+            class="text-xs text-white bg-blue-500 hover:brightness-105 px-2 py-1 rounded"
+          >초대</button>
+        </li>
+      </ul>
+      <div class="flex justify-end mt-3">
+        <button @click="showInviteModal = false" class="text-sm text-gray-500 hover:underline">닫기</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { Icon } from '@iconify/vue'
 
@@ -101,7 +123,17 @@ const attachedFile = ref(null)
 const uploadProgress = ref(0)
 const isUploading = ref(false)
 
-// 채팅 메시지 불러오기
+const showInviteModal = ref(false)
+const inviteSearch = ref('')
+const allUsers = ['박준서', '박장우', '오유경', '이승재', '윤채영', '조현승']
+const filteredInviteList = computed(() => {
+  const currentMembers = props.room?.membersList || []
+  return allUsers
+    .filter(name => !currentMembers.includes(name))
+    .filter(name => name.includes(inviteSearch.value))
+})
+
+// 메시지 불러오기
 const fetchMessages = async () => {
   const res = await axios.get(`/api/v1/chats/${props.room.id}/messages`)
   messages.value = res.data.data
@@ -114,22 +146,16 @@ const sendMessage = () => {
   messages.value.push({
     sender: 'ME',
     text: newMessage.value || '(파일 전송됨)',
-    time: new Date().toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
   })
 
   newMessage.value = ''
   attachedFile.value = null
 }
 
-// 파일 선택창 열기
-const triggerFileUpload = () => {
-  fileInput.value?.click()
-}
+// 파일 업로드
+const triggerFileUpload = () => fileInput.value?.click()
 
-// 파일 선택 + 업로드 + 진행률 표시
 const handleFileChange = async (e) => {
   const file = e.target.files[0]
   if (!file) return
@@ -144,8 +170,8 @@ const handleFileChange = async (e) => {
   try {
     await axios.post('/api/v1/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (progressEvent) => {
-        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+      onUploadProgress: (e) => {
+        const percent = Math.round((e.loaded * 100) / e.total)
         uploadProgress.value = percent
       }
     })
@@ -155,6 +181,13 @@ const handleFileChange = async (e) => {
     console.error('파일 업로드 실패', err)
     isUploading.value = false
   }
+}
+
+// 초대
+const invite = (name) => {
+  console.log(`${name}님을 채팅방에 초대합니다.`)
+  // TODO: 초대 API 호출
+  showInviteModal.value = false
 }
 
 // 채팅방 나가기
