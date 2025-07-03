@@ -10,7 +10,7 @@
         </div>
 
         <!-- 의견 리스트 -->
-        <div v-for="opinion in opinions" :key="opinion.id" class="flex mb-6">
+        <div v-for="opinion in opinions" :key="opinion.ideaId" class="flex mb-6">
             <div class="flex items-start pt-2.75 mr-3">
                 <div class="w-2 h-2 bg-opinion-circle rounded-full"></div>
             </div>
@@ -18,7 +18,7 @@
             <div class="flex-1 flex flex-col">
                 <div class="flex justify-between items-center mb-1">
                     <div class="flex items-center">
-                        <span class="font-bold text-sm">{{ opinion.author }}</span>
+                        <span class="font-bold text-sm">{{ opinion.userName }}</span>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -26,18 +26,18 @@
 
                         <div class="relative">
                             <button
-                                @click="toggleMenu(opinion.id)"
+                                @click="toggleMenu(opinion.ideaId)"
                                 class="p-1 hover:bg-gray-100 rounded"
                             >
                                 ⋮
                             </button>
 
                             <div
-                                v-if="menuOpenId === opinion.id"
+                                v-if="menuOpenId === opinion.ideaId"
                                 class="absolute right-0 mt-2 bg-white border rounded shadow-lg w-24 text-sm z-10"
                             >
                                 <button
-                                    @click="deleteOpinion(opinion.id)"
+                                    @click="deleteOpinion(opinion.ideaId)"
                                     class="block w-full text-left px-4 py-2 hover:bg-gray-medium"
                                 >
                                     삭제

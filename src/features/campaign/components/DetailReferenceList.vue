@@ -17,12 +17,12 @@
 
         <div
             v-for="(item, index) in items"
-            :key="item.id ?? index"
+            :key="item.pipelineId ?? index"
             class="hover:underline cursor-pointer"
             @click="handleSelect(item)"
         >
             <slot name="item" :item="item">
-                {{ item.title }}
+                {{ item.name }}
             </slot>
         </div>
     </div>

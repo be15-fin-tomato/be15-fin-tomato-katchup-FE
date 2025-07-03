@@ -24,21 +24,15 @@ export const getCampaignHistory = async (campaignId) => {
     return await api.get(`/campaign/history/${campaignId}`);
 };
 
-export const getOpinion = async (targetId, targetType) => {
-    return await api.get('/opinion', {
-        params: { targetType, targetId },
-    });
-};
-
 export const getProposalList = async (page, size, filters = {}) => {
-    return await api.get('/sales/proposal', {
+    return await api.get('/campaign/proposal', {
         params: { page, size, ...filters },
         paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
     });
 };
 
 export const getProposalDetail = async (proposalId) => {
-    return await api.get(`/sales/proposal/${proposalId}`);
+    return await api.get(`/campaign/proposal/${proposalId}`);
 };
 
 export const getListUpList = async (page, size, filters = {}) => {
@@ -48,13 +42,13 @@ export const getListUpList = async (page, size, filters = {}) => {
 };
 
 export const getQuotationList = async (page, size, filters = {}) => {
-    return await api.get('/sales/quotation', {
+    return await api.get('/campaign/quotation', {
         params: { page, size, ...filters },
     });
 };
 
 export const getQuotationDetail = async (quotationId) => {
-    return await api.get(`/sales/quotation/${quotationId}`);
+    return await api.get(`/campaign/quotation/${quotationId}`);
 };
 
 export const getRevenueList = async (page, size, filters = {}) => {

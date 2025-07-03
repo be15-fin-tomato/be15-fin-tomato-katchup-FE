@@ -3,34 +3,34 @@
         <!-- 상단: 제목 / 상태 -->
         <div class="flex justify-between items-center mb-2">
             <div class="text-base font-semibold truncate max-w-[70%]">
-                {{ managementOption.title }}
+                {{ managementOption.name }}
             </div>
 
             <div class="flex items-center gap-2">
                 <div
-                    v-if="managementOption.status"
+                    v-if="managementOption.statusName"
                     :class="[
                         'px-2 py-1 rounded text-white text-sm',
-                        statusColor(managementOption.status),
+                        statusColor(managementOption.statusName),
                     ]"
                 >
-                    {{ managementOption.status }}
+                    {{ managementOption.statusName }}
                 </div>
 
                 <div class="relative">
                     <button
-                        @click.stop="$emit('menuToggle', managementOption.id)"
+                        @click.stop="$emit('menuToggle', managementOption.pipelineId)"
                         class="p-1 hover:bg-gray-100 rounded"
                     >
                         <Icon icon="mdi:dots-vertical" width="20" height="20" />
                     </button>
 
                     <div
-                        v-if="openMenuId === managementOption.id"
+                        v-if="openMenuId === managementOption.pipelineId"
                         class="absolute right-0 mt-2 bg-white border border-gray-medium rounded shadow-lg w-24 text-sm z-10"
                     >
                         <button
-                            @click.stop="$emit('delete', managementOption.id)"
+                            @click.stop="$emit('delete', managementOption.pipelineId)"
                             class="block w-full text-left px-4 py-2 hover:bg-gray-medium"
                         >
                             삭제
@@ -42,7 +42,7 @@
 
         <!-- 캠페인 명 -->
         <div class="text-gray-dark text-sm mb-1 truncate max-w-full">
-            {{ managementOption.campaignTitle }}
+            {{ managementOption.campaignName }}
         </div>
 
         <!-- 상품명 (Quotation, Contract, Revenue 전용) -->
@@ -57,13 +57,13 @@
         <div class="flex justify-between text-sm text-gray-dark mt-8 mb-3">
             <div class="flex items-center gap-1 max-w-[40%]">
                 <Icon icon="tabler:building" width="24" height="24" class="mr-2" />
-                <span class="truncate">{{ managementOption.clientCompany }}</span>
+                <span class="truncate">{{ managementOption.clientCompanyName }}</span>
             </div>
 
             <div class="flex gap-4 items-center truncate max-w-[50%]">
                 <div class="flex items-center gap-1 truncate">
                     <Icon icon="mdi:person-tie" width="24" height="24" class="mr-2" />
-                    <span>{{ managementOption.userName }}</span>
+                    <span>{{ renderListupCount(managementOption.userName) }}</span>
                 </div>
                 <div class="flex items-center gap-1 truncate">
                     <Icon icon="mdi:account-check" width="24" height="24" class="mr-2" />
@@ -75,12 +75,14 @@
         <!-- 하단 상세 -->
         <div class="flex flex-row gap-2 text-sm text-gray-dark border-t pt-2 w-full max-w-full">
             <template v-if="pageType === 'proposal'">
-                <div class="truncate">요청일 : {{ formatDate(managementOption.requestDate) }}</div>
-                <div class="truncate">발표일 : {{ formatDate(managementOption.presentDate) }}</div>
+                <div class="truncate">요청일 : {{ formatDate(managementOption.requestAt) }}</div>
+                <div class="truncate">발표일 : {{ formatDate(managementOption.presentAt) }}</div>
             </template>
 
             <template v-else-if="['quotation', 'contract', 'revenue'].includes(pageType)">
-                <div class="truncate">광고단가 : {{ formatMoney(managementOption.adPrice) }}</div>
+                <div class="truncate">
+                    예상매출 : {{ formatMoney(managementOption.expectedRevenue) }}
+                </div>
             </template>
 
             <template v-else-if="pageType === 'listup' || pageType === 'campaignResult'">

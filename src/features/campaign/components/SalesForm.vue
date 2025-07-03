@@ -54,14 +54,14 @@ const openSearchPopup = (key, type) => {
                         <div v-if="field.type === 'date-range'" class="flex items-center gap-2">
                             <input
                                 type="date"
-                                v-model="form.startDate"
+                                v-model="form.startedAt"
                                 :disabled="!isEditing"
                                 class="input-form-box"
                             />
                             <span>~</span>
                             <input
                                 type="date"
-                                v-model="form.endDate"
+                                v-model="form.endedAt"
                                 :disabled="!isEditing"
                                 class="input-form-box"
                             />
@@ -74,8 +74,12 @@ const openSearchPopup = (key, type) => {
                             :disabled="!isEditing"
                             class="input-form-box"
                         >
-                            <option v-for="option in field.options" :key="option" :value="option">
-                                {{ option }}
+                            <option
+                                v-for="option in field.options"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ option.label }}
                             </option>
                         </select>
 

@@ -8,7 +8,6 @@ import ProposalAccordionItem from '@/features/campaign/components/ProposalAccord
 import {
     getInfluencerDetail,
     getListupReference,
-    getOpinion,
     getProposalDetail,
 } from '@/features/campaign/api.js';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
@@ -136,25 +135,6 @@ const fetchProposalDetail = async () => {
         console.log(e);
     }
 };
-// 실제 개발 시에는 파이프 라인 아이디 보내줘야함!
-const fetchListupReference = async () => {
-    try {
-        const res = await getListupReference();
-        listUpReferences.value = res.data.data;
-    } catch (e) {
-        console.log(e);
-    }
-};
-
-// 의견 호출
-const fetchOpinions = async () => {
-    try {
-        const res = await getOpinion(route.params.proposalId, 'contract');
-        opinions.value = res.data.data;
-    } catch (e) {
-        console.log(e);
-    }
-};
 
 watch(
     () => form.influencer,
@@ -210,7 +190,7 @@ onMounted(async () => {
     /* TODO 댓글, 래퍼런스, 상세 정보 불러와야 함!*/
     // await fetchOpinions();
     // await fetchProposalDetail();
-    await Promise.all([fetchOpinions(), fetchProposalDetail(), fetchListupReference()]);
+    await Promise.all([fetchProposalDetail()]);
 });
 </script>
 
