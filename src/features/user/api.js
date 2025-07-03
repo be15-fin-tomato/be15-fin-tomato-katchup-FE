@@ -13,3 +13,22 @@ export const connectYoutube = async () => {
 export const postToken = async (code) => {
     return await api.post('/oauth2/youtube/code', { code: code });
 };
+
+/* 로그인 */
+export const login = async (data) => {
+    return await api.post('/auth/login', data);
+};
+
+/* 로그아웃 */
+export const logout = async () => {
+    return api.post('/auth/logout');
+};
+
+/* AccessToken 재발급 */
+export const refreshToken = async () => {
+    return api.post('/auth/reissue');
+};
+
+/* 비밀번호 찾기 */
+
+/*  */
