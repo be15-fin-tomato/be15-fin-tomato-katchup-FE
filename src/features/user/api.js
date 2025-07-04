@@ -39,4 +39,9 @@ export const findPassword = (loginId, email) => {
   });
 };
 
-/*  */
+/* FCM 토큰 등록 */
+export const registerFcmToken = (token) => {
+  return api.post('/fcm/token', {
+    fcmToken: token,
+  });
+};
