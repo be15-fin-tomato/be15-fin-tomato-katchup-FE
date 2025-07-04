@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     modelValue: Object,
@@ -21,18 +21,37 @@ const parseNumberInput = (e, key) => {
     form[key] = raw ? parseInt(raw, 10) : 0;
 };
 
+watch(
+    () => form.clientCompany?.id,
+    (newVal, oldVal) => {
+        if (newVal !== oldVal) {
+            form.clientManager = null;
+        }
+    },
+);
+
 const openSearchPopup = (key, type) => {
     currentFieldKey.value = key;
     const currentValue = form[key];
     const selected = currentValue?.id ?? '';
 
+    // clientCompanyId가 필요한 경우만 별도 처리
+    const clientCompanyId = form.clientCompany?.id ?? '';
+
+    const queryParams = new URLSearchParams({
+        type,
+        selected,
+        ...(type === 'manager' && clientCompanyId ? { clientCompanyId } : {}),
+    });
+
     const popup = window.open(
-        `/search-popup?type=${type}&selected=${encodeURIComponent(selected)}`,
+        `/search-popup?${queryParams.toString()}`,
         'SearchPopup',
         'width=500,height=600',
     );
 
     window.handleUserSelect = (selectedItem) => {
+        console.log(selectedItem);
         form[currentFieldKey.value] = selectedItem;
         popup.close();
     };
@@ -54,14 +73,14 @@ const openSearchPopup = (key, type) => {
                         <div v-if="field.type === 'date-range'" class="flex items-center gap-2">
                             <input
                                 type="date"
-                                v-model="form.startDate"
+                                v-model="form.startedAt"
                                 :disabled="!isEditing"
                                 class="input-form-box"
                             />
                             <span>~</span>
                             <input
                                 type="date"
-                                v-model="form.endDate"
+                                v-model="form.endedAt"
                                 :disabled="!isEditing"
                                 class="input-form-box"
                             />
@@ -74,8 +93,12 @@ const openSearchPopup = (key, type) => {
                             :disabled="!isEditing"
                             class="input-form-box"
                         >
-                            <option v-for="option in field.options" :key="option" :value="option">
-                                {{ option }}
+                            <option
+                                v-for="option in field.options"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ option.label }}
                             </option>
                         </select>
 

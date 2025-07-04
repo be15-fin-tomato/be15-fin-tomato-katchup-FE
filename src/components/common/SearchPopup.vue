@@ -24,23 +24,32 @@ const allItems = ref([]);
 
 const fetchData = async () => {
     let res = null;
+    searchKeyword.value = (searchKeyword.value || '').trim();
+
     try {
         if (type === 'user') {
-            res = await getUser();
+            res = await getUser(searchKeyword.value);
+            allItems.value = res.data.data.userList;
         } else if (type === 'company') {
-            res = await getClientCompany();
+            res = await getClientCompany(searchKeyword.value);
+            allItems.value = res.data.data.clientCompanyList;
         } else if (type === 'manager') {
-            res = await getClientManager();
+            const clientCompanyId = route.query.clientCompanyId ?? null;
+            res = await getClientManager(clientCompanyId, searchKeyword.value);
+            allItems.value = res.data.data.clientManagerList;
         } else if (type === 'influencer') {
-            res = await getInfluencer();
+            res = await getInfluencer(searchKeyword.value);
+            allItems.value = res.data.data.influencerList;
         } else if (type === 'pipeline') {
-            res = await getPipeline();
+            res = await getPipeline(searchKeyword.value);
+            allItems.value = res.data.data.campaignList;
         } else if (type === 'email') {
-          res = await getUserNameAndEmail();
+            res = await getUserNameAndEmail();
         } else {
             console.error('Unknown search type:', type);
         }
-        allItems.value = res.data.data;
+
+        // allItems.value = res.data.data;
     } catch (e) {
         console.error('검색 데이터 조회 실패:', e);
     }
@@ -54,52 +63,34 @@ onMounted(async () => {
     }
 });
 
-const filteredItems = computed(() => {
-  if (!searchKeyword.value) return allItems.value;
-
-  return allItems.value.filter((item) => {
-    if (labelKey === 'fullLabel') {
-      const full = `${item.name} - ${item.email}`.toLowerCase();
-      return full.includes(searchKeyword.value.toLowerCase());
-    } else {
-      return (item[labelKey] ?? '').toLowerCase().includes(searchKeyword.value.toLowerCase());
-    }
-  });
-});
-
-
-const isSelected = (item) => selectedItems.value.includes(item[valueKey]);
+const isSelected = (item) => selectedItems.value.includes(item.id);
 
 const toggleSelect = (item) => {
-    const id = item[valueKey];
+    const id = item.id;
 
     if (type === 'user' || type === 'influencer') {
-        // 다중 선택 유지
         if (isSelected(item)) {
             selectedItems.value = selectedItems.value.filter((i) => i !== id);
         } else {
             selectedItems.value.push(id);
         }
     } else {
-        // 단일 선택은 클릭 즉시 선택 완료
         selectedItems.value = [id];
         submit();
     }
 };
 
 const submit = () => {
-    let result = null;
-
     if (type === 'user' || type === 'influencer') {
-        result = allItems.value.filter((item) => selectedItems.value.includes(item[valueKey]));
+        const result = allItems.value
+            .filter((item) => selectedItems.value.includes(item.id))
+            .map((item) => item.original || item); // 원본 전달
+        window.opener?.handleUserSelect(result);
     } else {
-        const selectedObj = allItems.value.find(
-            (item) => item[valueKey] === selectedItems.value[0],
-        );
-        result = selectedObj ?? null;
+        const selectedObj = allItems.value.find((item) => item.id === selectedItems.value[0]);
+        window.opener?.handleUserSelect(selectedObj?.original || selectedObj);
     }
 
-    window.opener?.handleUserSelect(result);
     window.close();
 };
 
@@ -110,33 +101,37 @@ const closePopup = () => window.close();
     <div class="p-6 w-[500px] font-sans bg-white">
         <h2 class="font-bold text-lg mb-6">{{ title }}</h2>
 
-        <div class="mb-6">
+        <div class="mb-6 flex gap-2">
             <input
                 v-model="searchKeyword"
                 type="text"
                 :placeholder="placeholder"
-                class="border border-gray-300 rounded w-full p-3 text-base"
+                class="border border-gray-300 rounded p-3 text-base flex-1"
+                @keyup.enter="fetchData"
             />
+            <button @click="fetchData" type="button" class="btn-open-popup w-[70px]">검색</button>
         </div>
 
         <div class="pt-2">
-            <div
-                v-if="filteredItems.length"
-                class="flex flex-col gap-2 max-h-[300px] overflow-y-auto"
-            >
-              <div
-                v-for="item in filteredItems"
-                :key="item[valueKey]"
-                class="flex justify-between items-center border border-gray-300 rounded p-3 hover:bg-blue-100 cursor-pointer"
-                :class="{ 'bg-blue-200': isSelected(item) }"
-                @click="toggleSelect(item)"
-              >
-                <span>
-                {{ type === 'email' ? `${item.name} - ${item.email}` : item[labelKey] }}
-                </span>
-                <span v-if="isSelected(item)" class="text-blue-500 font-bold">선택됨</span>
-              </div>
-
+            <div v-if="allItems.length" class="flex flex-col gap-2 max-h-[300px] overflow-y-auto">
+                <div
+                    v-for="item in allItems"
+                    :key="item[valueKey]"
+                    class="flex justify-between items-center border border-gray-300 rounded p-3 hover:bg-blue-100 cursor-pointer"
+                    :class="{ 'bg-blue-200': isSelected(item) }"
+                    @click="toggleSelect(item)"
+                >
+                    <span>
+                        <template v-if="type === 'email' || type === 'manager'">
+                            {{ item.name }}
+                            <span class="text-gray-400"> - {{ item.email }}</span>
+                        </template>
+                        <template v-else>
+                            {{ item[labelKey] }}
+                        </template>
+                    </span>
+                    <span v-if="isSelected(item)" class="text-blue-500 font-bold">선택됨</span>
+                </div>
             </div>
 
             <div v-else class="text-gray-400 text-sm py-8 text-center">검색 결과가 없습니다.</div>

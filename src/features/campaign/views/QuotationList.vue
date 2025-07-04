@@ -40,7 +40,7 @@ const searchFilters = ref({
 const fetchQuotationList = async () => {
     try {
         const res = await getQuotationList(page.value, size.value, searchFilters.value);
-        quotationList.value = res.data.data;
+        quotationList.value = [...res.data.data.response];
         total.value = res.data.total;
     } catch (e) {
         console.error(e);
@@ -64,7 +64,7 @@ const goDetail = (id) => {
 };
 
 const handleDelete = (id) => {
-    quotationList.value = quotationList.value.filter((item) => item.id !== id);
+    quotationList.value = quotationList.value.filter((item) => item.pipelineId !== id);
 };
 
 const menuOpenId = ref(null);
@@ -101,13 +101,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="quotation in quotationList"
-                    :key="quotation.id"
+                    :key="quotation.pipelineId"
                     :management-option="quotation"
                     :openMenuId="menuOpenId"
                     :pageType="'quotation'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(quotation.id)"
+                    @click="goDetail(quotation.pipelineId)"
                 />
             </div>
 

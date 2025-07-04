@@ -45,10 +45,11 @@
 import { onMounted, reactive, ref } from 'vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
-import { getOpinion, getProposalReference, getQuotationDetail } from '@/features/campaign/api.js';
+import { getQuotationDetail } from '@/features/campaign/api.js';
 import { useRoute, useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
+import { structuredForm } from '../utils/structedForm';
 
 const route = useRoute();
 const router = useRouter();
@@ -64,8 +65,8 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input' },
-            { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
+            { key: 'name', label: '제목', type: 'input' },
+            { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
     {
@@ -89,15 +90,15 @@ const groups = [
                 type: 'search-manager',
                 searchType: 'manager',
             },
-            { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
+            { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
     },
     {
         type: 'horizontal',
         fields: [
             {
-                key: 'pipeline',
-                label: '해당 파이프라인',
+                key: 'campaign',
+                label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
             },
@@ -123,7 +124,12 @@ const groups = [
                 key: 'status',
                 label: '진행단계',
                 type: 'select',
-                options: ['승인요청', '진행중', '보류', '완료'],
+                options: [
+                    { value: 1, label: '승인요청' },
+                    { value: 2, label: '승인완료' },
+                    { value: 3, label: '보류/대기' },
+                    { value: 4, label: '승인거절' },
+                ],
             },
             { key: 'supplyAmount', label: '공급가능수량', type: 'input', inputType: 'number' },
         ],
@@ -144,26 +150,22 @@ const groups = [
     },
 ];
 
-// API 데이터 로딩 함수
-const fetchOpinions = async () => {
-    const res = await getOpinion(route.params.quotationId, 'quotation');
-    opinions.value = res.data.data;
-};
-
 const fetchQuotationDetail = async () => {
     const res = await getQuotationDetail(route.params.quotationId);
-    quotationForm.value = res.data.data;
-    Object.assign(form, res.data.data);
-};
+    const rawForm = res.data.data.form;
 
-const fetchProposalReferences = async () => {
-    const res = await getProposalReference();
-    proposalReferences.value = res.data.data;
+    quotationForm.value = structuredForm(rawForm);
+    Object.assign(form, structuredForm(rawForm));
+
+    // 참고 리스트
+    proposalReferences.value = res.data.data.refrenceList ?? [];
+
+    opinions.value = res.data.data.ideaList ?? [];
 };
 
 // 마운트 시 전부 패칭
 onMounted(async () => {
-    await Promise.all([fetchQuotationDetail(), fetchOpinions(), fetchProposalReferences()]);
+    await Promise.all([fetchQuotationDetail()]);
 });
 
 // 의견 등록
@@ -188,13 +190,13 @@ const handleReferenceSelect = (item) => {
         return;
     }
     // 필요한 값만 form에 적용 (안전하게 매핑)
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = item.clientCompany;
-    form.clientManager = item.clientManager;
+    form.name = item.name;
+    form.requestAt = item.requestAt;
+    form.clientCompanyName = item.clientCompanyName;
+    form.clientManagerName = item.clientManagerName;
     form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
+    form.presentAt = item.presentAt;
+    form.campaign = item.campaign;
     form.username = item.username;
     form.influencer = item.influencer;
     form.price = item.price;

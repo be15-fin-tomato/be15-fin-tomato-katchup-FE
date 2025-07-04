@@ -42,8 +42,8 @@ const openSearchPopup = (key, type) => {
 <template>
     <div class="border border-gray-dark rounded-lg bg-white p-6 mt-6">
         <!-- 이름 -->
-        <div class="mb-4 flex items-center gap-2 ">
-            <label class="w-[76px] font-semibold ">이름</label>
+        <div class="mb-4 flex items-center gap-2">
+            <label class="w-[76px] font-semibold">이름</label>
             <input
                 type="text"
                 :value="name"
@@ -61,7 +61,11 @@ const openSearchPopup = (key, type) => {
                 disabled
                 class="border px-2 py-1 rounded w-[20%] bg-gray-100 border-gray-dark"
             />
-            <button type="button" class="btn-open-popup" @click="openSearchPopup('email', 'email')">
+            <button
+                type="button"
+                class="btn-open-popup"
+                @click="openSearchPopup('email', 'manager')"
+            >
                 검색
             </button>
         </div>
@@ -74,7 +78,7 @@ const openSearchPopup = (key, type) => {
 
         <div class="mb-4 flex items-start gap-2">
             <label class="w-[75px] font-semibold pt-2">내용</label>
-            <div class="flex-1 ">
+            <div class="flex-1">
                 <QuillEditor v-model:content="editorContent" />
                 <div class="flex justify-end mt-4">
                     <button class="btn-create">전송</button>
