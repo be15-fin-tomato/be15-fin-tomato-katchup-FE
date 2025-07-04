@@ -14,18 +14,25 @@ const emp_number = ref('');
 const password = ref('');
 
 const handleLogin = async () => {
-    if (!emp_number.value || !password.value) {
-        toast.error('사원코드와 비밀번호를 입력해주세요.');
-        return;
-    }
+  if (!emp_number.value || !password.value) {
+    toast.error('사원코드와 비밀번호를 입력해주세요.');
+    return;
+  }
 
+  try {
     const res = await login({ loginId: emp_number.value, password: password.value });
     const at = res.data.data.accessToken;
     authStore.setAccessToken(at);
 
     toast.success('로그인 되었습니다.');
     router.push('/');
+  } catch (error) {
+    const res = error.response?.data;
+    const message = res?.message || '로그인 중 오류가 발생했습니다.';
+    toast.error(message);
+  }
 };
+
 </script>
 
 <template>

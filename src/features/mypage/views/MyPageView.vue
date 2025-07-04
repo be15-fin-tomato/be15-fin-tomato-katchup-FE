@@ -1,65 +1,112 @@
 <script setup>
-import { Icon } from '@iconify/vue';
-import { reactive, ref } from 'vue';
-import FindPassword from '@/features/mypage/components/FindPassword.vue';
-import { useRouter } from 'vue-router';
-
-const influencers = ref([
-  { id: 1, name: '차은우', img: '/src/assets/images/mock/profile.png' },
-  { id: 2, name: '헬로키티', img: '/src/assets/images/mock/kitty.png' },
-  { id: 3, name: '기우쌤', img: '/src/assets/images/mock/kiu.png' },
-  { id: 4, name: '토끼', img: '/src/assets/images/mock/rabbit.png' },
-  { id: 5, name: '토끼2', img: '/src/assets/images/mock/rabbit2.png' },
-  { id: 6, name: '숏박스', img: '/src/assets/images/mock/shortbox.png' },
-  { id: 7, name: '여단오', img: '/src/assets/images/mock/yeodano.png' },
-  { id: 8, name: '냥냥이', img: '/src/assets/images/mock/냥냥이.png' },
-  { id: 9, name: '물딸기', img: '/src/assets/images/mock/물딸기.png' },
-  { id: 10, name: '물토마토', img: '/src/assets/images/mock/물토마토.png' },
-]);
+import { Icon } from '@iconify/vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import ExchangePassword from '@/features/mypage/components/ExchangePassword.vue'
+import {
+  fetchMyAccount,
+  fetchMyInfluencers,
+  updateMyAccount,
+  updateMyProfileImage,
+} from '@/features/mypage/api.js'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
+const toast = useToast()
 const showPasswordModal = ref(false)
-
-// 현재 수정 중인 필드
 const editField = ref(null)
 
-const goToInfluencer = (id) => {
-  router.push(`/influencer/dashboard/youtube?id=${id}`)
-}
-
-// 사용자 정보
 const form = reactive({
-  loginId:"12345",
-  name: '이승재',
-  phone: '01012345678',
-  email: 'lsj9057@daum.net',
-  birth: '2000-01-01',
-  gender: '남성',
-  profileImg: '' // base64 이미지 저장
+  loginId: '',
+  name: '',
+  phone: '',
+  email: '',
+  birth: '',
+  gender: '',
+  profileImg: ''
 })
 
-// 이미지 파일 선택 시 처리
+const selectedFile = ref(null)
+
+const influencers = ref([])
+
+const getMyAccount = async () => {
+  try {
+    const res = await fetchMyAccount()
+    const data = res.data.data
+    form.loginId = data.loginId
+    form.name = data.name
+    form.phone = data.phone
+    form.email = data.email
+    form.birth = data.date?.slice(0, 10)
+    form.gender = data.gender === 'F' ? '남성' : data.gender === 'M' ? '여성' : ''
+    form.profileImg = data.fileRoute || ''
+  } catch (err) {
+    console.error('계정 정보 조회 실패', err)
+  }
+}
+
+const getMyInfluencers = async () => {
+  try {
+    const res = await fetchMyInfluencers()
+    influencers.value = res.data.data.userInfluencerList.map(item => ({
+      id: item.influencerId,
+      name: item.name,
+      img: item.imageUrl || '/src/assets/icons/default-profile.svg'
+    }))
+  } catch (err) {
+    console.error('인플루언서 목록 조회 실패', err)
+  }
+}
+
+const saveEdit = async (field) => {
+  try {
+    if (field === 'profileImg' && selectedFile.value) {
+      await updateMyProfileImage(selectedFile.value)
+      toast.success('프로필 이미지가 수정되었습니다.')
+    } else {
+      const dto = {
+        phone: form.phone,
+        email: form.email,
+        name: form.name,
+        birth: form.birth,
+        gender: form.gender === '남성' ? 'F' : 'M',
+      }
+      await updateMyAccount(dto)
+      toast.success('계정 정보가 수정되었습니다.')
+    }
+    editField.value = null
+  } catch (err) {
+    toast.error('수정에 실패했습니다.')
+    console.error(err)
+  }
+}
+
 const handleImageUpload = (e) => {
   const file = e.target.files[0]
   if (file) {
+    selectedFile.value = file
     const reader = new FileReader()
     reader.onload = () => {
-      form.profileImg = reader.result // base64로 저장해서 미리보기
+      form.profileImg = reader.result
     }
     reader.readAsDataURL(file)
   }
 }
 
-// 저장 버튼 클릭 시
-const saveEdit = (field) => {
-  console.log(`${field} 저장됨`, form[field])
+const cancelEdit = () => {
+  selectedFile.value = null
   editField.value = null
 }
 
-// 취소 버튼 클릭 시
-const cancelEdit = () => {
-  editField.value = null
+const goToInfluencer = (id) => {
+  router.push(`/influencer/dashboard/youtube?id=${id}`)
 }
+
+onMounted(() => {
+  getMyAccount()
+  getMyInfluencers()
+})
 </script>
 
 <template>
@@ -320,5 +367,5 @@ const cancelEdit = () => {
       </div>
     </div>
   </div>
-  <FindPassword v-if="showPasswordModal" @close="showPasswordModal = false" />
+  <ExchangePassword v-if="showPasswordModal" @close="showPasswordModal = false" />
 </template>
