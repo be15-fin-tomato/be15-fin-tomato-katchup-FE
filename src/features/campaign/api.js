@@ -73,28 +73,38 @@ export const getContractDetail = async (contractId) => {
 
 /* === 팝업 ===*/
 
-export const getUser = async () => {
-    return await api.get('/popup/user');
+export const getUser = async (keyword) => {
+    return await api.get('/user/search', {
+        params: { keyword },
+    });
 };
 
 export const getUserNameAndEmail = async () => {
     return await api.get('/popup/user/email');
 };
 
-export const getClientCompany = async () => {
-    return await api.get('/popup/client-company');
+export const getClientCompany = async (keyword) => {
+    return await api.get('/client-companies/search', {
+        params: { keyword },
+    });
 };
 
-export const getClientManager = async () => {
-    return await api.get('/popup/client-manager');
+export const getClientManager = async (clientCompanyId, keyword) => {
+    return await api.get('/client-companies/manager/search', {
+        params: { clientCompanyId, keyword },
+    });
 };
 
-export const getInfluencer = async () => {
-    return await api.get('/popup/influencer');
+export const getInfluencer = async (keyword) => {
+    return await api.get('/influencer/search', {
+        params: { keyword },
+    });
 };
 
-export const getPipeline = async () => {
-    return await api.get('/popup/pipeline');
+export const getPipeline = async (keyword) => {
+    return await api.get('/campaign/search', {
+        params: { keyword },
+    });
 };
 
 export const getListupReference = async () => {

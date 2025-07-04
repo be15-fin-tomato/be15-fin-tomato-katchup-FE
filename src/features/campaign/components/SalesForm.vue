@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     modelValue: Object,
@@ -21,18 +21,37 @@ const parseNumberInput = (e, key) => {
     form[key] = raw ? parseInt(raw, 10) : 0;
 };
 
+watch(
+    () => form.clientCompany?.id,
+    (newVal, oldVal) => {
+        if (newVal !== oldVal) {
+            form.clientManager = null;
+        }
+    },
+);
+
 const openSearchPopup = (key, type) => {
     currentFieldKey.value = key;
     const currentValue = form[key];
     const selected = currentValue?.id ?? '';
 
+    // clientCompanyId가 필요한 경우만 별도 처리
+    const clientCompanyId = form.clientCompany?.id ?? '';
+
+    const queryParams = new URLSearchParams({
+        type,
+        selected,
+        ...(type === 'manager' && clientCompanyId ? { clientCompanyId } : {}),
+    });
+
     const popup = window.open(
-        `/search-popup?type=${type}&selected=${encodeURIComponent(selected)}`,
+        `/search-popup?${queryParams.toString()}`,
         'SearchPopup',
         'width=500,height=600',
     );
 
     window.handleUserSelect = (selectedItem) => {
+        console.log(selectedItem);
         form[currentFieldKey.value] = selectedItem;
         popup.close();
     };
