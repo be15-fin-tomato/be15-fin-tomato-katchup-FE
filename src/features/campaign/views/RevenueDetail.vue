@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, reactive, ref, watch } from 'vue';
-import { getContractReference, getOpinion, getRevenueDetail } from '@/features/campaign/api.js';
+import { getContractReference, getRevenueDetail } from '@/features/campaign/api.js';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
@@ -128,14 +128,14 @@ const groups = [
 ];
 
 // 의견 호출
-const fetchOpinions = async () => {
-    try {
-        const res = await getOpinion(route.params.revenueId, 'revenue');
-        opinions.value = res.data.data;
-    } catch (e) {
-        console.log(e);
-    }
-};
+// const fetchOpinions = async () => {
+//     try {
+//         const res = await getOpinion(route.params.revenueId, 'revenue');
+//         opinions.value = res.data.data;
+//     } catch (e) {
+//         console.log(e);
+//     }
+// };
 
 const fetchContractReferences = async () => {
     try {

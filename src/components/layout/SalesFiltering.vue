@@ -1,5 +1,5 @@
 <template>
-    <div class="custom-sidebar flex flex-col gap-8">
+    <form @submit.prevent="emitSearch" class="custom-sidebar flex flex-col gap-8">
         <!-- 검색조건 -->
         <div>
             <div class="font-bold mb-3">검색조건</div>
@@ -27,8 +27,11 @@
                     class="input-form-box flex-1"
                     readonly
                 />
-
-                <button @click="openManagerSearch" class="ml-1 px-2 bg-gray-200 rounded text-sm">
+                <button
+                    @click="openManagerSearch"
+                    type="button"
+                    class="ml-1 px-2 bg-gray-200 rounded text-sm"
+                >
                     <img src="@/assets/icons/add.svg" alt="sort" class="w-5 select-none" />
                 </button>
             </div>
@@ -55,6 +58,7 @@
 
                 <button
                     @click="toggleSortOrder"
+                    type="button"
                     class="w-[40px] h-[40px] bg-btn-gray rounded-md flex items-center justify-center"
                 >
                     <span v-if="localValue.sortOrder === 'asc'">
@@ -64,8 +68,10 @@
                 </button>
             </div>
         </div>
-        <button @click="emitSearch" class="w-full bg-blue-400 text-white py-2 rounded">검색</button>
-    </div>
+
+        <!-- 검색 버튼 -->
+        <button type="submit" class="w-full bg-blue-400 text-white py-2 rounded">검색</button>
+    </form>
 </template>
 
 <script setup>

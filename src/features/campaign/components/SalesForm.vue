@@ -24,6 +24,8 @@ const parseNumberInput = (e, key) => {
 watch(
     () => form.clientCompany?.id,
     (newVal, oldVal) => {
+        if (oldVal === undefined) return;
+
         if (newVal !== oldVal) {
             form.clientManager = null;
         }
