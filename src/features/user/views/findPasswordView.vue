@@ -1,9 +1,9 @@
 <script setup>
-
 import { useToast } from 'vue-toastification'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import MainLogo from '@/features/user/components/MainLogo.vue'
+import { findPassword } from '@/features/user/api.js';
 
 const toast = useToast();
 const router = useRouter();
@@ -11,22 +11,32 @@ const router = useRouter();
 const emp_number = ref('');
 const email = ref('');
 
-const handleFindPassword = () => {
-    if (!emp_number.value || !email.value) {
-        toast.error('사원코드와 이메일을 입력해주세요.')
-        return
+const handleFindPassword = async () => {
+  if (!emp_number.value || !email.value) {
+    toast.error('사원코드와 이메일을 입력해주세요.');
+    return;
+  }
+
+  try {
+    await findPassword(emp_number.value, email.value);
+    toast.success('입력하신 이메일 주소로 임시 비밀번호가 발송되었습니다.');
+    router.push('/login');
+    const domain = email.value.split('@')[1];
+    window.open(`https://${domain}`, '_blank');
+  } catch (error) {
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message);
+    } else {
+      toast.error('비밀번호 찾기 요청 중 오류가 발생했습니다.');
     }
-    toast.success('입력하신 이메일 주소로 비밀번호가 발송되었습니다.')
-    router.push('/login')
-    const domain = email.value.split('@')[1]
-    window.open(`https://${domain}`, '_blank')
-}
+  }
+};
 
 const backToLogin = () => {
-    router.push('/login')
-}
-
+  router.push('/login');
+};
 </script>
+
 
 <template>
     <div class = "findPassword-layout bg-[#f5f7fa]">

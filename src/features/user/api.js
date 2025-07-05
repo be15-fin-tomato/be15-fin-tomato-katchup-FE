@@ -30,5 +30,13 @@ export const refreshToken = async () => {
 };
 
 /* 비밀번호 찾기 */
+export const findPassword = (loginId, email) => {
+  return api.get('/auth/find/password', {
+    params: {
+      loginId,
+      email,
+    },
+  });
+};
 
 /*  */
