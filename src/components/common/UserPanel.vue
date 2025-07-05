@@ -5,6 +5,7 @@ import { Icon } from '@iconify/vue';
 import { useToast } from 'vue-toastification';
 import { logout } from '@/features/user/api';
 import { useAuthStore } from '@/stores/auth';
+import { fetchHeaderUserInfo } from '@/features/mypage/api.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -13,65 +14,90 @@ const authStore = useAuthStore();
 const isNotificationOpen = ref(false);
 
 const notifications = ref([
-    { id: 1, content: '파이프라인 단계가 변경되었습니다.', isRead: false, createdAt: '2025.06.16' },
-    { id: 2, content: '계약 마감일이 하루 남았습니다.', isRead: true, createdAt: '2025.06.15' },
-    { id: 3, content: '계약 실패했습니다.', isRead: false, createdAt: '2025.06.14' },
+  { id: 1, content: '파이프라인 단계가 변경되었습니다.', isRead: false, createdAt: '2025.06.16' },
+  { id: 2, content: '계약 마감일이 하루 남았습니다.', isRead: true, createdAt: '2025.06.15' },
+  { id: 3, content: '계약 실패했습니다.', isRead: false, createdAt: '2025.06.14' },
 ]);
 
 const unreadCount = computed(() => notifications.value.filter((n) => !n.isRead).length);
 
+// ✅ 사용자 정보 상태
+const userInfo = ref({
+  name: '',
+  position: '',
+  profileImg: '',
+});
+
+// ✅ 사용자 정보 조회 함수
+const getHeaderUserInfo = async () => {
+  try {
+    const res = await fetchHeaderUserInfo();
+    const data = res.data.data;
+
+    userInfo.value.name = data.name;
+    userInfo.value.position = data.position;
+    userInfo.value.profileImg = data.fileRoute || '/src/assets/icons/default-profile.svg';
+  } catch (error) {
+    console.error('헤더 사용자 정보 조회 실패:', error);
+  }
+};
+
 function toggleNotification() {
-    isNotificationOpen.value = !isNotificationOpen.value;
+  isNotificationOpen.value = !isNotificationOpen.value;
 }
 
 function handleClickOutside(event) {
-    const dropdown = document.getElementById('notification-dropdown');
-    if (isNotificationOpen.value && dropdown && !dropdown.contains(event.target)) {
-        isNotificationOpen.value = false;
-    }
+  const dropdown = document.getElementById('notification-dropdown');
+  if (isNotificationOpen.value && dropdown && !dropdown.contains(event.target)) {
+    isNotificationOpen.value = false;
+  }
 }
 
 function markAsRead(index) {
-    notifications.value[index].isRead = true;
+  notifications.value[index].isRead = true;
 }
 
 function deleteNotification(index) {
-    notifications.value.splice(index, 1);
+  notifications.value.splice(index, 1);
 }
 
 function clearAllNotifications() {
-    notifications.value = [];
+  notifications.value = [];
 }
 
 const handleLogout = async () => {
-    try {
-        await logout();
-        authStore.clearAccessToken();
-        toast.success('로그아웃 되었습니다.');
-
-        await router.replace('/login');
-    } catch (e) {
-        toast.error(e.data.message);
-    }
+  try {
+    await logout();
+    authStore.clearAccessToken();
+    toast.success('로그아웃 되었습니다.');
+    await router.replace('/login');
+  } catch (e) {
+    toast.error(e.data.message);
+  }
 };
 
-onMounted(() => document.addEventListener('click', handleClickOutside));
+onMounted(() => {
+  getHeaderUserInfo();
+  document.addEventListener('click', handleClickOutside);
+});
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
 </script>
 
+
 <template>
     <div class="flex items-center gap-10 mr-5">
+
         <!-- 프로필 -->
         <div class="flex items-center gap-3 cursor-pointer" @click="router.push('/mypage')">
-            <img
-                class="w-10 h-10 rounded-full"
-                src="@/assets/images/mock/profile.png"
-                alt="프로필"
-            />
-            <div class="flex flex-col text-sm">
-                <div class="font-bold text-black">차은우</div>
-                <div class="text-xs text-black">팀장</div>
-            </div>
+          <img
+            class="w-10 h-10 rounded-full object-cover"
+            :src="userInfo.profileImg"
+            alt="프로필"
+          />
+          <div class="flex flex-col text-sm">
+            <div class="font-bold text-black">{{ userInfo.name }}</div>
+            <div class="text-xs text-black">{{ userInfo.position }}</div>
+          </div>
         </div>
 
         <!-- 기능 버튼들 -->

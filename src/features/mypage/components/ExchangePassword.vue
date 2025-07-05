@@ -53,38 +53,38 @@
 <script setup>
 import { useToast } from 'vue-toastification'
 import { reactive } from 'vue'
+import { changePassword } from '@/features/mypage/api.js';
 
 const toast = useToast()
 const emit = defineEmits(['close'])
 
-// form 데이터
 const form = reactive({
   current: '',
   new: '',
   confirm: ''
 })
 
-// 유효성 상태
 const valid = reactive({
   current: true
 })
 
-// 현재 비밀번호
-const realPassword = '1234'
-
-const handleSubmit = () => {
-  if (form.current !== realPassword) {
-    valid.current = false
-    return
-  } else {
-    toast.success("비밀번호가 변경되었습니다.")
-    valid.current = true
-  }
-
-  if (form.new === form.confirm) {
-    console.log('비밀번호 변경 요청:', form)
+const handleSubmit = async () => {
+  try {
+    await changePassword(form)
+    toast.success("비밀번호가 성공적으로 변경되었습니다.")
     emit('close')
+  } catch (error) {
+    const response = error.response?.data
+    const message = response?.message || '비밀번호 변경 중 오류가 발생했습니다.'
+    toast.error(message)
+
+    if (response?.errorCode === 'PASSWORD_MISMATCH') {
+      valid.current = false
+    } else {
+      valid.current = true
+    }
   }
 }
 </script>
+
 
