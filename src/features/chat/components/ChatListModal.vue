@@ -217,11 +217,29 @@ const filteredRooms = computed(() => {
 })
 
 const handleOpenRoom = async (chatId) => {
-    try {
-        const roomDetail = await fetchChatRoomDetail(chatId)
-        emit('open-room', roomDetail)
-    } catch (e) {
-        console.error('채팅방 열기 실패', e)
+    if (!chatId) {
+        console.warn('❌ chatId가 유효하지 않습니다:', chatId);
+        return;
     }
-}
+
+    console.log('🔍 요청하려는 chatId:', chatId);
+
+    try {
+        const roomDetail = await fetchChatRoomDetail(chatId);
+        console.log('📦 roomDetail:', roomDetail);
+
+        // roomDetail이 정상적으로 받아졌는지 검증
+        if (!roomDetail || !roomDetail.messages) {
+            console.warn('⚠️ 유효하지 않은 roomDetail:', roomDetail);
+            return;
+        }
+
+        // 전체 객체를 넘기는 것이 안전함 (chatId 포함)
+        emit('open-room', roomDetail);
+
+    } catch (e) {
+        console.error('❌ 채팅방 열기 실패:', e);
+    }
+};
+
 </script>
