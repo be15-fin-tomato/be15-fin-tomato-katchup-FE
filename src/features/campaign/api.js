@@ -41,11 +41,26 @@ export const getListUpList = async (page, size, filters = {}) => {
     });
 };
 
+/* 견적 목록*/
 export const getQuotationList = async (page, size, filters = {}) => {
     return await api.get('/campaign/quotation', {
         params: { page, size, ...filters },
     });
 };
+
+export const updateQuotationDetail = async (form) => {
+    return await api.put('/campaign/quotation', form);
+};
+
+export const deleteQuotationDetail = async (pipelineId) => {
+    return await api.delete(`campaign/quotation/${pipelineId}`);
+};
+
+export const createQuotation = async (form) => {
+    return await api.post('/campaign/quotation', form);
+};
+
+/**/
 
 export const getQuotationDetail = async (quotationId) => {
     return await api.get(`/campaign/quotation/${quotationId}`);
@@ -125,4 +140,18 @@ export const getContractReference = async () => {
 
 export const getInfluencerDetail = async (ids) => {
     return await api.post('influencer/detail', ids);
+};
+
+export const postIdea = async (data) => {
+    return await api.post('/campaign/idea/create', data);
+};
+
+export const getIdea = async (pipelineId) => {
+    return await api.get('/campaign/idea/all', {
+        params: { pipelineId },
+    });
+};
+
+export const deleteIdea = async (ideaId) => {
+    return await api.delete(`/campaign/idea/${ideaId}`);
 };
