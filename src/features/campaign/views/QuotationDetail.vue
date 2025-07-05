@@ -45,14 +45,23 @@
 import { onMounted, reactive, ref } from 'vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
-import { getQuotationDetail } from '@/features/campaign/api.js';
+import {
+    deleteIdea,
+    deleteQuotationDetail,
+    getIdea,
+    getQuotationDetail,
+    postIdea,
+    updateQuotationDetail,
+} from '@/features/campaign/api.js';
 import { useRoute, useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import { structuredForm } from '../utils/structedForm';
+import { useToast } from 'vue-toastification';
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 const opinions = ref([]);
 const quotationForm = ref(null);
@@ -169,18 +178,32 @@ onMounted(async () => {
 });
 
 // 의견 등록
-const handleSubmit = (newComment) => {
-    opinions.value.push({
-        id: Date.now(),
-        author: '나',
-        content: newComment,
-        createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    });
+const handleSubmit = async (newComment) => {
+    try {
+        await postIdea({ pipeline: route.params.quotationId, content: newComment });
+        await fetchOpinion();
+        toast.success('의견이 등록되었습니다.');
+    } catch (e) {
+        toast.error(e.data.message);
+    }
 };
 
 // 의견 삭제
-const handleDelete = (id) => {
-    opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteIdea(id);
+        await fetchOpinion();
+        toast.success('의견이 삭제되었습니다.');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
+};
+
+// 의견 호출
+const fetchOpinion = async () => {
+    const res = await getIdea(route.params.quotationId);
+
+    opinions.value = res.data.data.response;
 };
 
 const handleReferenceSelect = (item) => {
@@ -207,13 +230,51 @@ const handleReferenceSelect = (item) => {
 };
 
 // 저장 및 취소
-const save = () => {
-    console.log('저장할 값:', form);
+const save = async () => {
+    try {
+        const requestForm = {
+            pipelineId: route.params.quotationId,
+            campaignId: form.campaign?.id ?? null,
+            pipelineStatusId: form.status,
+            clientCompanyId: form.clientCompany?.id ?? null,
+            clientManagerId: form.clientManager?.id ?? null,
+            userId: form.username ? form.username.map((user) => user.id) : null,
+            name: form.name,
+            requestAt: form.requestAt,
+            startedAt: form.startedAt,
+            endedAt: form.endedAt,
+            presentedAt: form.presentAt,
+            campaignName: form.campaign?.name ?? '',
+            content: form.content,
+            notes: form.notes,
+            influencerId: form.influencer ? form.influencer.map((inf) => inf.id) : null,
+            expectedRevenue: form.price,
+            availableQuantity: form.supplyAmount,
+            expectedProfit: form.extraProfit,
+        };
+
+        await updateQuotationDetail(requestForm);
+        toast.success('견적이 수정되었습니다.');
+        await fetchQuotationDetail();
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
+
     isEditing.value = false;
 };
 
 const cancel = () => {
     Object.assign(form, quotationForm.value);
     isEditing.value = false;
+};
+
+const remove = async () => {
+    try {
+        await deleteQuotationDetail(route.params.quotationId);
+        toast.success('견적이 삭제되었습니다.');
+        await router.replace('/sales/quotation');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 </script>
