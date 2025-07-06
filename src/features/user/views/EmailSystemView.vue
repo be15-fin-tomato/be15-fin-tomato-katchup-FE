@@ -20,7 +20,7 @@ const loadEmailList = async () => {
     emailList.value = data.data.campaignSatisfaction;
     totalPages.value = data.data.pagination.totalPage;
   } catch (err) {
-    console.error('📛 만족도 조회 실패', err);
+    console.error('만족도 조회 실패', err);
   }
 };
 
