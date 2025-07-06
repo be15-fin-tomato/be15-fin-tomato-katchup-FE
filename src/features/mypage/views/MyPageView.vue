@@ -40,7 +40,7 @@ const getMyAccount = async () => {
     form.email = data.email
     form.birth = data.date?.slice(0, 10)
     form.gender = data.gender === 'F' ? '남성' : data.gender === 'M' ? '여성' : ''
-    form.profileImg = data.fileRoute || ''
+    form.profileImg = data.fileRoute || '/tomato.png'
   } catch (err) {
     console.error('계정 정보 조회 실패', err)
   }
@@ -52,7 +52,7 @@ const getMyInfluencers = async () => {
     influencers.value = res.data.data.userInfluencerList.map(item => ({
       id: item.influencerId,
       name: item.name,
-      img: item.imageUrl || '/src/assets/icons/default-profile.svg'
+      img: item.imageUrl || '/tomato.png'
     }))
   } catch (err) {
     console.error('인플루언서 목록 조회 실패', err)

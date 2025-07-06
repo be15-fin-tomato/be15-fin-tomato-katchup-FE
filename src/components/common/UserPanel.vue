@@ -36,7 +36,7 @@ const getHeaderUserInfo = async () => {
     const data = res.data.data;
     userInfo.value.name = data.name;
     userInfo.value.position = data.position;
-    userInfo.value.profileImg = data.fileRoute || '/src/assets/icons/default-profile.svg';
+    userInfo.value.profileImg = data.fileRoute || '/tomato.png';
   } catch (error) {
     console.error('헤더 사용자 정보 조회 실패 : ', error);
   }
