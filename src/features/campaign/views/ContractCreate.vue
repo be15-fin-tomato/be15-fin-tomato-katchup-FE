@@ -1,11 +1,7 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { onMounted, reactive, ref } from 'vue';
-import {
-    createContract,
-    getQuotationReference,
-    updateContractDetail,
-} from '@/features/campaign/api.js';
+import { createContract, getQuotationReference } from '@/features/campaign/api.js';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
@@ -15,7 +11,6 @@ import { useToast } from 'vue-toastification';
 import { useAuthStore } from '@/stores/auth.js';
 
 const router = useRouter();
-const route = useRoute();
 const toast = useToast();
 const authStore = useAuthStore();
 
@@ -198,6 +193,7 @@ const save = async () => {
         await createContract(formData);
         toast.success('견적이 등록되었습니다.');
         isEditing.value = false;
+        await router.replace('/sales/contract');
     } catch (e) {
         toast.error(e?.response?.data?.message || '저장 중 오류 발생');
     }

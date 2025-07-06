@@ -102,6 +102,10 @@ export const createContract = async (form) => {
     });
 };
 
+export const deleteContract = async (contractId) => {
+    return await api.delete(`/campaign/contract/${contractId}`);
+};
+
 /* === 팝업 ===*/
 
 export const getUser = async (keyword) => {

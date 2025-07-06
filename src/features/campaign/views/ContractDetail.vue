@@ -2,7 +2,9 @@
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, reactive, ref } from 'vue';
 import {
+    deleteContract,
     deleteIdea,
+    deleteQuotationDetail,
     getContractDetail,
     getIdea,
     postIdea,
@@ -238,6 +240,16 @@ const save = async () => {
 const cancel = () => {
     Object.assign(form, contractForm.value);
     isEditing.value = false;
+};
+
+const remove = async () => {
+    try {
+        await deleteContract(route.params.contractId);
+        toast.success('계약이 삭제되었습니다.');
+        await router.replace('/sales/contract');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 onMounted(async () => {

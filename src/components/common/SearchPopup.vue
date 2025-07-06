@@ -27,7 +27,7 @@ const fetchData = async () => {
     searchKeyword.value = (searchKeyword.value || '').trim();
 
     try {
-        if (type === 'user') {
+        if (type === 'user' || type === 'one-user') {
             res = await getUser(searchKeyword.value);
             allItems.value = res.data.data.userList;
         } else if (type === 'company') {
