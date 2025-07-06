@@ -1,8 +1,10 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
+import { jwtDecode } from 'jwt-decode';
 export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(null);
     const userId = ref(null);
+    const userName = ref(null);
     const expirationTime = ref(null);
 
     const isAuthenticated = computed(() => {
@@ -13,8 +15,10 @@ export const useAuthStore = defineStore('auth', () => {
     function setAccessToken(token) {
         accessToken.value = token;
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
+            const payload = jwtDecode(token);
             userId.value = payload.userId;
+            userName.value = payload.name;
+            console.log(userName.value);
             expirationTime.value = payload.exp * 1000;
         } catch (e) {
             console.log('엑세스 토큰 파싱 에러', e);
@@ -37,6 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     return {
         userId,
+        userName,
         expirationTime,
         accessToken,
         isAuthenticated,
