@@ -11,16 +11,19 @@ const emit = defineEmits(['update:currentPage'])
 const groupSize = 5
 const currentGroup = ref(Math.floor((props.currentPage - 1) / groupSize))
 
+// currentPage 변경될 때 그룹도 재계산
 watch(() => props.currentPage, (newPage) => {
   currentGroup.value = Math.floor((newPage - 1) / groupSize)
 })
 
+// 페이지 그룹 계산
 const pages = computed(() => {
   const start = currentGroup.value * groupSize + 1
   const end = Math.min(start + groupSize - 1, props.totalPages)
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
+// 페이지 이동
 const goToPage = (page) => {
   if (page === props.currentPage) return
   emit('update:currentPage', page)
