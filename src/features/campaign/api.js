@@ -60,11 +60,11 @@ export const createQuotation = async (form) => {
     return await api.post('/campaign/quotation', form);
 };
 
-/**/
-
 export const getQuotationDetail = async (quotationId) => {
     return await api.get(`/campaign/quotation/${quotationId}`);
 };
+
+/**/
 
 export const getRevenueList = async (page, size, filters = {}) => {
     return await api.get('/sales/revenue', {
@@ -77,13 +77,21 @@ export const getRevenueDetail = async (revenueId) => {
 };
 
 export const getContractList = async (page, size, filters = {}) => {
-    return await api.get('/sales/contract', {
+    return await api.get('/campaign/contract', {
         params: { page, size, ...filters },
     });
 };
 
 export const getContractDetail = async (contractId) => {
-    return await api.get(`/sales/contract/${contractId}`);
+    return await api.get(`/campaign/contract/${contractId}`);
+};
+
+export const updateContractDetail = async (form) => {
+    return await api.put(`/campaign/contract`, form, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
 };
 
 /* === 팝업 ===*/
@@ -116,9 +124,9 @@ export const getInfluencer = async (keyword) => {
     });
 };
 
-export const getPipeline = async (keyword) => {
+export const getPipeline = async (clientCompanyId, keyword) => {
     return await api.get('/campaign/search', {
-        params: { keyword },
+        params: { keyword, clientCompanyId },
     });
 };
 
@@ -154,4 +162,13 @@ export const getIdea = async (pipelineId) => {
 
 export const deleteIdea = async (ideaId) => {
     return await api.delete(`/campaign/idea/${ideaId}`);
+};
+
+export const downloadFile = async (key) => {
+    return await api.get(`/file/download`, {
+        params: {
+            key: key,
+        },
+        responseType: 'blob',
+    });
 };

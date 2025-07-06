@@ -28,6 +28,7 @@ watch(
 
         if (newVal !== oldVal) {
             form.clientManager = null;
+            form.campaign = null;
         }
     },
 );
@@ -43,7 +44,9 @@ const openSearchPopup = (key, type) => {
     const queryParams = new URLSearchParams({
         type,
         selected,
-        ...(type === 'manager' && clientCompanyId ? { clientCompanyId } : {}),
+        ...((type === 'manager' || type === 'pipeline') && clientCompanyId
+            ? { clientCompanyId }
+            : {}),
     });
 
     const popup = window.open(

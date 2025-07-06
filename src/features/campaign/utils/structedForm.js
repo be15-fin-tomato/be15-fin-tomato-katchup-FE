@@ -1,4 +1,5 @@
-export const structuredForm = (rawForm) => {
+export const structuredForm = (rawForm, fileList = []) => {
+    console.log(rawForm);
     return {
         name: rawForm.name,
         requestAt: rawForm.requestAt,
@@ -43,5 +44,12 @@ export const structuredForm = (rawForm) => {
 
         // 상태 (select 박스)
         status: rawForm.pipelineStatusId,
+
+        // 파일
+        attachment: (fileList || []).map((f) => ({
+            id: f.fileId,
+            name: f.fileName,
+            key: f.fileKey,
+        })),
     };
 };

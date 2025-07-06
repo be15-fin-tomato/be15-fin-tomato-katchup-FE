@@ -41,7 +41,8 @@ const fetchData = async () => {
             res = await getInfluencer(searchKeyword.value);
             allItems.value = res.data.data.influencerList;
         } else if (type === 'pipeline') {
-            res = await getPipeline(searchKeyword.value);
+            const clientCompanyId = route.query.clientCompanyId ?? null;
+            res = await getPipeline(clientCompanyId, searchKeyword.value);
             allItems.value = res.data.data.campaignList;
         } else if (type === 'email') {
             res = await getUserNameAndEmail();

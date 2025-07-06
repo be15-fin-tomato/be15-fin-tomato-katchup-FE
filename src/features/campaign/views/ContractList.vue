@@ -40,8 +40,8 @@ const searchFilters = ref({
 const fetchContractList = async () => {
     try {
         const res = await getContractList(page.value, size.value, searchFilters.value);
-        contractList.value = res.data.data;
-        total.value = res.data.total;
+        contractList.value = res.data.data.response;
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
         console.error(e);
     }
@@ -101,13 +101,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="contract in contractList"
-                    :key="contract.id"
+                    :key="contract.pipelineId"
                     :management-option="contract"
                     :openMenuId="menuOpenId"
                     :pageType="'contract'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(contract.id)"
+                    @click="goDetail(contract.pipelineId)"
                 />
             </div>
 
