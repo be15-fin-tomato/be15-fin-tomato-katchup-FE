@@ -5,6 +5,7 @@ import MainLogo from '@/features/user/components/MainLogo.vue';
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { login } from '../api';
+import { setAccessTokenToCookie } from '@/utils/token.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -23,6 +24,7 @@ const handleLogin = async () => {
     const res = await login({ loginId: emp_number.value, password: password.value });
     const at = res.data.data.accessToken;
     authStore.setAccessToken(at);
+    setAccessTokenToCookie(at);
 
     toast.success('로그인 되었습니다.');
     router.push('/');
