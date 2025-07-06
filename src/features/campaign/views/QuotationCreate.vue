@@ -50,7 +50,6 @@ const toast = useToast();
 const authStore = useAuthStore();
 
 const opinions = ref([]);
-const quotationForm = ref(null);
 const form = reactive({});
 const proposalReferences = ref([]);
 const isEditing = ref(true);
@@ -220,6 +219,7 @@ const save = async () => {
 
     try {
         await createQuotation(requestForm);
+        isEditing.value = false;
         await router.push('/sales/quotation'); // 저장 후 목록으로 이동
     } catch (e) {
         toast.error(e.response.data.message);

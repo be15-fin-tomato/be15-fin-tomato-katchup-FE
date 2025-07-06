@@ -94,6 +94,14 @@ export const updateContractDetail = async (form) => {
     });
 };
 
+export const createContract = async (form) => {
+    return await api.post(`/campaign/contract`, form, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
 /* === 팝업 ===*/
 
 export const getUser = async (keyword) => {
