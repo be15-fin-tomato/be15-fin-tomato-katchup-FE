@@ -23,16 +23,6 @@ const isNotificationOpen = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
 let sseSource = null;
-const notificationRef = ref(null);
-
-const rerenderNotificationDropdown = () => {
-  const el = notificationRef.value;
-  if (el) {
-    el.style.display = 'none';
-    void el.offsetHeight; // 리플로우 유도
-    el.style.display = '';
-  }
-};
 
 const userInfo = ref({
   name: '',
@@ -48,7 +38,7 @@ const getHeaderUserInfo = async () => {
     userInfo.value.position = data.position;
     userInfo.value.profileImg = data.fileRoute || '/src/assets/icons/default-profile.svg';
   } catch (error) {
-    console.error('헤더 사용자 정보 조회 실패:', error);
+    console.error('헤더 사용자 정보 조회 실패 : ', error);
   }
 };
 
@@ -57,7 +47,7 @@ const getNotifications = async () => {
     notifications.value = await fetchAllNotifications();
     unreadCount.value = await fetchUnreadNotificationCount();
   } catch (err) {
-    console.error('알림 불러오기 실패:', err);
+    console.error('알림 불러오기 실패 : ', err);
   }
 };
 
@@ -145,14 +135,13 @@ const startSse = () => {
         createdAt: formatDateTime(new Date()), // 받은 시각을 프론트에서 생성
       });
       unreadCount.value++;
-      rerenderNotificationDropdown();
     },
 
     onConnect: (msg) => {
-      console.log('서버 연결 성공:', msg);
+      console.log('서버 연결 성공 : ', msg);
     },
     onError: (err) => {
-      console.error('SSE 오류:', err);
+      console.error('SSE 오류 : ', err);
     }
   });
 };
