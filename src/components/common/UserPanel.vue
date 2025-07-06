@@ -137,20 +137,22 @@ const startSse = () => {
   sseSource = subscribeNotificationSse({
     onMessage: (data) => {
       notifications.value.unshift({
-        id: data.id || Date.now(), // fallback
+        id: data.id,
         content: data.message,
-        isRead: false,
-        createdAt: formatDateTime(new Date()),
+        typeId: data.typeId,
+        targetId: data.targetId,
+        isRead: false, // 새로 받은 알림은 항상 '안 읽음' 상태
+        createdAt: formatDateTime(new Date()), // 받은 시각을 프론트에서 생성
       });
       unreadCount.value++;
       rerenderNotificationDropdown();
     },
 
     onConnect: (msg) => {
-      console.log('🔗 서버 연결 성공:', msg);
+      console.log('서버 연결 성공:', msg);
     },
     onError: (err) => {
-      console.error('❌ SSE 오류:', err);
+      console.error('SSE 오류:', err);
     }
   });
 };

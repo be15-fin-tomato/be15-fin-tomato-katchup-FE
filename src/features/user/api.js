@@ -91,17 +91,17 @@ export const subscribeNotificationSse = ({ onMessage, onConnect, onError }) => {
   });
 
   eventSource.onopen = (event) => {
-    console.log('✅ SSE 연결됨:', event);
+    console.log('SSE 연결됨:', event);
     if (typeof onConnect === 'function') onConnect(event);
   };
 
   eventSource.addEventListener('new-notification', (event) => {
     try {
       const data = JSON.parse(event.data);
-      console.log('📨 새 알림 수신:', data);
+      console.log('새 알림 수신:', data);
       if (typeof onMessage === 'function') onMessage(data);
     } catch (e) {
-      console.error('❌ 알림 파싱 실패:', e);
+      console.error('알림 파싱 실패:', e);
     }
   });
 
@@ -110,7 +110,7 @@ export const subscribeNotificationSse = ({ onMessage, onConnect, onError }) => {
   });
 
   eventSource.onerror = (error) => {
-    console.error('🚨 SSE 오류:', error);
+    console.error('SSE 오류:', error);
     eventSource.close();
     if (typeof onError === 'function') onError(error);
   };
