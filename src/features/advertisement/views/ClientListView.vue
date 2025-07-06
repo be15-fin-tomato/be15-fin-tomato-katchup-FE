@@ -1,71 +1,97 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import ClientCard from '../components/ClientCard.vue'
 import PagingBar from '@/components/common/PagingBar.vue'
-import CommonFiltering from '@/components/layout/CommonFiltering.vue'
+import ClientFiltering from '../components/ClientFiltering.vue'
+import { getClientCompanyList } from '@/features/advertisement/api.js'
 
+// 현재 페이지 상태
 const currentPage = ref(1)
-const pageSize = 6
+const pageSize = 6 // 한 페이지에 보여줄 개수
 
-const clientList = ref([
-  { id: 1, name: 'ABC 화장품', status: '잠재고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-  { id: 2, name: '아모레퍼시픽', status: '기존고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경', '이승재'], price: '23,370,000' },
-  { id: 3, name: '마니커', status: '신규고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-  { id: 4, name: '마니커', status: '잠재고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-  { id: 5, name: '마니커', status: '신규고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-  { id: 6, name: '마니커', status: '잠재고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-  { id: 7, name: '마니커', status: '기존고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-  { id: 8, name: '마니커', status: '기존고객', address: '서울특별시 구로구 디지털로 76길 111(구로동)', contacts: ['오유경'], price: '23,370,000' },
-])
 
-const totalCount = clientList.value.length
-const totalPages = computed(() => Math.ceil(totalCount / pageSize))
+// 고객사 목록 & 총 개수
+const clientList = ref([])
+const totalCount = ref(0)
+const totalPages = ref(1)
 
-const paginatedClients = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return clientList.value.slice(start, start + pageSize)
+// 필터 조건 초기값
+const filters = ref({
+  keyword: '',
+  statusId: null,
+  minSales: null,
+  maxSales: null,
+  startDate: null,
+  endDate: null,
 })
+
+// 고객사 목록 조회 API
+const fetchClients = async () => {
+  try {
+    const res = await getClientCompanyList(currentPage.value, pageSize, filters.value)
+    console.log('🔥 응답:', res)
+
+    // 응답 구조 반영 (items + pagination)
+    clientList.value = res.data.items
+    totalCount.value = res.data?.pagination?.totalCount || 0
+    totalPages.value = res.data?.pagination?.totalPages || 1
+
+  } catch (e) {
+    console.error('고객사 목록 조회 실패:', e)
+  }
+}
+
+// 필터 변경 시 호출되는 함수 (자식 컴포넌트에서 emit)
+const onFilterChange = (newFilters) => {
+  filters.value = { ...filters.value, ...newFilters }
+  currentPage.value = 1
+  fetchClients()
+}
+
+watch(currentPage, fetchClients)
+
+// 최초 진입 시 목록 조회
+onMounted(fetchClients)
 </script>
 
 <template>
   <div class="w-full min-h-screen bg-background flex font-sans">
-    <!-- 사이드바 -->
-    <CommonFiltering class="custom-sidebar" />
 
-    <!-- 본문 영역 -->
+    <!-- 필터 영역 -->
+    <ClientFiltering class="custom-sidebar" @change="onFilterChange" />
+
+    <!-- 본문 컨텐츠 -->
     <div class="flex flex-col flex-1 container bg-white">
 
-      <!-- 제목 + 등록 버튼 -->
+      <!-- 타이틀 + 등록 버튼 -->
       <div class="page-header">
         <div class="page-title">
           고객사 목록
-          <span class="cnt-search">
+          <span class="cnt-search text-gray-500">
             (검색 결과: {{ totalCount }}건)
           </span>
         </div>
-
-        <!-- 등록 버튼 -->
         <RouterLink to="/management/client/new" class="btn-create">등록</RouterLink>
       </div>
 
       <!-- 구분선 -->
       <div class="blue-line"></div>
 
-      <!-- 카드 리스트 -->
+      <!-- 고객사 카드 리스트 -->
       <div class="grid grid-cols-2 gap-x-6 gap-y-6 px-4">
         <ClientCard
-          v-for="client in paginatedClients"
-          :key="client.id"
+          v-for="client in clientList"
+          :key="client.clientCompanyId"
           :client="client"
         />
       </div>
 
-      <!-- 페이지네이션 -->
-      <div class="flex justify-center mt-8">
+      <!-- 페이지네이션 바 (totalPages 1 이상일 때만 렌더링) -->
+      <div class="flex justify-center mt-8" v-if="totalPages > 0">
         <PagingBar
           :totalPages="totalPages"
           :currentPage="currentPage"
-          @update:currentPage="(val) => currentPage = val"
+          @update:currentPage="(val) => currentPage.value = val"
         />
       </div>
     </div>
