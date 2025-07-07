@@ -24,11 +24,11 @@
 
       <!-- 버튼 영역 -->
       <div class="mt-4 flex justify-center gap-3">
-        <button @click="handleSubmit" class="btn-create">
-          등록
-        </button>
         <button @click="$emit('close')" class="btn-delete">
           취소
+        </button>
+        <button @click="handleSubmit" class="btn-create">
+          등록
         </button>
       </div>
     </div>

@@ -13,11 +13,11 @@
         class="w-full border rounded px-3 py-2 mb-4 text-sm"
       />
       <div class="flex justify-center gap-2">
-        <button @click="handleConfirm" class="bg-blue-300 text-white px-4 py-1 rounded">
-          확인
-        </button>
-        <button @click="$emit('close')" class="bg-gray-300 text-white px-4 py-1 rounded">
+        <button @click="$emit('close')" class="btn-delete">
           취소
+        </button>
+        <button @click="handleConfirm" class="btn-create">
+          확인
         </button>
       </div>
     </div>
