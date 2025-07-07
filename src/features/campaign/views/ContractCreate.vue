@@ -120,7 +120,6 @@ const fetchQuotationReferences = async () => {
 
 // 의견 등록
 const handleSubmit = (newComment) => {
-    console.log('의견 등록', authStore.userName);
     opinions.value.push({
         id: Date.now(),
         userName: authStore.userName,

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -85,7 +85,6 @@ const openSearchPopup = (key, type) => {
     );
 
     window.handleUserSelect = (selectedItem) => {
-        console.log(selectedItem);
         form[currentFieldKey.value] = selectedItem;
         popup.close();
     };

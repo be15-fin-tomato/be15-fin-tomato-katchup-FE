@@ -156,7 +156,6 @@ onMounted(async () => {
 
 // 의견 등록
 const handleSubmit = (newComment) => {
-    console.log('의견 등록', authStore.userName);
     opinions.value.push({
         id: Date.now(),
         userName: authStore.userName,
@@ -215,7 +214,6 @@ const save = async () => {
         expectedProfit: form.extraProfit,
         ideaList: opinions.value.map((op) => ({ content: op.content })),
     };
-    console.log(requestForm);
 
     try {
         await createQuotation(requestForm);
