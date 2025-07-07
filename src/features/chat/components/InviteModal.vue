@@ -47,37 +47,48 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-// Props
 const props = defineProps({
   users: {
     type: Array,
-    default: () => [] // [{ id: 1, name: '박장우' }, ...]
+    default: () => []
+  },
+  excludedIds: {
+    type: Array,
+    default: () => []
   }
 })
 
-// Emits
 const emit = defineEmits(['invite', 'close'])
 
-// 상태값
 const search = ref('')
 const selectedIds = ref([])
 
-// 필터링
-const filteredUsers = computed(() =>
-  props.users.filter(user => user.name.includes(search.value))
-)
+// 이미 초대된 사람 제외 + 검색
+const filteredUsers = computed(() => {
+  const rawList = props.users || []
+  const excluded = props.excludedIds || []
 
-// 초대 실행
-const invite = () => {
-  emit('invite', selectedIds.value)
+
+  const filtered = rawList
+    .filter(user => !excluded.includes(user.id))
+    .filter(user => user.name.toLowerCase().includes(search.value.toLowerCase()))
+
+  return filtered
+})
+
+
+const reset = () => {
   selectedIds.value = []
   search.value = ''
 }
 
-// 닫기
+const invite = () => {
+  emit('invite', selectedIds.value)
+  reset()
+}
+
 const close = () => {
   emit('close')
-  selectedIds.value = []
-  search.value = ''
+  reset()
 }
 </script>
