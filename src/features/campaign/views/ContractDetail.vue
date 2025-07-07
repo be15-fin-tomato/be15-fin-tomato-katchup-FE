@@ -1,11 +1,13 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import {
     deleteContract,
     deleteIdea,
     getContractDetail,
     getIdea,
+    getQuotationDetail,
+    getQuotationReference,
     postIdea,
     updateContractDetail,
 } from '@/features/campaign/api.js';
@@ -161,27 +163,44 @@ const fetchOpinion = async () => {
     opinions.value = res.data.data.response;
 };
 
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
         // 수정 모드 아닐 때는 무시
         alert('수정 모드가 아닙니다!');
         return;
     }
-    // 필요한 값만 form에 적용 (안전하게 매핑)
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = item.clientCompany;
-    form.clientManager = item.clientManager;
-    form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
-    form.username = item.username;
-    form.influencer = item.influencer;
-    form.price = item.price;
-    form.supplyAmount = item.supplyAmount;
-    form.extraProfit = item.extraProfit;
-    form.content = item.content;
-    form.notes = item.notes;
+    const res = await getQuotationDetail(item.pipelineId);
+    const resForm = res.data.data.form;
+
+    // form 필드 매핑
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
+    form.requestAt = resForm.requestAt;
+    form.presentAt = resForm.presentAt;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
+
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
+    form.price = resForm.expectedRevenue;
+    form.supplyAmount = resForm.availableQuantity;
+    form.extraProfit = resForm.expectedProfit;
 };
 
 // 저장 및 취소
@@ -250,6 +269,18 @@ const remove = async () => {
         toast.error(e.response.data.message);
     }
 };
+
+watch(
+    () => form.campaign?.id,
+    async (newVal) => {
+        if (newVal) {
+            const res = await getQuotationReference(newVal);
+            quotationReferences.value = res.data.data.referenceList;
+        } else {
+            quotationReferences.value = []; // campaignId 없으면 초기화
+        }
+    },
+);
 
 onMounted(async () => {
     // await Promise.all([fetchContractDetail(), fetchQuotationReferences()]);

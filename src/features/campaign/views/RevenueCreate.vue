@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { onMounted, reactive, ref, watch } from 'vue';
-import { createRevenue, getContractReference } from '@/features/campaign/api.js';
+import { createRevenue, getContractDetail, getContractReference } from '@/features/campaign/api.js';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
@@ -122,6 +122,11 @@ const groups = [
     },
 ];
 
+const fetchContractReferences = async () => {
+    const res = await getContractReference();
+    contractReferences.value = res.data.data.referenceList;
+};
+
 // 저장
 const save = async () => {
     try {
@@ -187,34 +192,43 @@ const handleDelete = (id) => {
     opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
 };
 // 참조 선택 시 폼 매핑
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
+        // 수정 모드 아닐 때는 무시
         alert('수정 모드가 아닙니다!');
         return;
     }
+    const res = await getContractDetail(item.pipelineId);
+    const resForm = res.data.data.form;
 
-    Object.keys(form).forEach((key) => {
-        form[key] = Array.isArray(form[key]) ? [] : typeof form[key] === 'object' ? {} : '';
-    });
+    // form 필드 매핑
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
+    form.requestAt = resForm.requestAt;
+    form.presentAt = resForm.presentAt;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
 
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = { ...(item.clientCompany ?? {}) };
-    form.clientManager = { ...(item.clientManager ?? {}) };
-    form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
-    form.username = { ...(item.username ?? {}) };
-    form.influencer = Array.isArray(item.influencer) ? [...item.influencer] : [item.influencer];
-    form.status = item.status;
-    form.adPrice = item.price;
-    form.productPrice = item.supplyAmount;
-    form.salesQuantity = item.extraProfit;
-    form.content = item.content;
-    form.notes = item.notes;
-    form.startDate = item.startDate;
-    form.endDate = item.endDate;
-    form.showInfluencerContentInput = true;
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
+    form.salesQuantity = resForm.availableQuantity;
+    form.productPrice = resForm.productPrice;
 };
 
 // 인플루언서 선택 시 자동 매핑
@@ -252,15 +266,17 @@ watch(
     },
 );
 
-// 계약 참조 불러오기
-const fetchContractReferences = async () => {
-    try {
-        const res = await getContractReference();
-        contractReferences.value = res.data.data;
-    } catch (e) {
-        console.error(e);
-    }
-};
+watch(
+    () => form.campaign?.id,
+    async (newVal) => {
+        if (newVal) {
+            const res = await getContractReference(newVal);
+            contractReferences.value = res.data.data.referenceList;
+        } else {
+            contractReferences.value = []; // campaignId 없으면 초기화
+        }
+    },
+);
 
 onMounted(() => {
     fetchContractReferences();

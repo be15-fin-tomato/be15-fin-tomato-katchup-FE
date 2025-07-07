@@ -42,7 +42,7 @@ watch(
 );
 
 const showInfluencerButton = computed(() => {
-    return 'revenue' in route.query;
+    return route.path.includes('revenue');
 });
 
 const initializeInfluencerContents = () => {

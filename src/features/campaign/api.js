@@ -179,8 +179,13 @@ export const getQuotationReference = async (campaignId = null) => {
     return await api.get('/campaign/quotation/reference', { params });
 };
 
-export const getContractReference = async () => {
-    return await api.get('/contract/reference');
+export const getContractReference = async (campaignId = null) => {
+    const params = {};
+    if (campaignId !== null) {
+        params.campaignId = campaignId;
+    }
+
+    return await api.get('/campaign/contract/reference', { params });
 };
 
 export const getInfluencerDetail = async (ids) => {

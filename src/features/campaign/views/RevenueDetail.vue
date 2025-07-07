@@ -2,9 +2,10 @@
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, reactive, ref, watch } from 'vue';
 import {
-    deleteContract,
     deleteIdea,
     deleteRevenue,
+    getContractDetail,
+    getContractReference,
     getIdea,
     getRevenueDetail,
     postIdea,
@@ -198,42 +199,54 @@ const fetchOpinion = async () => {
     opinions.value = res.data.data.response;
 };
 
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
         alert('수정 모드가 아닙니다!');
         return;
     }
 
     // 기존 값 초기화
-    Object.keys(form).forEach((key) => {
-        if (Array.isArray(form[key])) {
-            form[key] = [];
-        } else if (typeof form[key] === 'object' && form[key] !== null) {
-            form[key] = {};
-        } else {
-            form[key] = '';
-        }
-    });
+    // Object.keys(form).forEach((key) => {
+    //     if (Array.isArray(form[key])) {
+    //         form[key] = [];
+    //     } else if (typeof form[key] === 'object' && form[key] !== null) {
+    //         form[key] = {};
+    //     } else {
+    //         form[key] = '';
+    //     }
+    // });
+
+    const res = await getContractDetail(item.pipelineId);
+    const resForm = res.data.data.form;
 
     // 매핑
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = { ...(item.clientCompany ?? {}) };
-    form.clientManager = { ...(item.clientManager ?? {}) };
-    form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
-    form.username = { ...(item.username ?? {}) };
-    form.influencer = [...(item.influencer ?? [])];
-    form.status = item.status;
-    form.adPrice = item.adPrice;
-    form.productPrice = item.productPrice;
-    form.salesQuantity = item.salesQuantity;
-    form.content = item.content;
-    form.notes = item.notes;
-    form.startDate = item.startDate;
-    form.endDate = item.endDate;
-    form.showInfluencerContentInput = item.showInfluencerContentInput ?? false;
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
+    form.requestAt = resForm.requestAt;
+    form.presentAt = resForm.presentAt;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
+
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
+    form.salesQuantity = resForm.availableQuantity;
+    form.productPrice = resForm.productPrice;
 };
 
 // 저장 및 취소
@@ -322,6 +335,18 @@ watch(
         const price = parseInt(productPrice) || 0;
         const quantity = parseInt(salesQuantity) || 0;
         form.totalRevenue = price * quantity;
+    },
+);
+
+watch(
+    () => form.campaign?.id,
+    async (newVal) => {
+        if (newVal) {
+            const res = await getContractReference(newVal);
+            contractReferences.value = res.data.data.referenceList;
+        } else {
+            contractReferences.value = []; // campaignId 없으면 초기화
+        }
     },
 );
 
