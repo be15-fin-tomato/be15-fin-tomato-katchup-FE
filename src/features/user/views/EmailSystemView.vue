@@ -1,19 +1,29 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import CommonFiltering from '@/components/layout/CommonFiltering.vue';
-import PagingBar from '@/components/common/PagingBar.vue';
+import { ref, onMounted } from 'vue';
+import Filtering from '@/features/user/components/Filtering.vue';
 import EmailCard from '@/features/user/components/EmailCard.vue';
+import PagingBar from '@/components/common/PagingBar.vue';
 import { fetchSatisfactionList } from '@/features/user/api';
 
 const currentPage = ref(1);
 const pageSize = 6;
-
 const totalPages = ref(0);
 const emailList = ref([]);
+
+const searchModel = ref({
+  searchType: 'all',
+  keyword: '',
+  user: null,
+  sort: 'date',
+  sortOrder: 'asc',
+});
 
 const loadEmailList = async () => {
   try {
     const { data } = await fetchSatisfactionList({
+      searchType: searchModel.value.searchType,
+      keyword: searchModel.value.keyword,
+      userName: searchModel.value.user?.name ?? '',
       page: currentPage.value,
       size: pageSize,
     });
@@ -24,7 +34,11 @@ const loadEmailList = async () => {
   }
 };
 
-const paginatedEmail = computed(() => emailList.value);
+const handleSearch = (filters) => {
+  searchModel.value = filters;
+  currentPage.value = 1;
+  loadEmailList();
+};
 
 onMounted(() => {
   loadEmailList();
@@ -33,7 +47,11 @@ onMounted(() => {
 
 <template>
   <div class="w-full min-h-screen bg-background flex">
-    <CommonFiltering :showFilterSort="false" />
+    <Filtering
+      v-model="searchModel"
+      @search="handleSearch"
+    />
+
     <div class="flex flex-col flex-1 container bg-white">
       <div class="page-header">
         <div class="page-title">만족도 조사</div>
@@ -42,7 +60,7 @@ onMounted(() => {
 
       <div class="grid grid-cols-2 gap-x-9 gap-y-9 px-1">
         <EmailCard
-          v-for="(email, index) in paginatedEmail"
+          v-for="(email, index) in emailList"
           :key="index"
           :emailList="{
             satisfaction_id: email.satisfactionId,
@@ -56,7 +74,6 @@ onMounted(() => {
           }"
           @refreshList="loadEmailList"
         />
-
       </div>
 
       <div class="flex justify-center mt-8">
