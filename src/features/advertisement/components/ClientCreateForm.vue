@@ -1,10 +1,10 @@
 <script setup>
 import { reactive, ref, watch, nextTick, toRaw } from 'vue';
 
-// const props = defineProps({
-//   isEditing: { type: Boolean, default: false },
-// });
-//
+const props = defineProps({
+  isEditing: { type: Boolean, default: false },
+});
+
 // const emit = defineEmits(['save', 'cancel']);
 
 // 고객사 form
