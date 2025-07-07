@@ -436,20 +436,14 @@ function cancelAddBig() {
       </div>
     </div>
     <div class="editor-tem-box flex flex-col gap-6 my-6">
-      <template v-if="selectedSmall">
-        <SendEmail
-          :name="selectedSmall?.name"
-          :email="' '"
-          :title="selectedSmall"
-          :initialContent="selectedSmall?.content"
-          :initialFile="selectedSmall?.file"
-        />
-      </template>
-      <template v-else>
-        <div class="p-6 border border-gray-dark rounded-lg bg-white text-gray-400 text-sm text-center py-10">
-          이메일을 전송하려면 좌측 목록에서 템플릿을 선택해주세요.
-        </div>
-      </template>
+      <!-- SendEmail 컴포넌트가 항상 렌더링되도록 조건부 렌더링 제거 -->
+      <SendEmail
+        :name="selectedSmall?.name"
+        :email="' '"
+        :title="selectedSmall"
+        :initialContent="selectedSmall?.content"
+        :initialFile="selectedSmall?.file"
+      />
     </div>
   </div>
 
