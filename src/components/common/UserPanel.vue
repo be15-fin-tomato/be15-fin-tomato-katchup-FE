@@ -78,7 +78,7 @@ function resolveNotificationUrl(typeId, targetId) {
   switch (typeId) {
     case 2:
     case 3:
-      return `/campaign/${targetId}`;
+      return `${targetId}`;
     case 4:
       return `/calendar`;
     case 5:
