@@ -118,4 +118,22 @@ export const subscribeNotificationSse = ({ onMessage, onConnect, onError }) => {
   return eventSource;
 };
 
+/* 만족도 조사 페이지 목록 조회 */
+export const fetchSatisfactionList = (params) => {
+  return api.get('/satisfaction/list', { params });
+};
+
+/* 만족도 조사 요청하기 */
+export const sendSatisfactionRequest = (satisfactionId) => {
+  return api.post(`/satisfaction/send/${satisfactionId}`);
+};
+
+/* 만족도 결과 조회하기 */
+export const fetchSatisfactionScore = (satisfactionId) =>
+  api.get(`/satisfaction/list/score/${satisfactionId}`);
+
+/* 만족도 총점 db에 저장하기 */
+export const saveSatisfactionResult = (satisfactionId) =>
+  api.post(`/satisfaction/save/${satisfactionId}`);
+
 

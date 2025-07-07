@@ -21,17 +21,24 @@ const influencerId = route.query.id
 
 onMounted(async () => {
   try {
-    const [dashboardRes, influencerRes] = await Promise.all([
+    const [dashboardRes, youtubeRes, influencerRes] = await Promise.all([
       fetch(`/api/v1/dashboard/instagram?id=${influencerId}`),
-      fetch(`/api/v1/influencer/${influencerId}`)
+      fetch(`/api/v1/influencer/${influencerId}`),
+      fetch(`/api/v1/dashboard/youtube?id=${influencerId}`)
     ])
 
     const dashboardData = await dashboardRes.json()
     const influencerData = await influencerRes.json()
+    const youtubeData = await youtubeRes.json()
 
     if (!dashboardData.data) {
-      toast.warning('인스타그램 계정이 연결되어있지 않습니다.')
-      router.replace(`/influencer/dashboard/youtube?id=${influencerId}`)
+      if(youtubeData.data){
+        toast.success("유튜브 대시보드로 이동")
+        router.push(`/influencer/dashboard/youtube?id=${influencerId}`)
+      } else {
+        toast.warning('계정이 모두 연결되어있지 않습니다.')
+        router.replace(`/influencer/list`)
+      }
       return
     }
 
