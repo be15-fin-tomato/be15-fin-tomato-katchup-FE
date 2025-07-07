@@ -15,11 +15,11 @@ const tagStyle = (tag) => {
 
 const genderColor = (gender) => {
   switch (gender) {
-    case 'male':
+    case 'M':
       return 'bg-blue-200'
-    case 'female':
+    case 'F':
       return 'bg-pink-200'
-    case 'other':
+    case 'O':
       return 'bg-purple-200'
     default:
       return 'bg-gray-200'
@@ -28,11 +28,11 @@ const genderColor = (gender) => {
 
 const genderLabel = (gender) => {
   switch (gender) {
-    case 'male':
+    case 'M':
       return '남성'
-    case 'female':
+    case 'F':
       return '여성'
-    case 'other':
+    case 'O':
       return '혼합'
     default:
       return '기타'
@@ -56,20 +56,20 @@ function goToDashboard(target)  {
         <div class="flex flex-wrap items-center justify-between gap-4">
 
             <!-- 유튜브명 -->
-            <div class="flex items-center gap-4 min-w-[160px]">
-                <img :src="influencer.thumbnail" alt="프로필" class="w-14 h-14 rounded-full object-cover" />
+            <div class="flex items-center gap-4 min-w-[200px]">
+                <img :src="influencer.thumbnail" alt="프로필" class="w-[95px] rounded-full object-cover" />
                 <div class="font-semibold text-sm truncate w-[100px]" :title="influencer.name">
                     {{ influencer.name }}
                 </div>
             </div>
 
             <!-- 인스타 아이디 -->
-            <div class="w-[120px] text-sm font-semibold truncate text-center">
+            <div class="w-[70px] text-sm font-semibold truncate text-center">
                 {{ influencer.instagram }}
             </div>
 
             <!-- 유튜브 구독자 -->
-            <div class="flex flex-col items-center w-[180px]">
+            <div class="flex flex-col items-center w-[130px]">
                 <span class="text-sm font-semibold truncate mb-2">{{ influencer.subscribers || '해당 없음' }}</span>
                 <button
                   @click="goToDashboard('youtube')"
@@ -81,7 +81,7 @@ function goToDashboard(target)  {
             </div>
 
             <!-- 인스타 팔로워 -->
-            <div class="flex flex-col items-center w-[180px]">
+            <div class="flex flex-col items-center w-[130px]">
                 <span class="text-sm font-semibold truncate mb-2">{{ influencer.instaFollowers || '해당 없음' }}</span>
                 <button
                   @click="goToDashboard('instagram')"
@@ -102,7 +102,7 @@ function goToDashboard(target)  {
             <!-- 연령대 -->
             <div class="w-[80px] flex justify-center items-center">
                 <div class="bg-green-100 text-black px-2 rounded-xl font-semibold text-sm text-center">
-                    {{ influencer.targetAgeGroup }}
+                    {{ influencer.ageRange }}
                 </div>
             </div>
 
@@ -110,13 +110,13 @@ function goToDashboard(target)  {
 
         <!-- 태그 -->
         <div class="flex flex-wrap gap-2 mt-4">
-            <span
-                v-for="tag in influencer.tags"
-                :key="tag"
-                class="text-xs rounded-lg px-1 py-0.5"
-                :class="tagStyle(tag)"
-            >
-            # {{ tag }}
+             <span
+               v-for="tag in influencer.tags ?? []"
+               :key="tag.categoryId"
+               class="text-xs rounded-lg px-1 py-0.5"
+               :class="tagStyle(tag.categoryName)"
+             >
+            # {{ tag.categoryName }}
             </span>
         </div>
     </div>

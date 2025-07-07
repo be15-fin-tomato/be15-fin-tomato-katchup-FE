@@ -1,12 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getContractList } from '@/features/campaign/api.js';
+import { deleteContract, getContractList } from '@/features/campaign/api.js';
 import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
 import Pagination from '@/components/common/PagingBar.vue';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 
 const contractList = ref([]);
 const page = ref(1);
@@ -17,20 +19,20 @@ const totalPages = computed(() => Math.ceil(total.value / size.value));
 const categoryOptions = [
     { value: 'title', label: '제목' },
     { value: 'clientCompany', label: '고객사' },
-    { value: 'user', label: '담당자' },
+    { value: 'user', label: '광고 담당자' },
 ];
 
 const filterOptions = [
-    { value: 'approved', label: '승인완료' },
-    { value: 'request', label: '승인요청' },
-    { value: 'onhold', label: '보류/대기' },
-    { value: 'rejected', label: '거절됨' },
+    { value: 1, label: '승인요청' },
+    { value: 2, label: '승인완료' },
+    { value: 3, label: '보류/대기' },
+    { value: 4, label: '승인거절' },
 ];
 
 const searchFilters = ref({
     category: '',
     keyword: '',
-    manager: null,
+    userId: null,
     filter: '',
     sort: 'date',
     sortOrder: 'asc',
@@ -40,8 +42,8 @@ const searchFilters = ref({
 const fetchContractList = async () => {
     try {
         const res = await getContractList(page.value, size.value, searchFilters.value);
-        contractList.value = res.data.data;
-        total.value = res.data.total;
+        contractList.value = res.data.data.response;
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
         console.error(e);
     }
@@ -63,8 +65,14 @@ const goDetail = (id) => {
     router.push(`/sales/contract/${id}`);
 };
 
-const handleDelete = (id) => {
-    contractList.value = contractList.value.filter((item) => item.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteContract(id);
+        toast.success('견적이 삭제되었습니다.');
+        await fetchContractList();
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 const menuOpenId = ref(null);
@@ -101,13 +109,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="contract in contractList"
-                    :key="contract.id"
+                    :key="contract.pipelineId"
                     :management-option="contract"
                     :openMenuId="menuOpenId"
                     :pageType="'contract'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(contract.id)"
+                    @click="goDetail(contract.pipelineId)"
                 />
             </div>
 
