@@ -4,7 +4,6 @@ import { onMounted, reactive, ref } from 'vue';
 import {
     deleteContract,
     deleteIdea,
-    deleteQuotationDetail,
     getContractDetail,
     getIdea,
     postIdea,
@@ -231,7 +230,7 @@ const save = async () => {
         toast.success('견적이 수정되었습니다.');
         await fetchContractDetail(); // 다시 조회
     } catch (e) {
-        toast.error(e?.response?.data?.message || '저장 중 오류 발생');
+        toast.error(e?.response?.data?.message);
     }
 
     isEditing.value = false;

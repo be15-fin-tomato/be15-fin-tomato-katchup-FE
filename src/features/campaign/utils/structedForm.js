@@ -37,10 +37,25 @@ export const structuredForm = (rawForm, fileList = []) => {
             name: i.influencerName,
         })),
 
+        influencerContents: rawForm.influencerList.map((i) => {
+            const youtube = i.youtubeLink?.trim();
+            const instagram = i.instagramLink?.trim();
+
+            return {
+                influencerId: i.influencerId,
+                name: i.influencerName,
+                platform: youtube ? 'youtube' : instagram ? 'instagram' : null,
+                url: youtube || instagram || '',
+                adPrice: i.adPrice ?? 0,
+            };
+        }),
+
         // 기타 수치 필드
         price: rawForm.expectedRevenue,
         supplyAmount: rawForm.availableQuantity,
         extraProfit: rawForm.expectedProfit,
+        productPrice: rawForm.productPrice,
+        salesQuantity: rawForm.salesQuantity,
 
         // 상태 (select 박스)
         status: rawForm.pipelineStatusId,

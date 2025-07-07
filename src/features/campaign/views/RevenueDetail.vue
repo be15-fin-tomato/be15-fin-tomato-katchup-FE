@@ -1,15 +1,26 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, reactive, ref, watch } from 'vue';
-import { getContractReference, getRevenueDetail } from '@/features/campaign/api.js';
+import {
+    deleteContract,
+    deleteIdea,
+    deleteRevenue,
+    getIdea,
+    getRevenueDetail,
+    postIdea,
+    updateRevenueDetail,
+} from '@/features/campaign/api.js';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import FileUploadCard from '@/features/campaign/components/FileUploadCard.vue';
+import { structuredForm } from '@/features/campaign/utils/structedForm.js';
+import { useToast } from 'vue-toastification';
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 const opinions = ref([]);
 const revenueForm = ref(null);
@@ -21,8 +32,8 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input' },
-            { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
+            { key: 'name', label: '제목', type: 'input' },
+            { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
     {
@@ -46,19 +57,46 @@ const groups = [
                 type: 'search-manager',
                 searchType: 'manager',
             },
-            { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
+            { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
     },
     {
         type: 'horizontal',
         fields: [
             {
-                key: 'pipeline',
+                key: 'campaign',
                 label: '해당 파이프라인',
                 type: 'search-pipeline',
-                searchType: 'pipeline',
+                searchType: 'campaign',
             },
             { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+        ],
+    },
+    {
+        type: 'horizontal',
+        fields: [
+            {
+                key: 'productPrice',
+                label: '상품 가격',
+                type: 'input',
+                inputType: 'number',
+                width: 24,
+            },
+            {
+                key: 'salesQuantity',
+                label: '판매 수량',
+                type: 'input',
+                inputType: 'number',
+                width: 24,
+            },
+            {
+                key: 'totalRevenue',
+                label: '총 수익',
+                type: 'input',
+                inputType: 'number',
+                disabled: true,
+                width: 50,
+            },
         ],
     },
     {
@@ -74,50 +112,19 @@ const groups = [
                 key: 'status',
                 label: '진행단계',
                 type: 'select',
-                options: ['승인요청', '진행중', '보류', '완료'],
+                options: [
+                    { value: 1, label: '승인요청' },
+                    { value: 2, label: '승인완료' },
+                    { value: 3, label: '보류/대기' },
+                    { value: 4, label: '승인거절' },
+                ],
             },
         ],
     },
-    {
-        type: 'horizontal',
-        fields: [
-            {
-                key: 'adPrice',
-                label: '광고 단가',
-                type: 'input',
-                inputType: 'number',
-                width: 50,
-            },
-            {
-                key: 'productPrice',
-                label: '상품 가격',
-                type: 'input',
-                inputType: 'number',
-                width: 24,
-            },
-            {
-                key: 'salesQuantity',
-                label: '판매 수량',
-                type: 'input',
-                inputType: 'number',
-                width: 24,
-            },
-        ],
-    },
-    {
-        type: 'horizontal',
-        fields: [
-            { key: 'platform', label: '컨텐츠 목록', type: 'platform', width: 24 },
-            {
-                key: 'totalRevenue',
-                label: '총 수익',
-                type: 'input',
-                inputType: 'number',
-                disabled: true,
-                width: 25,
-            },
-        ],
-    },
+    // {
+    //     type: 'horizontal',
+    //     fields: [{ key: 'platform', label: '컨텐츠 목록', type: 'platform', width: 24 }],
+    // },
     {
         type: 'single',
         fields: [
@@ -137,38 +144,58 @@ const groups = [
 //     }
 // };
 
-const fetchContractReferences = async () => {
-    try {
-        const res = await getContractReference();
-        contractReferences.value = res.data.data;
-    } catch (e) {
-        console.log(e);
-    }
-};
+// const fetchContractReferences = async () => {
+//     try {
+//         const res = await getContractReference();
+//         contractReferences.value = res.data.data;
+//     } catch (e) {
+//         console.log(e);
+//     }
+// };
 
 const fetchRevenueDetail = async () => {
     try {
-        const res = await getRevenueDetail();
-        revenueForm.value = res.data.data;
-        Object.assign(form, res.data.data);
+        const res = await getRevenueDetail(route.params.revenueId);
+        const rawForm = res.data.data.form;
+        const fileList = res.data.data.fileList ?? [];
+
+        const parsedForm = structuredForm(rawForm, fileList);
+        revenueForm.value = parsedForm;
+        Object.assign(form, parsedForm);
+
+        contractReferences.value = res.data.data.referenceList ?? [];
+        opinions.value = res.data.data.ideaList ?? [];
     } catch (e) {
-        console.log(e);
+        toast.error(e.data.message);
     }
 };
 
 // 의견 등록
-const handleSubmit = (newComment) => {
-    opinions.value.push({
-        id: Date.now(),
-        author: '나',
-        content: newComment,
-        createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    });
+const handleSubmit = async (newComment) => {
+    try {
+        await postIdea({ pipeline: route.params.revenueId, content: newComment });
+        await fetchOpinion();
+        toast.success('의견이 등록되었습니다.');
+    } catch (e) {
+        toast.error(e.data.message);
+    }
 };
 
 // 의견 삭제
-const handleDelete = (id) => {
-    opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteIdea(id);
+        await fetchOpinion();
+        toast.success('의견이 삭제되었습니다.');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
+};
+
+const fetchOpinion = async () => {
+    const res = await getIdea(route.params.revenueId);
+
+    opinions.value = res.data.data.response;
 };
 
 const handleReferenceSelect = (item) => {
@@ -210,9 +237,65 @@ const handleReferenceSelect = (item) => {
 };
 
 // 저장 및 취소
-const save = () => {
-    console.log('저장할 값:', form);
+const save = async () => {
+    try {
+        const requestForm = {
+            pipelineId: route.params.revenueId,
+            campaignId: form.campaign?.id ?? null,
+            pipelineStatusId: form.status,
+            clientCompanyId: form.clientCompany?.id ?? null,
+            clientManagerId: form.clientManager?.id ?? null,
+            userId: form.username?.map((user) => user.id) ?? [],
+            name: form.name,
+            requestAt: form.requestAt,
+            startedAt: form.startedAt,
+            endedAt: form.endedAt,
+            presentedAt: form.presentAt,
+            campaignName: form.campaign?.name ?? '',
+            content: form.content,
+            notes: form.notes,
+            productPrice: form.productPrice ?? 0,
+            salesQuantity: form.salesQuantity ?? 0,
+            influencerList:
+                form.influencerContents?.map((i) => ({
+                    influencerId: i.influencerId,
+                    youtubeLink: i.platform === 'youtube' ? i.url : null,
+                    instagramLink: i.platform === 'instagram' ? i.url : null,
+                    adPrice: i.adPrice,
+                })) ?? [],
+
+            existingFileList: form.attachment.filter((f) => !f.file && f.id).map((f) => f.id),
+        };
+
+        const formData = new FormData();
+        formData.append(
+            'request',
+            new Blob([JSON.stringify(requestForm)], { type: 'application/json' }),
+        );
+
+        for (const f of form.attachment || []) {
+            if (f.file) {
+                formData.append('files', f.file);
+            }
+        }
+
+        await updateRevenueDetail(formData);
+        toast.success('매출이 수정되었습니다.');
+        await fetchRevenueDetail();
+    } catch (e) {
+        toast.error(e?.response?.data?.message);
+    }
     isEditing.value = false;
+};
+
+const remove = async () => {
+    try {
+        await deleteRevenue(route.params.revenueId);
+        toast.success('매출이 삭제되었습니다.');
+        await router.replace('/sales/revenue');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 const cancel = () => {
@@ -227,6 +310,10 @@ const cancel = () => {
             form[key] = original ?? '';
         }
     });
+
+    const price = parseInt(form.productPrice) || 0;
+    const quantity = parseInt(form.salesQuantity) || 0;
+    form.totalRevenue = price * quantity;
     isEditing.value = false;
 };
 watch(
@@ -264,7 +351,7 @@ watch(
 );
 
 onMounted(async () => {
-    await Promise.all([fetchRevenueDetail(), fetchOpinions(), fetchContractReferences()]);
+    await Promise.all([fetchRevenueDetail()]);
 });
 </script>
 
@@ -308,7 +395,7 @@ onMounted(async () => {
                 <DetailReferenceList :items="contractReferences" @select="handleReferenceSelect" />
             </div>
             <div class="container">
-                <FileUploadCard :isEditing="isEditing" v-model="form.attachments" />
+                <FileUploadCard :isEditing="isEditing" v-model="form.attachment" />
             </div>
         </div>
     </div>

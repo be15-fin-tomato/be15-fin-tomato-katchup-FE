@@ -67,13 +67,33 @@ export const getQuotationDetail = async (quotationId) => {
 /**/
 
 export const getRevenueList = async (page, size, filters = {}) => {
-    return await api.get('/sales/revenue', {
+    return await api.get('/campaign/revenue', {
         params: { page, size, ...filters },
     });
 };
 
 export const getRevenueDetail = async (revenueId) => {
-    return await api.get(`/sales/revenue/${revenueId}`);
+    return await api.get(`/campaign/revenue/${revenueId}`);
+};
+
+export const updateRevenueDetail = async (formData) => {
+    return await api.put('/campaign/revenue', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
+export const deleteRevenue = async (revenueId) => {
+    return await api.delete(`/campaign/revenue/${revenueId}`);
+};
+
+export const createRevenue = async (formData) => {
+    return await api.post('/campaign/revenue', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
 };
 
 export const getContractList = async (page, size, filters = {}) => {
@@ -150,8 +170,13 @@ export const getProposalReference = async () => {
     return await api.get('/proposal/reference');
 };
 
-export const getQuotationReference = async () => {
-    return await api.get('/quotation/reference');
+export const getQuotationReference = async (campaignId = null) => {
+    const params = {};
+    if (campaignId !== null) {
+        params.campaignId = campaignId;
+    }
+
+    return await api.get('/campaign/quotation/reference', { params });
 };
 
 export const getContractReference = async () => {

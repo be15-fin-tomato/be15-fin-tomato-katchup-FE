@@ -1,12 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getRevenueList } from '@/features/campaign/api.js';
+import { deleteRevenue, getRevenueList } from '@/features/campaign/api.js';
 import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
 import Pagination from '@/components/common/PagingBar.vue';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 
 const revenueList = ref([]);
 const page = ref(1);
@@ -17,20 +19,20 @@ const totalPages = computed(() => Math.ceil(total.value / size.value));
 const categoryOptions = [
     { value: 'title', label: '제목' },
     { value: 'clientCompany', label: '고객사' },
-    { value: 'user', label: '담당자' },
+    { value: 'user', label: '광고 담당자' },
 ];
 
 const filterOptions = [
-    { value: 'approved', label: '승인완료' },
-    { value: 'request', label: '승인요청' },
-    { value: 'onhold', label: '보류/대기' },
-    { value: 'rejected', label: '거절됨' },
+    { value: 1, label: '승인요청' },
+    { value: 2, label: '승인완료' },
+    { value: 3, label: '보류/대기' },
+    { value: 4, label: '승인거절' },
 ];
 
 const searchFilters = ref({
     category: '',
     keyword: '',
-    manager: null,
+    userId: null,
     filter: '',
     sort: 'date',
     sortOrder: 'asc',
@@ -40,10 +42,10 @@ const searchFilters = ref({
 const fetchRevenueList = async () => {
     try {
         const res = await getRevenueList(page.value, size.value, searchFilters.value);
-        revenueList.value = res.data.data;
-        total.value = res.data.total;
+        revenueList.value = res.data.data.response;
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
-        console.error(e);
+        console.error(e.response.data.message);
     }
 };
 
@@ -63,8 +65,14 @@ const goDetail = (id) => {
     router.push(`/sales/revenue/${id}`);
 };
 
-const handleDelete = (id) => {
-    revenueList.value = revenueList.value.filter((item) => item.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteRevenue(id);
+        toast.success('견적이 삭제되었습니다.');
+        await fetchRevenueList();
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 const menuOpenId = ref(null);
@@ -101,13 +109,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="revenue in revenueList"
-                    :key="revenue.id"
+                    :key="revenue.pipelineId"
                     :management-option="revenue"
                     :openMenuId="menuOpenId"
                     :pageType="'revenue'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(revenue.id)"
+                    @click="goDetail(revenue.pipelineId)"
                 />
             </div>
 
