@@ -33,6 +33,7 @@ export const updateContractObject = async (objectId, title) => {
   }
 };
 
+/* 계약서 템플릿 조건 삭제 */
 export const deleteContractObject = async (objectId) => {
   try {
     const response = await api.delete(`/contracts/delete/object/${objectId}`);
@@ -42,3 +43,6 @@ export const deleteContractObject = async (objectId) => {
     throw error;
   }
 };
+
+/*계약서 상세 조건 목록 조회 */
+export const fetchContractDetails = async

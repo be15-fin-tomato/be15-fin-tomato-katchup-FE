@@ -4,7 +4,9 @@ import { Icon } from '@iconify/vue';
 import SmallTemplateModal from '@/features/contract/components/SmallTemplateModal.vue';
 import SmallTemplateEditModal from '@/features/contract/components/SmallTemplateEditModal.vue';
 import SendEmail from '@/features/contract/components/SendEmail.vue';
-import { fetchContractObjects, createContractObject, updateContractObject, deleteContractObject } from '@/features/contract/api';
+import { fetchContractObjects, createContractObject,
+  updateContractObject, deleteContractObject
+} from '@/features/contract/api';
 
 
 const bigList = ref([]);
