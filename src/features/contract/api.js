@@ -126,6 +126,33 @@ export const sendContractEmail = async (requestData, file = null) => {
   }
 };
 
+/* 계약 완료 목록 조회 */
+export const fetchContractSuccessList = (params) => {
+  return api.get('/contract/success', { params });
+};
+
+/* 계약서 조회 */
+export const fetchContractFile = (contractId, password) => {
+  const formData = new FormData();
+  formData.append('password', password);
+
+  return api.get(`/contract/success/view/${contractId}`, {
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+/* 계약서 등록 */
+export async function uploadContractFile(contractId, formData) {
+  return api.put(`/contract/sign/${contractId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
+
 
 
 
