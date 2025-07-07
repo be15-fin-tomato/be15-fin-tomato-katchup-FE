@@ -29,7 +29,6 @@ const todayDate = new Date()
 const selectedDate = ref(formatDateToLocalYYYYMMDD(todayDate))
 const selectedEvent = ref(null)
 const isModalOpen = ref(false)
-
 const events = ref([])
 
 const fetchEvents = async () => {
@@ -45,7 +44,6 @@ const fetchEvents = async () => {
 onMounted(() => {
   fetchEvents()
 })
-
 
 const calendarRef = ref(null)
 
@@ -84,7 +82,6 @@ const calendarOptions = {
         arg.el.style.fontWeight = '700'
     }
   },
-
   events: events.value
 }
 
@@ -109,11 +106,9 @@ function closeModal() {
 async function handleSave(newEvent) {
   try {
     if (selectedEvent.value && selectedEvent.value.id) {
-      // 수정
       await updateSchedule(selectedEvent.value.id, newEvent)
       toast.success('수정되었습니다.')
     } else {
-      // 생성
       await postSchedule(newEvent)
       toast.success('등록되었습니다.')
     }
@@ -138,7 +133,6 @@ async function deleteEvent(eventToDelete) {
     console.error(err)
   }
 }
-
 </script>
 
 <template>

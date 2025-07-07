@@ -8,7 +8,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'save'])
-
 const toast = useToast();
 const content = ref('')
 const startTime = ref('')
@@ -62,7 +61,6 @@ function submit() {
   toast.success(`반영되었습니다.`)
   emit('close')
 }
-
 </script>
 
 <template>
