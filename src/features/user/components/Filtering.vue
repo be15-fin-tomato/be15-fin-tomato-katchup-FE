@@ -31,7 +31,7 @@ const openUserSearch = () => {
 
 
   window.open(
-    `/search-popup?type=single-user&selected=${selectedIds}`,
+    `/search-popup?type=one-user&selected=${selectedIds}`,
     'SearchPopup',
     'width=500,height=600'
   );
