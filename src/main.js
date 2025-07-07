@@ -17,11 +17,9 @@ async function bootstrap() {
     app.use(createPinia());
 
     const authStore = useAuthStore();
-    console.log('isA in main', authStore.isAuthenticated);
     if (!authStore.isAuthenticated) {
         try {
             const response = await refreshToken();
-            console.log(response.data.data.accessToken);
             authStore.setAccessToken(response.data.data.accessToken);
         } catch (e) {
             console.log('엑세스 토큰 지우기..');

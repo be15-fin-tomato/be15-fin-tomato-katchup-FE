@@ -50,7 +50,6 @@ const toast = useToast();
 const authStore = useAuthStore();
 
 const opinions = ref([]);
-const quotationForm = ref(null);
 const form = reactive({});
 const proposalReferences = ref([]);
 const isEditing = ref(true);
@@ -157,7 +156,6 @@ onMounted(async () => {
 
 // 의견 등록
 const handleSubmit = (newComment) => {
-    console.log('의견 등록', authStore.userName);
     opinions.value.push({
         id: Date.now(),
         userName: authStore.userName,
@@ -216,10 +214,10 @@ const save = async () => {
         expectedProfit: form.extraProfit,
         ideaList: opinions.value.map((op) => ({ content: op.content })),
     };
-    console.log(requestForm);
 
     try {
         await createQuotation(requestForm);
+        isEditing.value = false;
         await router.push('/sales/quotation'); // 저장 후 목록으로 이동
     } catch (e) {
         toast.error(e.response.data.message);

@@ -1,22 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue';
+
+const props = defineProps({
+  categories: {
+    type: Array,
+    required: true
+  }
+})
 
 const emit = defineEmits(['update:selected'])
-
-const categories = [
-  '전체',
-  '엔터테인먼트',
-  '일상',
-  '푸드',
-  '동물',
-  '키즈',
-  '애니메이션',
-  '게임',
-  '지식/정보',
-  '뷰티/패션'
-]
-
 const selected = ref('전체')
+
+onMounted(() => {
+  emit('update:selected', selected.value)
+})
 
 const selectCategory = (category) => {
   selected.value = category
@@ -27,7 +24,7 @@ const selectCategory = (category) => {
 <template>
   <div class="flex gap-3 mb-10">
     <button
-      v-for="category in categories"
+      v-for="category in props.categories"
       :key="category"
       @click="selectCategory(category)"
       :class="[

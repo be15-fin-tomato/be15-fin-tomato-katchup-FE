@@ -1,5 +1,8 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const props = defineProps({
     modelValue: Object,
@@ -16,6 +19,11 @@ const formatNumber = (value) => {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
+const onAdPriceInput = (event, item) => {
+    const raw = event.target.value.replace(/[^0-9]/g, '');
+    item.adPrice = raw ? parseInt(raw, 10) : 0;
+};
+
 const parseNumberInput = (e, key) => {
     const raw = e.target.value.replace(/[^0-9]/g, '');
     form[key] = raw ? parseInt(raw, 10) : 0;
@@ -28,9 +36,31 @@ watch(
 
         if (newVal !== oldVal) {
             form.clientManager = null;
+            form.campaign = null;
         }
     },
 );
+
+const showInfluencerButton = computed(() => {
+    return route.path.includes('revenue');
+});
+
+const initializeInfluencerContents = () => {
+    if (!form.influencerList) return;
+
+    form.influencerContents = form.influencerList.map((influencer) => {
+        const youtube = influencer.youtubeLink?.trim();
+        const instagram = influencer.instagramLink?.trim();
+
+        return {
+            influencerId: influencer.influencerId,
+            name: influencer.influencerName,
+            platform: youtube ? 'youtube' : instagram ? 'instagram' : null,
+            url: youtube || instagram || '',
+            adPrice: influencer.adPrice ?? 0,
+        };
+    });
+};
 
 const openSearchPopup = (key, type) => {
     currentFieldKey.value = key;
@@ -43,7 +73,9 @@ const openSearchPopup = (key, type) => {
     const queryParams = new URLSearchParams({
         type,
         selected,
-        ...(type === 'manager' && clientCompanyId ? { clientCompanyId } : {}),
+        ...((type === 'manager' || type === 'pipeline') && clientCompanyId
+            ? { clientCompanyId }
+            : {}),
     });
 
     const popup = window.open(
@@ -53,11 +85,18 @@ const openSearchPopup = (key, type) => {
     );
 
     window.handleUserSelect = (selectedItem) => {
-        console.log(selectedItem);
         form[currentFieldKey.value] = selectedItem;
         popup.close();
     };
 };
+
+watch(
+    () => form.influencerList,
+    () => {
+        initializeInfluencerContents();
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -115,7 +154,10 @@ const openSearchPopup = (key, type) => {
                         />
 
                         <!-- 검색 팝업 -->
-                        <div v-else-if="field.type?.startsWith('search-')" class="flex gap-2">
+                        <div
+                            v-else-if="field.type?.startsWith('search-')"
+                            class="flex gap-2 items-center"
+                        >
                             <input
                                 type="text"
                                 :value="
@@ -134,6 +176,27 @@ const openSearchPopup = (key, type) => {
                             >
                                 검색
                             </button>
+
+                            <!-- 인플루언서 전용 컨텐츠 입력 버튼 -->
+                            <button
+                                v-if="field.key === 'influencer' && showInfluencerButton"
+                                type="button"
+                                class="btn-create"
+                                @click="
+                                    form.showInfluencerContentInput =
+                                        !form.showInfluencerContentInput
+                                "
+                            >
+                                {{
+                                    !isEditing
+                                        ? form.showInfluencerContentInput
+                                            ? '닫기'
+                                            : '컨텐츠 보기'
+                                        : form.showInfluencerContentInput
+                                          ? '입력 닫기'
+                                          : '컨텐츠 입력하기'
+                                }}
+                            </button>
                         </div>
 
                         <!-- 날짜 입력 -->
@@ -146,22 +209,22 @@ const openSearchPopup = (key, type) => {
                         />
 
                         <!-- 컨텐츠 입력 버튼 -->
-                        <div v-else-if="field.type === 'platform'" class="w-full">
-                            <button
-                                type="button"
-                                class="w-full h-[36px] text-sm font-semibold rounded-[8px] shadow transition bg-blue-500 text-white"
-                                @click="
-                                    form.showInfluencerContentInput =
-                                        !form.showInfluencerContentInput
-                                "
-                            >
-                                {{
-                                    form.showInfluencerContentInput
-                                        ? '입력 닫기'
-                                        : '컨텐츠 입력하기'
-                                }}
-                            </button>
-                        </div>
+                        <!--                        <div v-else-if="field.type === 'platform'" class="w-full">-->
+                        <!--                            <button-->
+                        <!--                                type="button"-->
+                        <!--                                class="w-full h-[36px] text-sm font-semibold rounded-[8px] shadow transition bg-blue-500 text-white"-->
+                        <!--                                @click="-->
+                        <!--                                    form.showInfluencerContentInput =-->
+                        <!--                                        !form.showInfluencerContentInput-->
+                        <!--                                "-->
+                        <!--                            >-->
+                        <!--                                {{-->
+                        <!--                                    form.showInfluencerContentInput-->
+                        <!--                                        ? '입력 닫기'-->
+                        <!--                                        : '컨텐츠 입력하기'-->
+                        <!--                                }}-->
+                        <!--                            </button>-->
+                        <!--                        </div>-->
 
                         <!-- 기본 텍스트 입력 -->
                         <input
@@ -190,8 +253,8 @@ const openSearchPopup = (key, type) => {
                         >
                             <div class="font-semibold">{{ item.name }}</div>
 
+                            <!-- 플랫폼 선택 버튼 -->
                             <div class="flex gap-2">
-                                <!-- 유튜브 버튼 -->
                                 <button
                                     type="button"
                                     :disabled="!isEditing"
@@ -206,7 +269,6 @@ const openSearchPopup = (key, type) => {
                                     유튜브
                                 </button>
 
-                                <!-- 인스타그램 버튼 -->
                                 <button
                                     type="button"
                                     :disabled="!isEditing"
@@ -230,13 +292,24 @@ const openSearchPopup = (key, type) => {
                                 </button>
                             </div>
 
-                            <input
-                                v-model="item.url"
-                                :readonly="!isEditing"
-                                type="text"
-                                placeholder="컨텐츠 URL 입력"
-                                class="input-form-box w-full"
-                            />
+                            <!-- URL + 단가 입력 -->
+                            <div class="flex gap-2">
+                                <input
+                                    v-model="item.url"
+                                    :readonly="!isEditing"
+                                    type="text"
+                                    placeholder="컨텐츠 URL 입력"
+                                    class="input-form-box flex-1"
+                                />
+                                <input
+                                    type="text"
+                                    :value="formatNumber(item.adPrice)"
+                                    @input="onAdPriceInput($event, item)"
+                                    :readonly="!isEditing"
+                                    placeholder="단가 (₩)"
+                                    class="input-form-box w-[140px]"
+                                />
+                            </div>
                         </div>
                     </div>
                 </Transition>

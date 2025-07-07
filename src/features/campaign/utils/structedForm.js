@@ -1,4 +1,5 @@
-export const structuredForm = (rawForm) => {
+export const structuredForm = (rawForm, fileList = []) => {
+    console.log(rawForm);
     return {
         name: rawForm.name,
         requestAt: rawForm.requestAt,
@@ -36,12 +37,34 @@ export const structuredForm = (rawForm) => {
             name: i.influencerName,
         })),
 
+        influencerContents: rawForm.influencerList.map((i) => {
+            const youtube = i.youtubeLink?.trim();
+            const instagram = i.instagramLink?.trim();
+
+            return {
+                influencerId: i.influencerId,
+                name: i.influencerName,
+                platform: youtube ? 'youtube' : instagram ? 'instagram' : null,
+                url: youtube || instagram || '',
+                adPrice: i.adPrice ?? 0,
+            };
+        }),
+
         // 기타 수치 필드
         price: rawForm.expectedRevenue,
         supplyAmount: rawForm.availableQuantity,
         extraProfit: rawForm.expectedProfit,
+        productPrice: rawForm.productPrice,
+        salesQuantity: rawForm.salesQuantity,
 
         // 상태 (select 박스)
         status: rawForm.pipelineStatusId,
+
+        // 파일
+        attachment: (fileList || []).map((f) => ({
+            id: f.fileId,
+            name: f.fileName,
+            key: f.fileKey,
+        })),
     };
 };
