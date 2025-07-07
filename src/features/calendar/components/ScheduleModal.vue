@@ -21,6 +21,22 @@ const colors = [
   '#60a5fa', '#6366f1', '#a855f7', '#00FBFF'
 ]
 
+const colorIdMap = {
+    '#f87171': 1,
+    '#f97316': 2,
+    '#facc15': 3,
+    '#4ade80': 4,
+    '#22d3ee': 5,
+    '#60a5fa': 6,
+    '#6366f1': 7,
+    '#a855f7': 8,
+    '#00FBFF': 9
+}
+
+function getScheduleColorIdFromColorCode(hex) {
+    return colorIdMap[hex]
+}
+
 watch(
   () => props.eventData,
   async (event) => {
@@ -48,18 +64,20 @@ function submit() {
     }
 
     if (startTime.value >= endTime.value) {
-    alert('시작 시간은 종료 시간보다 빠르거나 같을 수 없습니다.')
-    return
-  }
+        alert('시작 시간은 종료 시간보다 빠르거나 같을 수 없습니다.')
+        return
+    }
 
-  emit('save', {
-      content: content.value,
-    start: `${props.date}T${startTime.value}`,
-    end: `${props.date}T${endTime.value}`,
-    backgroundColor: backgroundColor.value
-  })
-  toast.success(`반영되었습니다.`)
-  emit('close')
+    emit('save', {
+        content: content.value,
+        scheduleDate: props.date,  // "2025-07-07"
+        startTime: startTime.value + ':00', // "09:00" → "09:00:00"
+        endTime: endTime.value + ':00',
+        scheduleColorId: getScheduleColorIdFromColorCode(backgroundColor.value)
+    })
+
+    toast.success(`반영되었습니다.`)
+    emit('close')
 }
 </script>
 

@@ -8,10 +8,8 @@ export const getScheduleDetail = async (scheduleDate) => {
   return await api.get(`/calendar/schedule/${scheduleDate}/daily`)
 };
 
-export const getPipelineSchedule = async (pipelineId) => {
-    return await api.get('/calendar/schedule/pipeline', {
-        params: { pipelineId },
-    });
+export const getPipelineSchedule = async () => {
+    return await api.get('/calendar/schedule/pipeline')
 };
 
 export const postSchedule = async (data) => {
