@@ -33,7 +33,7 @@ onMounted(() => {
 
 <template>
   <div class="w-full min-h-screen bg-background flex">
-    <CommonFiltering :showFilterSort="false" ref="filterRef" />
+    <CommonFiltering :showFilterSort="false" />
     <div class="flex flex-col flex-1 container bg-white">
       <div class="page-header">
         <div class="page-title">만족도 조사</div>

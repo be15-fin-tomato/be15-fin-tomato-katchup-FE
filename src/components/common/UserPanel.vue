@@ -14,6 +14,8 @@ import {
   subscribeNotificationSse
 } from '@/features/user/api';
 import { fetchHeaderUserInfo } from '@/features/mypage/api.js';
+import { fetchChatRoomDetail } from '@/features/chat/api';
+import ChatRoom from '@/features/chat/components/ChatRoom.vue';
 
 const router = useRouter();
 const toast = useToast();
@@ -29,6 +31,15 @@ const userInfo = ref({
   position: '',
   profileImg: '',
 });
+
+onMounted(() => {
+  window.addEventListener('refresh-header-profile', getHeaderUserInfo)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('refresh-header-profile', getHeaderUserInfo)
+})
+
+const selectedChatRoom = ref(null); // ⬅️ 채팅 모달 상태
 
 const getHeaderUserInfo = async () => {
   try {
@@ -64,14 +75,25 @@ function handleClickOutside(event) {
 
 async function handleNotificationClick(index) {
   const noti = notifications.value[index];
+
   if (!noti.isRead) {
     await markNotificationAsRead(noti.id);
     noti.isRead = true;
     unreadCount.value--;
   }
 
-  const url = resolveNotificationUrl(noti.typeId, noti.targetId);
-  await router.push(url);
+  if (noti.typeId === 5) {
+    try {
+      const detail = await fetchChatRoomDetail(noti.targetId);
+      selectedChatRoom.value = detail;
+    } catch (err) {
+      console.error('채팅방 정보 조회 실패:', err);
+    }
+  } else {
+    const url = resolveNotificationUrl(noti.typeId, noti.targetId);
+    await router.push(url);
+  }
+  isNotificationOpen.value = false;
 }
 
 function resolveNotificationUrl(typeId, targetId) {
@@ -81,8 +103,6 @@ function resolveNotificationUrl(typeId, targetId) {
       return `${targetId}`;
     case 4:
       return `/calendar`;
-    case 5:
-      return `/chat/${targetId}`;
     default:
       return '/';
   }
@@ -99,6 +119,7 @@ async function clearAllNotifications() {
   await deleteAllNotifications();
   notifications.value = [];
   unreadCount.value = 0;
+  isNotificationOpen.value = false;
 }
 
 const handleLogout = async () => {
@@ -131,8 +152,8 @@ const startSse = () => {
         content: data.message,
         typeId: data.typeId,
         targetId: data.targetId,
-        isRead: false, // 새로 받은 알림은 항상 '안 읽음' 상태
-        createdAt: formatDateTime(new Date()), // 받은 시각을 프론트에서 생성
+        isRead: false,
+        createdAt: formatDateTime(new Date()),
       });
       unreadCount.value++;
     },
@@ -180,7 +201,7 @@ onBeforeUnmount(() => {
       <!-- 알림 -->
       <div class="relative cursor-pointer">
         <button @click.stop="toggleNotification">
-          <img src="@/assets/icons/alarm.svg" alt="알림" class="w-6 h-6 relative top-[4px]" />
+          <img src="@/assets/icons/alarm.svg" alt="알림" class="cursor-pointer w-6 h-6 relative top-[4px]" />
         </button>
         <span
           v-if="unreadCount > 0"
@@ -233,4 +254,10 @@ onBeforeUnmount(() => {
       </button>
     </div>
   </div>
+
+  <ChatRoom
+    v-if="selectedChatRoom"
+    :room="selectedChatRoom"
+    @close="selectedChatRoom = null"
+  />
 </template>

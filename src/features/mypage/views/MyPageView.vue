@@ -76,6 +76,7 @@ const saveEdit = async (field) => {
       toast.success('계정 정보가 수정되었습니다.')
     }
     editField.value = null
+    window.dispatchEvent(new Event('refresh-header-profile'))
   } catch (err) {
     toast.error('수정에 실패했습니다.')
     console.error(err)
@@ -207,7 +208,7 @@ onMounted(() => {
               <!-- 이미지 -->
               <div class="w-12 h-12 rounded-full overflow-hidden border border-gray-200">
                 <img
-                  :src="form.profileImg || '/src/assets/icons/default-profile.svg'"
+                  :src="form.profileImg"
                   alt="profile"
                   class="w-full h-full object-cover"
                 />
