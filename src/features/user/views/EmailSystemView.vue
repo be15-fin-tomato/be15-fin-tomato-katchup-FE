@@ -8,6 +8,7 @@ import { fetchSatisfactionList } from '@/features/user/api';
 const currentPage = ref(1);
 const pageSize = 6;
 const totalPages = ref(0);
+const totalCount = ref(0);
 const emailList = ref([]);
 
 const searchModel = ref({
@@ -29,6 +30,7 @@ const loadEmailList = async () => {
     });
     emailList.value = data.data.campaignSatisfaction;
     totalPages.value = data.data.pagination.totalPage;
+    totalCount.value = data.data.pagination.totalCount;
   } catch (err) {
     console.error('만족도 조회 실패', err);
   }
@@ -54,7 +56,11 @@ onMounted(() => {
 
     <div class="flex flex-col flex-1 container bg-white">
       <div class="page-header">
-        <div class="page-title">만족도 조사</div>
+        <div class="page-title">만족도 조사
+          <span class="cnt-search  text-gray-500">
+            (검색 결과: {{ totalCount }}건)
+          </span>
+        </div>
       </div>
       <div class="blue-line"></div>
 
