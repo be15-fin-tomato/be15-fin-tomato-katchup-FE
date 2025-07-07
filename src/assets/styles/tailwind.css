@@ -102,7 +102,7 @@
 
   /* 팝업 여는 버튼 */
   .btn-open-popup {
-    @apply px-3 py-1 bg-btn-open-popup text-white rounded hover:brightness-95 active:brightness-90 transition cursor-pointer;
+    @apply px-3 py-2 bg-btn-open-popup text-white rounded hover:brightness-95 active:brightness-90 transition cursor-pointer;
   }
 
   /* === 페이지 상단 타이틀 === */

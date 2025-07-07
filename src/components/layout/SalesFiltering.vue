@@ -22,13 +22,13 @@
             <!-- 담당자 -->
             <div class="flex mb-2">
                 <input
-                    :value="localValue.manager?.name ?? ''"
+                    :value="localValue.user?.name ?? ''"
                     placeholder="담당자"
                     class="input-form-box flex-1"
                     readonly
                 />
                 <button
-                    @click="openManagerSearch"
+                    @click="openUserSearch"
                     type="button"
                     class="ml-1 px-2 bg-gray-200 rounded text-sm"
                 >
@@ -88,26 +88,42 @@ const emit = defineEmits(['update:modelValue', 'search']);
 const localValue = reactive({ ...(props.modelValue ?? defaultSearch()) });
 
 watch(localValue, (val) => {
-    emit('update:modelValue', val);
+    const modelValue = {
+        category: val.category,
+        keyword: val.keyword,
+        userId: val.userId,
+        filter: val.filter,
+        sort: val.sort,
+        sortOrder: val.sortOrder,
+    };
+    emit('update:modelValue', modelValue);
 });
 
 const emitSearch = () => {
-    emit('search', localValue);
+    const searchParams = {
+        category: localValue.category,
+        keyword: localValue.keyword,
+        userId: localValue.userId,
+        filter: localValue.filter,
+        sort: localValue.sort,
+        sortOrder: localValue.sortOrder,
+    };
+    emit('search', searchParams);
 };
-
 const toggleSortOrder = () => {
     localValue.sortOrder = localValue.sortOrder === 'asc' ? 'desc' : 'asc';
 };
 
-const openManagerSearch = () => {
+const openUserSearch = () => {
     const popup = window.open(
-        `/search-popup?type=manager&selected=${localValue.manager?.id ?? ''}`,
+        `/search-popup?type=one-user&selected=${localValue.user?.id ?? ''}`,
         'SearchPopup',
         'width=500,height=600',
     );
 
     window.handleUserSelect = (selectedItem) => {
-        localValue.manager = selectedItem;
+        localValue.userId = selectedItem.id;
+        localValue.user = selectedItem;
         popup.close();
     };
 };
@@ -116,7 +132,7 @@ function defaultSearch() {
     return {
         category: '',
         keyword: '',
-        manager: null,
+        userId: null,
         filter: '',
         sort: 'date',
         sortOrder: 'asc',

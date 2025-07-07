@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {
     getUser,
@@ -27,7 +27,7 @@ const fetchData = async () => {
     searchKeyword.value = (searchKeyword.value || '').trim();
 
     try {
-        if (type === 'user') {
+        if (type === 'user' || type === 'one-user') {
             res = await getUser(searchKeyword.value);
             allItems.value = res.data.data.userList;
         } else if (type === 'company') {
@@ -41,7 +41,8 @@ const fetchData = async () => {
             res = await getInfluencer(searchKeyword.value);
             allItems.value = res.data.data.influencerList;
         } else if (type === 'pipeline') {
-            res = await getPipeline(searchKeyword.value);
+            const clientCompanyId = route.query.clientCompanyId ?? null;
+            res = await getPipeline(clientCompanyId, searchKeyword.value);
             allItems.value = res.data.data.campaignList;
         } else if (type === 'email') {
             res = await getUserNameAndEmail();

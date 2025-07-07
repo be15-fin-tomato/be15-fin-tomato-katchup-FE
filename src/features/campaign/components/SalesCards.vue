@@ -79,9 +79,15 @@
                 <div class="truncate">발표일 : {{ formatDate(managementOption.presentAt) }}</div>
             </template>
 
-            <template v-else-if="['quotation', 'contract', 'revenue'].includes(pageType)">
+            <template v-else-if="['quotation', 'contract'].includes(pageType)">
                 <div class="truncate">
                     예상매출 : {{ formatMoney(managementOption.expectedRevenue) }}
+                </div>
+            </template>
+
+            <template v-else-if="['revenue'].includes(pageType)">
+                <div class="truncate">
+                    총 광고료 : {{ formatMoney(managementOption.totalAdPrice) }}
                 </div>
             </template>
 
