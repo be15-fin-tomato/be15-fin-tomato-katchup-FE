@@ -40,7 +40,7 @@ const getMyAccount = async () => {
     form.email = data.email
     form.birth = data.date?.slice(0, 10)
     form.gender = data.gender === 'F' ? '남성' : data.gender === 'M' ? '여성' : ''
-    form.profileImg = data.fileRoute || ''
+    form.profileImg = data.fileRoute || '/tomato.png'
   } catch (err) {
     console.error('계정 정보 조회 실패', err)
   }
@@ -52,7 +52,7 @@ const getMyInfluencers = async () => {
     influencers.value = res.data.data.userInfluencerList.map(item => ({
       id: item.influencerId,
       name: item.name,
-      img: item.imageUrl || '/src/assets/icons/default-profile.svg'
+      img: item.imageUrl || '/tomato.png'
     }))
   } catch (err) {
     console.error('인플루언서 목록 조회 실패', err)
@@ -76,6 +76,7 @@ const saveEdit = async (field) => {
       toast.success('계정 정보가 수정되었습니다.')
     }
     editField.value = null
+    window.dispatchEvent(new Event('refresh-header-profile'))
   } catch (err) {
     toast.error('수정에 실패했습니다.')
     console.error(err)
@@ -207,7 +208,7 @@ onMounted(() => {
               <!-- 이미지 -->
               <div class="w-12 h-12 rounded-full overflow-hidden border border-gray-200">
                 <img
-                  :src="form.profileImg || '/src/assets/icons/default-profile.svg'"
+                  :src="form.profileImg"
                   alt="profile"
                   class="w-full h-full object-cover"
                 />

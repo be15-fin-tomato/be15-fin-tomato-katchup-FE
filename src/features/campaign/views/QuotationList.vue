@@ -44,9 +44,9 @@ const fetchQuotationList = async () => {
         // quotationList.value = [];
         const res = await getQuotationList(page.value, size.value, searchFilters.value);
         quotationList.value = [...res.data.data.response];
-        total.value = res.data.total;
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
-        console.error(e);
+        toast.error(e.response.data.message);
     }
 };
 

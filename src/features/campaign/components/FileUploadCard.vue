@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
+import { downloadFile } from '@/features/campaign/api.js';
 
 const props = defineProps({
     modelValue: { type: Array, default: () => [] },
@@ -38,18 +39,41 @@ const handleRemove = (index) => {
     emit('update:modelValue', files.value);
 };
 
-const handleDownload = (fileObj) => {
-    const blobUrl = URL.createObjectURL(fileObj.file);
+const handleDownload = async (fileObj) => {
+    if (fileObj.file) {
+        // 로컬에서 업로드된 파일
+        const blobUrl = URL.createObjectURL(fileObj.file);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileObj.name;
+        link.click();
+        URL.revokeObjectURL(blobUrl);
+    } else if (fileObj.key) {
+        // 서버에서 다운로드
+        try {
+            const res = await downloadFile(fileObj.key);
+            const blob = new Blob([res.data], { type: res.headers['content-type'] });
+            const url = window.URL.createObjectURL(blob);
 
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = fileObj.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(blobUrl);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = decodeURIComponent(
+                getFileNameFromHeader(res.headers['content-disposition']) || fileObj.name,
+            );
+            link.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('파일 다운로드 실패:', err);
+        }
+    }
 };
+
+function getFileNameFromHeader(disposition) {
+    if (!disposition) return null;
+    const filenameRegex = /filename\*=UTF-8''(.+)|filename="(.+)"/;
+    const matches = filenameRegex.exec(disposition);
+    return decodeURIComponent(matches?.[1] || matches?.[2] || '');
+}
 </script>
 
 <template>
