@@ -11,19 +11,23 @@
     </div>
 
     <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4 bg-[#f8fafc]">
-      <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        :class="['flex flex-col', msg.mine ? 'items-end ml-auto pr-2' : 'items-start']"
-      >
-        <span class="text-xs text-gray-400 mb-1">
-          {{ msg.mine ? 'ME' : msg.senderName }} ·
-          {{ new Date(msg.sentAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) }}
-        </span>
+      <div v-for="(msg, index) in formattedMessages" :key="index">
+        <div v-if="shouldShowDateDivider(msg, index)" class="text-center text-xs text-gray-500 my-2">
+          {{ msg.formattedDate }}
+        </div>
+
         <div
-          :class="['px-4 py-2 rounded-xl text-sm whitespace-pre-wrap', msg.mine ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800']"
+          :class="['flex flex-col', msg.mine ? 'items-end ml-auto pr-2' : 'items-start']"
         >
-          {{ msg.message }}
+          <span class="text-xs text-gray-400 mb-1">
+            {{ msg.mine ? 'ME' : msg.senderName }} ·
+            {{ msg.formattedTime }}
+          </span>
+          <div
+            :class="['px-4 py-2 rounded-xl text-sm whitespace-pre-wrap', msg.message === null ? 'hidden' : '', msg.mine ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800']"
+          >
+            {{ msg.message }}
+          </div>
         </div>
       </div>
     </div>
@@ -74,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
@@ -114,6 +118,61 @@ const currentMemberIds = computed(() => {
   return [];
 });
 
+const formatMessageTime = (isoString) => {
+  if (!isoString) return { formattedDate: '', formattedTime: '' };
+
+  const messageDate = new Date(isoString);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const yesterdayDay = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+
+  let datePrefix = '';
+  if (messageDay.getTime() === todayDay.getTime()) {
+    datePrefix = '오늘';
+  } else if (messageDay.getTime() === yesterdayDay.getTime()) {
+    datePrefix = '어제';
+  } else {
+    datePrefix = `${messageDate.getFullYear()}년 ${messageDate.getMonth() + 1}월 ${messageDate.getDate()}일`;
+  }
+
+  let hours = messageDate.getHours();
+  const minutes = messageDate.getMinutes();
+  const ampm = hours >= 12 ? '오후' : '오전';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+  return {
+    formattedDate: datePrefix,
+    formattedTime: `${ampm} ${hours}:${formattedMinutes}`
+  };
+};
+
+const formattedMessages = computed(() => {
+  return messages.value.map(msg => {
+    const { formattedDate, formattedTime } = formatMessageTime(msg.sentAt);
+    return {
+      ...msg,
+      formattedDate,
+      formattedTime,
+      mine: msg.senderId === currentUserId.value,
+    };
+  });
+});
+
+const shouldShowDateDivider = (currentMsg, index) => {
+  if (index === 0) {
+    return true;
+  }
+  const prevMsg = formattedMessages.value[index - 1];
+  return currentMsg.formattedDate !== prevMsg.formattedDate;
+};
+
+
 const fetchMessages = async () => {
   try {
     const data = await fetchChatRoomDetail(props.room.chatId)
@@ -121,6 +180,8 @@ const fetchMessages = async () => {
       ...m,
       mine: m.senderId === currentUserId.value,
     }))
+    await nextTick();
+    scrollToBottom();
   } catch (err) {
     console.error('채팅방 메시지 불러오기 실패:', err)
   }
@@ -144,6 +205,9 @@ const connectWebSocket = () => {
           ...body,
           mine: body.senderId === currentUserId.value,
         })
+        nextTick(() => {
+          scrollToBottom();
+        });
       })
     },
     onStompError: (frame) => {
@@ -173,9 +237,12 @@ const sendMessage = () => {
 
   newMessage.value = ''
   attachedFile.value = null
+
+  nextTick(() => {
+    scrollToBottom();
+  });
 }
 
-// 초대 완료 시 처리
 const handleInvite = async (invitedIds) => {
   try {
     await inviteChatMembers(props.room.chatId, invitedIds)
@@ -222,17 +289,24 @@ const handleFileChange = async (e) => {
 
 const loadAllUsers = async () => {
   try {
-    const res = await searchUser('') // 빈 문자열로 모든 사용자 검색
+    const res = await searchUser('')
     allUsers.value = res.userList
   } catch (err) {
     console.error('사용자 목록 불러오기 실패:', err)
   }
 }
 
+const scrollToBottom = () => {
+  const messageList = document.querySelector('.flex-1.overflow-y-auto');
+  if (messageList) {
+    messageList.scrollTop = messageList.scrollHeight;
+  }
+};
+
 onMounted(() => {
   fetchMessages()
   connectWebSocket()
-  loadAllUsers() // 컴포넌트 마운트 시 모든 사용자 목록 불러오기
+  loadAllUsers()
 })
 
 onBeforeUnmount(() => {
