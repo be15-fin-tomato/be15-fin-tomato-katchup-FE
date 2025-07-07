@@ -36,6 +36,13 @@ const salesActivity = ref({
   campaign: 0
 });
 
+
+const sortedEventList = computed(() =>
+    [...eventList.value].sort((a, b) => {
+        return a.startTime.localeCompare(b.startTime);
+    })
+);
+
 const fetchSalesActivityData = async () => {
   try {
     const res = await fetchSalesActivity();
@@ -183,24 +190,25 @@ const goToCalendar = () => {
                     </div>
                 </div>
             </div>
+
             <!-- 일정 정보 -->
             <div class="dashboard-section w-1/3">
                 <h2 class="text-xl font-bold">일정</h2>
                 <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full max-h-[200px] overflow-y-auto"></div>
-                    <ul>
-                        <li
-                            v-for="(event, index) in eventList"
-                            :key="index"
-                            class="flex items-center gap-2 py-0.5 border border-gray-medium rounded p-3 mb-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToCalendar"
-                        >
-                            <div class="w-2 h-5 rounded-sm" :style="{ backgroundColor: event.hexCode || event.hexCode }"></div>
-                            <span class="text-gray-medium">{{ event.startTime.slice(0, 5) }} ~</span>
-                            <span class="text-gray-medium">{{ event.endTime.slice(0, 5) }}</span>
-                            <span>{{ event.content }}</span>
-                        </li>
-                      </ul>
-                </div>
+                <ul>
+                    <li
+                        v-for="(event, index) in sortedEventList"
+                        :key="index"
+                        class="flex items-center gap-2 py-0.5 border border-gray-medium rounded p-3 mb-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                        @click="goToCalendar"
+                    >
+                        <div class="w-2 h-5 rounded-sm" :style="{ backgroundColor: event.hexCode || event.hexCode }"></div>
+                        <span class="text-gray-medium">{{ event.startTime.slice(0, 5) }} ~</span>
+                        <span class="text-gray-medium">{{ event.endTime.slice(0, 5) }}</span>
+                        <span>{{ event.content }}</span>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div class="flex gap-5">
