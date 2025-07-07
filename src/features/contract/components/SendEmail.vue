@@ -9,7 +9,7 @@ const props = defineProps({
   email: String,
   title: Object, // selectedSmall 객체 전체
   initialContent: String,
-  initialFile: Object, // 새로 추가된 prop: selectedSmall.file (파일 메타데이터 객체)
+  initialFile: Object, // 첨부 파일 메타데이터 객체 (fileUrl 또는 filePath 포함 가정)
 });
 
 const editorContent = ref('');
@@ -25,11 +25,27 @@ const form = ref({
 
 const attachedFile = ref(null); // 실제 File 객체 또는 파일 메타데이터 객체
 const fileInput = ref(null);
+const loadingFile = ref(false); // 파일 다운로드 로딩 상태
+
+// props.name이 변경될 때마다 로컬 name ref 업데이트
+watch(() => props.name, (newName) => {
+  name.value = newName || '';
+}, { immediate: true });
+
+// props.email이 변경될 때마다 로컬 email ref 업데이트
+watch(() => props.email, (newEmail) => {
+  email.value = newEmail || '';
+  if (newEmail) {
+    form.value.email = { email: newEmail };
+  } else {
+    form.value.email = null;
+  }
+}, { immediate: true });
 
 // props.title (selectedSmall)이 변경될 때마다 이메일 제목을 업데이트
 watch(() => props.title, (newTitle) => {
   if (newTitle && newTitle.name) {
-    title.value = `[계약서] ${newTitle.name}`; // 이메일 제목에 계약서명 반영
+    title.value = `[계약서] ${newTitle.name}`;
   } else {
     title.value = '';
   }
@@ -40,12 +56,34 @@ watch(() => props.initialContent, (newContent) => {
   editorContent.value = newContent || '';
 }, { immediate: true });
 
-// props.initialFile이 변경될 때마다 attachedFile을 업데이트
-watch(() => props.initialFile, (newFile) => {
-  if (newFile) {
-    // initialFile은 File 객체가 아닌 파일 메타데이터 객체일 가능성이 높습니다.
-    // UI에 표시하기 위해 그대로 할당합니다.
-    attachedFile.value = newFile;
+// props.initialFile이 변경될 때마다 해당 파일을 다운로드하여 attachedFile에 할당
+watch(() => props.initialFile, async (newFile) => {
+  if (newFile && (newFile.fileUrl || newFile.filePath)) { // fileUrl 또는 filePath가 있는지 확인
+    loadingFile.value = true;
+    try {
+      const fileDownloadUrl = newFile.fileUrl || newFile.filePath;
+      if (!fileDownloadUrl) {
+        throw new Error('첨부 파일 다운로드 URL이 없습니다.');
+      }
+
+      const response = await fetch(fileDownloadUrl);
+      if (!response.ok) {
+        throw new Error(`파일 다운로드 실패: ${response.status} ${response.statusText}`);
+      }
+      const blob = await response.blob();
+
+      const mimeType = newFile.mimeType || response.headers.get('Content-Type') || 'application/octet-stream';
+
+      attachedFile.value = new File([blob], newFile.originalName, { type: mimeType });
+      console.log('첨부 파일 성공적으로 로드:', attachedFile.value);
+
+    } catch (error) {
+      console.error('템플릿 첨부 파일 로드 중 오류 발생:', error);
+      alert('템플릿 첨부 파일을 불러오는 데 실패했습니다. 파일을 다시 첨부하거나 직접 선택해주세요.');
+      attachedFile.value = null;
+    } finally {
+      loadingFile.value = false;
+    }
   } else {
     attachedFile.value = null;
   }
@@ -82,7 +120,7 @@ const triggerFileInput = () => {
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   if (file) {
-    attachedFile.value = file; // 사용자가 새로 파일을 선택하면 실제 File 객체로 업데이트
+    attachedFile.value = file;
   } else {
     attachedFile.value = null;
   }
@@ -95,7 +133,35 @@ const removeAttachedFile = () => {
   }
 };
 
+// Quill 에디터 내용이 비어있는지 확인하는 헬퍼 함수
+const isQuillContentEffectivelyEmpty = (htmlContent) => {
+  if (!htmlContent) return true;
+
+  const textContent = htmlContent.replace(/<[^>]*>/g, '').trim();
+  if (textContent.length > 0) return false;
+
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlContent;
+  const hasMeaningfulEmbeds = tempDiv.querySelector('img, a[href]');
+
+  return !hasMeaningfulEmbeds;
+};
+
+// editorContent의 변화를 감지하는 watch 추가 (디버깅용)
+watch(editorContent, (newValue) => {
+  console.log('editorContent changed in SendEmail.vue:', newValue);
+});
+
+
 const sendEmail = async () => {
+  console.log("--- 전송 버튼 클릭됨 ---");
+  console.log("수신자 이메일:", form.value.email?.email);
+  console.log("제목:", title.value);
+  console.log("Quill Editor 내용 (HTML):", editorContent.value); // 이 값을 확인해주세요.
+  console.log("첨부 파일:", attachedFile.value); // 이 값을 확인해주세요.
+  console.log("-----------------------");
+
+
   if (!form.value.email?.email.trim()) {
     alert('수신자 이메일을 선택하거나 입력해주세요.');
     return;
@@ -104,7 +170,9 @@ const sendEmail = async () => {
     alert('이메일 제목을 입력해주세요.');
     return;
   }
-  if (!editorContent.value.trim()) {
+
+  // Quill 에디터 내용 유효성 검사 강화
+  if (isQuillContentEffectivelyEmpty(editorContent.value)) {
     alert('이메일 내용을 입력해주세요.');
     return;
   }
@@ -115,15 +183,12 @@ const sendEmail = async () => {
     targetEmail: form.value.email.email,
   };
 
-  // attachedFile.value가 실제 File 객체인지 확인하여 API에 전달
-  // 만약 initialFile로 받은 메타데이터 객체라면 전송하지 않도록 합니다.
   const fileToUpload = attachedFile.value instanceof File ? attachedFile.value : null;
 
   try {
     const response = await sendContractEmail(requestData, fileToUpload);
     if (response.success) {
       alert('이메일이 성공적으로 전송되었습니다.');
-      // 전송 후 필드 초기화
       name.value = '';
       email.value = '';
       title.value = '';
@@ -147,6 +212,7 @@ const sendEmail = async () => {
   <div class="border border-gray-dark rounded-lg bg-white p-6 mt-6">
     <h3 class="font-bold text-lg mb-4">이메일 전송</h3>
 
+    <!-- 이름 -->
     <div class="mb-4 flex items-center gap-2">
       <label class="w-[76px] font-semibold">이름</label>
       <input
@@ -157,6 +223,7 @@ const sendEmail = async () => {
       />
     </div>
 
+    <!-- 이메일 -->
     <div class="mb-4 flex items-center gap-2">
       <label class="w-[75px] font-semibold">이메일</label>
       <input
@@ -174,16 +241,23 @@ const sendEmail = async () => {
       </button>
     </div>
 
+    <!-- 제목 -->
     <div class="mb-4 flex items-start gap-2">
       <label class="w-[75px] font-semibold">제목</label>
       <input type="text" v-model="title" class="input-form-box flex-1 border-gray-dark" />
     </div>
 
+    <!-- 내용 (QuillEditor) -->
     <div class="mb-4 flex items-start gap-2">
       <label class="w-[75px] font-semibold pt-2">내용</label>
       <div class="flex-1">
-        <QuillEditor v-model:content="editorContent" />
+        <!-- QuillEditor 바인딩 방식 변경 -->
+        <QuillEditor
+          :content="editorContent"
+          @update:content="editorContent = $event"
+        />
 
+        <!-- 파일 첨부 섹션 -->
         <div class="flex items-center gap-2 mt-4">
           <button
             @click="triggerFileInput"
@@ -192,6 +266,7 @@ const sendEmail = async () => {
           >
             <Icon icon="codex:file" class="inline-block mr-1" /> 파일 첨부
           </button>
+          <!-- 실제 파일 입력 필드 (숨김) -->
           <input
             type="file"
             ref="fileInput"
@@ -200,7 +275,9 @@ const sendEmail = async () => {
             accept="*/*"
           />
 
-          <span v-if="attachedFile" class="text-gray-700 text-sm">
+          <!-- 첨부된 파일 이름 표시 및 삭제 버튼 -->
+          <span v-if="loadingFile" class="text-gray-500 text-sm">첨부파일 로드 중...</span>
+          <span v-else-if="attachedFile" class="text-gray-700 text-sm">
                         <!-- initialFile이 File 객체가 아닐 경우 originalName을 사용 -->
                         {{ attachedFile.name || attachedFile.originalName }}
                         <button @click="removeAttachedFile" class="text-xs text-red-500 ml-1 hover:underline">삭제</button>
