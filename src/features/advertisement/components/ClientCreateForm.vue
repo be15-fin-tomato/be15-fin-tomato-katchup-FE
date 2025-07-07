@@ -14,7 +14,7 @@ const form = reactive({
   employeeCount: '',
   businessNumber: '',
   note: '',
-  status: '시작전',
+  status: '',
   phone: '',
   fax: '',
   user: [],
@@ -43,13 +43,10 @@ watch(() => form.name, (newVal) => {
   newEmployee.client = newVal;
 });
 
-// expose 메서드
 const statusMap = {
-  '시작전': 1,
-  '진행중': 2,
-  '종료': 3,
-  '보류': 4,
-  '거절': 5,
+  '잠재': 1,
+  '기존': 2,
+  '신규': 3,
   '재직': 1,
   '휴직': 2,
   '퇴직': 3,
@@ -170,7 +167,7 @@ const editEmployee = (index) => {
         <div class="flex flex-col gap-2.5">
           <!-- 왼쪽 필드 -->
           <label class="input-form-label">
-            광고업체명 <span class="text-red-500 ml-1">*</span>
+            고객사명 <span class="text-red-500 ml-1">*</span>
           </label>
           <input class="input-form-box" v-model="form.name" :disabled="!isEditing" />
           <label class="input-form-label">매출</label>
@@ -191,14 +188,13 @@ const editEmployee = (index) => {
         <div class="flex flex-col gap-2.5">
           <!-- 오른쪽 필드 -->
           <label class="input-form-label">
-            진행 상태 <span class="text-red-500 ml-1">*</span>
+            고객사 상태 <span class="text-red-500 ml-1">*</span>
           </label>
           <select class="input-form-box" v-model="form.status" :disabled="!isEditing">
-            <option value="시작전">시작전</option>
-            <option value="진행중">진행중</option>
-            <option value="종료">종료</option>
-            <option value="보류">보류</option>
-            <option value="거절">거절</option>
+            <option disabled value="">-- 상태를 선택하세요 --</option>
+            <option value="잠재">잠재</option>
+            <option value="기존">기존</option>
+            <option value="신규">신규</option>
           </select>
           <label class="input-form-label">유선번호</label>
           <input class="input-form-box" v-model="form.phone" :disabled="!isEditing" />
