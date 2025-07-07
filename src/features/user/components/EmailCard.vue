@@ -23,8 +23,13 @@ const toast = useToast();
 const scoreList = ref([]);
 const totalScore = ref(0);
 const comment = ref('');
+const isRequesting = ref(false);
+const isFetching = ref(false);
 
 const requestSatisfaction = async () => {
+  if (isRequesting.value) return;
+  isRequesting.value = true;
+
   try {
     await sendSatisfactionRequest(props.emailList.satisfaction_id);
     toast.success('만족도 조사 요청 이메일이 전송되었습니다.');
@@ -33,11 +38,14 @@ const requestSatisfaction = async () => {
   } catch (err) {
     console.error('요청 실패', err);
     toast.error(err.response?.data?.message || '요청 중 오류가 발생했습니다.');
+  } finally {
+    isRequesting.value = false;
   }
 };
 
 const handleClick = async () => {
-  if (props.emailList.email_status === 'N') return;
+  if (props.emailList.email_status === 'N' || isFetching.value) return;
+  isFetching.value = true;
 
   try {
     await saveSatisfactionResult(props.emailList.satisfaction_id);
@@ -57,8 +65,11 @@ const handleClick = async () => {
   } catch (err) {
     console.error('평가 조회 실패', err);
     toast.error(err.response?.data?.message || '아직 만족도 조사를 진행하지 않았습니다.');
+  } finally {
+    isFetching.value = false;
   }
 };
+
 </script>
 
 <template>
@@ -97,36 +108,39 @@ const handleClick = async () => {
     <!-- 우측 -->
     <div class="flex justify-center items-end">
       <div class="flex flex-col items-end gap-5">
+        <!-- 요청 버튼 -->
         <button
           @click="requestSatisfaction"
-          :disabled="emailList.email_status === 'Y'"
+          :disabled="emailList.email_status === 'Y' || isRequesting"
           :class="[
-            'bg-white border-2 text-sm px-1 py-3 rounded',
-            emailList.email_status === 'Y'
-              ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
-              : 'border-btn-sky hover:bg-btn-sky'
-          ]"
+        'border-2 text-sm px-2 py-3 rounded w-[160px] flex justify-center items-center gap-1',
+        emailList.email_status === 'Y' || isRequesting
+          ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+          : 'border-btn-sky hover:bg-btn-sky'
+      ]"
         >
-          만족도 평가 요청
+          <Icon v-if="isRequesting" icon="eos-icons:loading" class="animate-spin" />
+          {{ isRequesting ? '요청 중...' : '만족도 평가 요청' }}
         </button>
 
+        <!-- 조회 버튼 -->
         <button
           @click="handleClick"
-          :disabled="emailList.email_status === 'N'"
+          :disabled="emailList.email_status === 'N' || isFetching"
           :class="[
-            'bg-white border-2 text-sm px-1 py-3 rounded',
-            emailList.email_status === 'N'
-              ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
-              : 'border-btn-sky hover:bg-btn-sky'
-          ]"
+        'border-2 text-sm px-2 py-3 rounded w-[160px] flex justify-center items-center gap-1',
+        emailList.email_status === 'N' || isFetching
+          ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+          : 'border-btn-sky hover:bg-btn-sky'
+      ]"
         >
-          만족도 평가 조회
+          <Icon v-if="isFetching" icon="eos-icons:loading" class="animate-spin" />
+          {{ isFetching ? '조회 중...' : '만족도 평가 조회' }}
         </button>
       </div>
     </div>
   </div>
-
-  <SatisfactionScoreModal
+    <SatisfactionScoreModal
     v-if="showModal"
     :score-list="scoreList"
     :total-score="totalScore"
