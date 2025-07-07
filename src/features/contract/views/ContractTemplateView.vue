@@ -1,52 +1,18 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import SmallTemplateModal from '@/features/contract/components/SmallTemplateModal.vue';
 import SmallTemplateEditModal from '@/features/contract/components/SmallTemplateEditModal.vue';
 import SendEmail from '@/features/contract/components/SendEmail.vue';
-import { fetchContractObjects, createContractObject, updateContractObject, deleteContractObject } from '@/features/contract/api';
+import { fetchContractObjects, createContractObject,
+  updateContractObject, deleteContractObject, fetchContractDetails,
+  createContractDetail, updateContractDetail, deleteContractDetail
+} from '@/features/contract/api.js';
 
 
 const bigList = ref([]);
 
-const smallList = ref([
-  {
-    id: 1,
-    name: '특수 계약서',
-    parentId: 1,
-    content: '특수 계약서에 대한 상세내용',
-    createdAt: '2025-06-18',
-    active: false,
-    parentName: '계약서',
-  },
-  {
-    id: 2,
-    name: '일반 계약서',
-    parentId: 1,
-    content: '일반 계약서 설명',
-    createdAt: '2025-06-17',
-    active: false,
-    parentName: '계약서',
-  },
-  {
-    id: 3,
-    name: '제안문의 메일',
-    parentId: 2,
-    content: '제안 관련 메일',
-    createdAt: '2025-06-10',
-    active: false,
-    parentName: '이메일',
-  },
-  {
-    id: 4,
-    name: '일정조정 메일',
-    parentId: 2,
-    content: '일정 조정 메일',
-    createdAt: '2025-06-11',
-    active: false,
-    parentName: '이메일',
-  },
-]);
+const smallList = ref([]);
 
 const selectedBig = ref(null);
 const selectedSmall = ref(null);
@@ -82,16 +48,68 @@ async function fetchBigList() {
   }
 }
 
+async function fetchSmallListAndDetails(objectId, detailId = null) {
+  if (!objectId) {
+    smallList.value = [];
+    selectedSmall.value = null;
+    return;
+  }
+  try {
+    const data = await fetchContractDetails(objectId, detailId);
+    smallList.value = (data.details || []).map(item => ({
+      id: item.detailId,
+      name: item.subTitle,
+      parentId: objectId,
+      content: '',
+      createdAt: item.createdAt,
+      parentName: data.object?.title || selectedBig.value?.name
+    }));
+
+    if (data.selectedDetail) {
+      selectedSmall.value = {
+        id: data.selectedDetail.detailId,
+        name: data.selectedDetail.subTitle,
+        parentId: objectId,
+        content: data.selectedDetail.content,
+        createdAt: data.selectedDetail.createdAt,
+        updatedAt: data.selectedDetail.updatedAt,
+        parentName: data.object?.title || selectedBig.value?.name,
+        file: data.selectedDetail.file // 파일 정보도 selectedSmall에 포함되어야 합니다.
+      };
+    } else {
+      selectedSmall.value = null;
+    }
+  } catch (error) {
+    console.error(`작은 목록 및 상세 정보 (ObjectID: ${objectId}) 가져오기 실패:`, error);
+    smallList.value = [];
+    selectedSmall.value = null;
+  }
+}
+
 onMounted(() => {
   fetchBigList();
 });
+
+watch(selectedBig, (newVal) => {
+  if (newVal) {
+    fetchSmallListAndDetails(newVal.id);
+  } else {
+    smallList.value = [];
+    selectedSmall.value = null;
+  }
+}, { immediate: true });
+
+const selectSmallItem = (item) => {
+  selectedSmall.value = item;
+  fetchSmallListAndDetails(selectedBig.value.id, item.id);
+};
+
 
 function startEditBig(item) {
   editingBigId.value = item.id;
   editBigName.value = item.name;
 }
 
-// 목적 수정 API 호출 로직을 포함하도록 수정
 async function confirmEditBig(item) {
   const newName = editBigName.value.trim();
   if (!newName) {
@@ -106,7 +124,7 @@ async function confirmEditBig(item) {
   try {
     const response = await updateContractObject(item.id, newName);
     if (response.success) {
-      await fetchBigList(); // API 호출 성공 시 bigList를 새로고침하여 최신 데이터를 가져옵니다.
+      await fetchBigList();
       editingBigId.value = null;
       editBigName.value = '';
     } else {
@@ -123,34 +141,60 @@ function cancelEditBig() {
   editBigName.value = '';
 }
 
-function handleAddSmall(newItem) {
-  const parent = bigList.value.find((b) => b.id === newItem.parentId);
-  if (parent) {
-    newItem.parentName = parent.name;
+async function handleAddSmall(newItem) {
+  if (!selectedBig.value) {
+    alert('먼저 큰 종류를 선택해주세요.');
+    return;
   }
-  smallList.value.push(newItem);
-}
 
-function handleUpdateSmall(updatedItem) {
-  const index = smallList.value.findIndex((s) => s.id === updatedItem.id);
-  if (index !== -1) {
-    smallList.value[index] = updatedItem;
-    if (selectedSmall.value?.id === updatedItem.id) {
-      selectedSmall.value = { ...updatedItem };
+  const requestData = {
+    objectId: selectedBig.value.id,
+    subTitle: newItem.name,
+    content: newItem.content,
+  };
+  const fileToUpload = newItem.file || null;
+
+  try {
+    const response = await createContractDetail(requestData, fileToUpload);
+    if (response.success) {
+      alert('계약서 상세 템플릿이 성공적으로 생성되었습니다.');
+      await fetchSmallListAndDetails(selectedBig.value.id);
+      showSmallModal.value = false;
+    } else {
+      alert(`계약서 상세 템플릿 생성 실패: ${response.message || '알 수 없는 오류'}`);
     }
+  } catch (error) {
+    alert('계약서 상세 템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    console.error('계약서 상세 템플릿 생성 API 호출 중 에러:', error);
   }
 }
 
-const filteredSmallList = computed(() =>
-  selectedBig.value ? smallList.value.filter((s) => s.parentId === selectedBig.value.id) : []
-);
+async function handleUpdateSmall(updatedData) {
+  const { detailId, requestData, file } = updatedData;
+
+  try {
+    const response = await updateContractDetail(detailId, requestData, file);
+    if (response.success) {
+      alert('계약서 상세 템플릿이 성공적으로 수정되었습니다.');
+      await fetchSmallListAndDetails(selectedBig.value.id, detailId);
+      showEditModal.value = false;
+    } else {
+      alert(`계약서 상세 템플릿 수정 실패: ${response.message || '알 수 없는 오류'}`);
+    }
+  } catch (error) {
+    alert('계약서 상세 템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    console.error('계약서 상세 템플릿 수정 API 호출 중 에러:', error);
+  }
+}
+
+const filteredSmallList = computed(() => smallList.value);
+
 
 function editItem(item) {
   editTarget.value = { ...item };
   showEditModal.value = true;
 }
 
-// 목적 삭제 API 호출 로직을 포함하도록 수정
 async function deleteItem(item, type) {
   if (type === 'big') {
     if (!confirm(`정말로 "${item.name}" 종류를 삭제하시겠습니까? 이 종류에 속한 모든 하위 템플릿도 삭제됩니다.`)) {
@@ -160,14 +204,11 @@ async function deleteItem(item, type) {
     try {
       const response = await deleteContractObject(item.id);
       if (response.success) {
-        await fetchBigList(); // API 호출 성공 시 bigList를 새로고침하여 최신 데이터를 가져옵니다.
-        // 삭제된 big 항목이 현재 선택된 항목이었다면, 선택을 해제하거나 다른 항목을 선택
+        await fetchBigList();
         if (selectedBig.value?.id === item.id) {
           selectedBig.value = bigList.value[0] || null;
         }
-        // 해당 종류에 속한 small 항목들도 모두 삭제합니다. (프론트엔드에서만)
         smallList.value = smallList.value.filter(s => s.parentId !== item.id);
-        // 선택된 small 항목이 삭제된 big 항목에 속했다면 선택 해제
         if (selectedSmall.value && selectedSmall.value.parentId === item.id) {
           selectedSmall.value = null;
         }
@@ -183,13 +224,17 @@ async function deleteItem(item, type) {
     if (!confirm(`정말로 "${item.name}" 템플릿을 삭제하시겠습니까?`)) {
       return;
     }
-    // Small 템플릿 삭제는 현재 백엔드 API가 없으므로 프론트엔드에서만 처리합니다.
-    const smallIndex = smallList.value.findIndex((s) => s.id === item.id);
-    if (smallIndex !== -1) {
-      smallList.value.splice(smallIndex, 1);
-      if (selectedSmall.value?.id === item.id) {
-        selectedSmall.value = null;
+    try {
+      const response = await deleteContractDetail(item.id);
+      if (response.success) {
+        alert('계약서 상세 템플릿이 성공적으로 삭제되었습니다.');
+        await fetchSmallListAndDetails(selectedBig.value.id);
+      } else {
+        alert(`계약서 상세 템플릿 삭제 실패: ${response.message || '알 수 없는 오류'}`);
       }
+    } catch (error) {
+      alert('계약서 상세 템플릿 삭제 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+      console.error('계약서 상세 템플릿 삭제 API 호출 중 에러:', error);
     }
   }
 }
@@ -227,7 +272,7 @@ function cancelAddBig() {
 </script>
 
 <template>
-  <div class="container">
+  <div class="container" v-bind="$attrs">
     <div class="page-header">
       <div class="page-title">템플릿 목록</div>
     </div>
@@ -326,7 +371,7 @@ function cancelAddBig() {
               class="group relative mb-2"
             >
               <div class="flex items-center gap-2">
-                <input type="radio" :value="item" v-model="selectedSmall" />
+                <input type="radio" :value="item" :checked="selectedSmall?.id === item.id" @change="selectSmallItem(item)" />
                 <input
                   type="text"
                   :value="item.name"
@@ -363,18 +408,6 @@ function cancelAddBig() {
                     readonly
                   />
                 </div>
-                <div class="flex items-center gap-2">
-                  <label class="font-semibold whitespace-nowrap">생성일자</label>
-                  <input
-                    v-model="selectedSmall.createdAt"
-                    class="border rounded px-2 py-1 text-sm w-[120px]"
-                    readonly
-                  />
-                </div>
-                <div class="flex items-center gap-2">
-                  <label class="font-semibold whitespace-nowrap">사용여부</label>
-                  <input type="checkbox" v-model="selectedSmall.active" />
-                </div>
               </div>
               <div>
                 <label class="block font-semibold mb-1">내용</label>
@@ -383,6 +416,16 @@ function cancelAddBig() {
                   class="w-full border rounded px-2 py-1 text-sm h-24"
                   readonly
                 ></textarea>
+              </div>
+              <div v-if="selectedSmall.file" class="mt-4">
+                <label class="block font-semibold mb-1">첨부 파일</label>
+                <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm">
+                  <Icon icon="codex:file" class="text-blue-500 w-4 h-4" />
+                  <span class="text-gray-700">
+                    {{ selectedSmall.file.originalName }}
+                  </span>
+                  <span class="text-gray-500 text-xs">({{ selectedSmall.file.program }})</span>
+                </div>
               </div>
             </template>
             <template v-else>
@@ -393,11 +436,13 @@ function cancelAddBig() {
       </div>
     </div>
     <div class="editor-tem-box flex flex-col gap-6 my-6">
+      <!-- SendEmail 컴포넌트가 항상 렌더링되도록 조건부 렌더링 제거 -->
       <SendEmail
         :name="selectedSmall?.name"
         :email="' '"
         :title="selectedSmall"
         :initialContent="selectedSmall?.content"
+        :initialFile="selectedSmall?.file"
       />
     </div>
   </div>
