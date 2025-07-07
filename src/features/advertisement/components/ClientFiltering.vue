@@ -61,16 +61,28 @@ const applyFilter = () => {
     />
 
     <!-- 날짜 필터 -->
-    <input
-      v-model="filters.startDate"
-      type="date"
-      class="w-full border border-gray-medium rounded-md p-2 mb-3"
-    />
-    <input
-      v-model="filters.endDate"
-      type="date"
-      class="w-full border border-gray-medium rounded-md p-2 mb-5"
-    />
+      <!-- 시작일 -->
+      <div class="mb-3">
+          <label for="startDate" class="block text-sm text-gray-dark mb-1">시작일</label>
+          <input
+              id="startDate"
+              v-model="filters.startDate"
+              type="date"
+              class="w-full border border-gray-medium rounded-md p-2"
+          />
+      </div>
+
+      <!-- 종료일 -->
+      <div class="mb-5">
+          <label for="endDate" class="block text-sm text-gray-dark mb-1">종료일</label>
+          <input
+              id="endDate"
+              v-model="filters.endDate"
+              type="date"
+              class="w-full border border-gray-medium rounded-md p-2"
+          />
+      </div>
+
 
     <!-- 검색 버튼 -->
     <button
