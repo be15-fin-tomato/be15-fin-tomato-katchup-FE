@@ -1,6 +1,6 @@
 <script setup>
 import { Icon } from '@iconify/vue'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   client: Object
@@ -9,7 +9,7 @@ const props = defineProps({
 const router = useRouter()
 
 const goToDetail = () => {
-  router.push(`/management/client/${props.client?.id}`)
+  router.push(`/management/client/${props.client.clientCompanyId}`)
 }
 </script>
 
@@ -20,42 +20,50 @@ const goToDetail = () => {
   >
     <div class="flex justify-between items-start mb-4">
       <div class="flex flex-col justify-between min-h-[80px]">
-        <h3 class="text-lg font-semibold text-black">{{ client.name }}</h3>
+        <!-- 고객사명 -->
+        <h3 class="text-lg font-semibold text-black">
+          {{ client.clientCompanyName }}
+        </h3>
 
-        <!-- 고객사원 아이콘 -->
+        <!-- 직원 수 -->
         <p class="text-sm text-gray-dark">
           <Icon icon="f7:person-2" class="inline-block mr-0.5" width="18" height="18" />
-          ( 총 3명 )
+          ( 총 {{ client.employeeCount }}명 )
         </p>
-        <p class="text-sm text-gray-medium mt-1">{{ client.address }}</p>
+
+        <!-- 주소 -->
+        <p class="text-sm text-gray-medium mt-1">
+          {{ client.address }} {{ client.detailAddress }}
+        </p>
       </div>
 
-      <!-- 상태 뱃지 + 메뉴 -->
+      <!-- 상태 뱃지 -->
       <div class="flex flex-col items-end gap-1">
-        <!-- 상태 표시 추가 -->
         <p
           class="text-xs font-semibold px-2 py-1 rounded-md"
           :class="{
-        'bg-blue-400 text-white': client.status === '잠재고객',
-        'bg-green-400 text-white': client.status === '신규고객',
-        'bg-yellow-400 text-white': client.status === '기존고객'
-      }"
+            'bg-blue-400 text-white': client.clientCompanyStatusName === '잠재',
+            'bg-green-400 text-white': client.clientCompanyStatusName === '신규',
+            'bg-yellow-400 text-white': client.clientCompanyStatusName === '기존'
+          }"
         >
-          {{ client.status }}
+          {{ client.clientCompanyStatusName }}
         </p>
-
-      <button class="text-gray-medium">
-        <i class="fas fa-ellipsis-v" />
-      </button>
+        <button class="text-gray-medium">
+          <i class="fas fa-ellipsis-v" />
+        </button>
+      </div>
     </div>
-  </div>
-    <!-- 담당자 아이콘 -->
+
+    <!-- 담당자 및 매출 -->
     <div class="flex justify-between items-end">
       <p class="text-sm text-gray-dark flex items-end leading-none">
         <Icon icon="mdi:person-tie" class="inline-block mr-2 align-text-bottom" width="18" height="18" />
-        {{ client.contacts.join(', ') }}
+        {{ client.userName || '담당자 없음' }}
       </p>
-      <p class="text-sm font-semibold text-black">{{ client.price }} ₩</p>
+      <p class="text-sm font-semibold text-black">
+        {{ client.sales?.toLocaleString() || 0 }} ₩
+      </p>
     </div>
   </div>
 </template>
