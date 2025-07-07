@@ -3,7 +3,7 @@
     <button
       class="relative w-14 h-14 rounded-full
              bg-[--color-request]
-             border border-[--color-btn-sky]
+             border border-[--color-btn-sky]   /* 초기 디자인 복원 */
              text-white text-2xl
              shadow-lg
              hover:scale-105 active:scale-95
@@ -26,9 +26,19 @@
 
 <script setup>
 import { Icon } from '@iconify/vue'
-import { ref } from 'vue'
+
+
+const props = defineProps({
+  unreadCount: {
+    type: Number,
+    default: 0
+  }
+})
 
 defineEmits(['toggle'])
 
-const unreadCount = ref(4)
 </script>
+
+<style scoped>
+
+</style>
