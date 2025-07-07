@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -7,6 +7,15 @@ import koLocale from '@fullcalendar/core/locales/ko'
 import { Icon } from '@iconify/vue'
 import ScheduleModal from '../components/ScheduleModal.vue'
 import { useToast } from 'vue-toastification';
+
+import {
+  getScheduleList,
+  getScheduleDetail,
+  postSchedule,
+  updateSchedule,
+  deleteSchedule,
+  getPipelineSchedule
+} from '@/features/calendar/api.js'
 
 function formatDateToLocalYYYYMMDD(date) {
   const year = date.getFullYear()
@@ -21,20 +30,22 @@ const selectedDate = ref(formatDateToLocalYYYYMMDD(todayDate))
 const selectedEvent = ref(null)
 const isModalOpen = ref(false)
 
-const events = ref([
-  {
-    title: '워크샵',
-    start: '2025-06-04T09:00:00',
-    end: '2025-06-04T18:00:00',
-    backgroundColor: '#f87171'
-  },
-  {
-    title: '휴가',
-    start: '2025-06-04T09:00:00',
-    end: '2025-06-04T18:00:00',
-    backgroundColor: '#f97316'
+const events = ref([])
+
+const fetchEvents = async () => {
+  try {
+    const res = await getScheduleList()
+    events.value = res.data.data.scheduleListsAll || []
+  } catch (err) {
+    toast.error('일정 불러오기에 실패했습니다.')
+    console.error(err)
   }
-])
+}
+
+onMounted(() => {
+  fetchEvents()
+})
+
 
 const calendarRef = ref(null)
 
@@ -72,7 +83,6 @@ const calendarOptions = {
         arg.el.style.color = '#111827'
         arg.el.style.fontWeight = '700'
     }
-
   },
 
   events: events.value
@@ -96,33 +106,37 @@ function closeModal() {
   isModalOpen.value = false
 }
 
-function handleSave(newEvent) {
-  if (selectedEvent.value) {
-    const index = events.value.findIndex(e =>
-      e.title === selectedEvent.value.title &&
-      e.start === selectedEvent.value.start &&
-      e.end === selectedEvent.value.end
-    )
-    if (index !== -1) {
-      events.value[index] = newEvent
+async function handleSave(newEvent) {
+  try {
+    if (selectedEvent.value && selectedEvent.value.id) {
+      // 수정
+      await updateSchedule(selectedEvent.value.id, newEvent)
+      toast.success('수정되었습니다.')
+    } else {
+      // 생성
+      await postSchedule(newEvent)
+      toast.success('등록되었습니다.')
     }
-  } else {
-    events.value.push(newEvent)
+    isModalOpen.value = false
+    await fetchEvents()
+  } catch (err) {
+    toast.error('저장에 실패했습니다.')
+    console.error(err)
   }
 }
 
-function deleteEvent(eventToDelete) {
+async function deleteEvent(eventToDelete) {
   const confirmed = window.confirm('정말 삭제하시겠습니까?')
   if (!confirmed) return
 
-  events.value = events.value.filter(event =>
-    !(
-      event.title === eventToDelete.title &&
-      event.start === eventToDelete.start &&
-      event.end === eventToDelete.end
-    )
-  )
-  toast.success("삭제되었습니다.")
+  try {
+    await deleteSchedule(eventToDelete.id)
+    toast.success("삭제되었습니다.")
+    await fetchEvents()
+  } catch (err) {
+    toast.error('삭제에 실패했습니다.')
+    console.error(err)
+  }
 }
 
 </script>
@@ -165,14 +179,14 @@ function deleteEvent(eventToDelete) {
             </div>
             <div class="flex-20 pl-5 flex flex-col justify-center">
               <span
-                  class="text-md text-black-500 truncate max-w-[120px]"
-                  :title="event.title"
+                  class = "text-md text-black-500 truncate max-w-[120px]"
+                  :title = "event.content"
               >
-              {{ event.title }}
+              {{ event.content }}
               </span>
             </div>
 
-            <!-- 수정,삭제 아이콘 -->
+            <!-- 수정, 삭제 아이콘 -->
             <div class="flex gap-2 ml-2">
               <button class="text-lg cursor-pointer" @click="openEditModal(event)">
                 <Icon icon="ei:pencil" class="w-6 h-6" />

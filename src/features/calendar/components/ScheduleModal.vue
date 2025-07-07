@@ -10,9 +10,9 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 
 const toast = useToast();
-const title = ref('')
-const startTime = ref('09:00')
-const endTime = ref('18:00')
+const content = ref('')
+const startTime = ref('')
+const endTime = ref('')
 const backgroundColor = ref('#f87171')
 
 const isEditMode = computed(() => !!props.eventData)
@@ -26,16 +26,16 @@ watch(
   () => props.eventData,
   async (event) => {
     if (event) {
-      title.value = event.title
+        content.value = event.content
       startTime.value = event.start.slice(11, 16)
       endTime.value = event.end.slice(11, 16)
       backgroundColor.value = ''
       await nextTick()
       backgroundColor.value = event.backgroundColor || '#f87171'
     } else {
-      title.value = ''
-      startTime.value = '09:00'
-      endTime.value = '18:00'
+        content.value = ''
+      startTime.value = ''
+      endTime.value = ''
       backgroundColor.value = '#f87171'
     }
   },
@@ -43,13 +43,18 @@ watch(
 )
 
 function submit() {
-  if (startTime.value >= endTime.value) {
+    if (!content.value.trim()) {
+        alert('일정을 입력해주세요.')
+        return
+    }
+
+    if (startTime.value >= endTime.value) {
     alert('시작 시간은 종료 시간보다 빠르거나 같을 수 없습니다.')
     return
   }
 
   emit('save', {
-    title: title.value,
+      content: content.value,
     start: `${props.date}T${startTime.value}`,
     end: `${props.date}T${endTime.value}`,
     backgroundColor: backgroundColor.value
@@ -57,6 +62,7 @@ function submit() {
   toast.success(`반영되었습니다.`)
   emit('close')
 }
+
 </script>
 
 <template>
@@ -73,8 +79,8 @@ function submit() {
 
         <!-- 제목 -->
         <div class="flex items-center gap-2">
-          <label class="w-20 bg-btn-blue text-white text-sm font-semibold px-2 py-1 rounded text-center">제목</label>
-          <input type="text" v-model="title" placeholder="제목을 입력하세요" class="flex-1 border px-2 py-1 rounded" />
+          <label class="w-20 bg-btn-blue text-white text-sm font-semibold px-2 py-1 rounded text-center">일정</label>
+          <input type="text" v-model="content" placeholder="일정을 입력하세요" class="flex-1 border px-2 py-1 rounded" />
         </div>
 
         <!-- 시간 -->
