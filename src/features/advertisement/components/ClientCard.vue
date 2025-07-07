@@ -33,7 +33,8 @@ const goToDetail = () => {
 
         <!-- 주소 -->
         <p class="text-sm text-gray-medium mt-1">
-          {{ client.address }} {{ client.detailAddress }}
+          {{ client.address }} <br />
+          {{ client.detailAddress }}
         </p>
       </div>
 
