@@ -31,7 +31,7 @@ onMounted(async () => {
 
     if (!dashboardData.data) {
       toast.warning('인스타그램 계정이 연결되어있지 않습니다.')
-      router.replace(`/influencer/dashboard/youtube?id=${influencerId}`)
+      router.replace(`/influencer/list`)
       return
     }
 
