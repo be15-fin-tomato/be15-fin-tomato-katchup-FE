@@ -219,6 +219,5 @@ async function deleteEvent(eventToDelete) {
       @close="closeModal"
       @save="handleSave"
     />
-
   </div>
 </template>
