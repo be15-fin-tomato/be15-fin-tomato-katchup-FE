@@ -151,3 +151,30 @@ export const getInfluencers = async (params) => {
   const response = await api.get('/influencer', { params });
   return response.data;
 };
+
+/* 인플루언서 등록 */
+export const registerInfluencer = async (influencerData) => {
+  const response = await api.post('/influencer/regist', influencerData);
+  return response.data;
+};
+
+/* 인플루언서 수정*/
+export const updateInfluencer = async (params) => {
+  const { influencerId, ...requestDTO } = params;
+  try {
+    const response = await api.patch(`/influencer/${influencerId}`, requestDTO);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteInfluencerApi = async (params) => {
+  const { influencerId, ...requestDTO } = params;
+  try {
+    const response = await api.delete(`/influencer/delete/${influencerId}`, { data: requestDTO });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
