@@ -3,8 +3,7 @@ import { ref, watch } from 'vue';
 import { fetchContractFile } from '@/features/contract/api';
 
 const props = defineProps({
-  contractId: Number,
-  password: String,
+  pdfUrl: String,
 });
 const emit = defineEmits(['close']);
 

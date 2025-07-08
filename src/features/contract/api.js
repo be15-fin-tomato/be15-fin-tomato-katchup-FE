@@ -136,13 +136,13 @@ export const fetchContractFile = (contractId, password) => {
   const formData = new FormData();
   formData.append('password', password);
 
-  return api.get(`/contract/success/view/${contractId}`, {
-    data: formData,
+  return api.post(`/contract/success/view/${contractId}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
 };
+
 
 /* 계약서 등록 */
 export async function uploadContractFile(contractId, formData) {

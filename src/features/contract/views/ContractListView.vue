@@ -2,10 +2,12 @@
 import { ref, onMounted } from 'vue';
 import ContractFiltering from '@/features/contract/components/ContractFiltering.vue';
 import PasswordModal from '@/features/contract/components/PasswordModal.vue';
-import PdfViewerModal from '@/features/contract/components/PdfViewerModal.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
-import { fetchContractSuccessList } from '@/features/contract/api';
+import { fetchContractFile, fetchContractSuccessList } from '@/features/contract/api';
 import ContractUploadModal from '@/features/contract/components/ContractUploadModal.vue';
+import { useToast } from 'vue-toastification'
+
+const toast = useToast();
 
 const currentPage = ref(1);
 const pageSize = 10;
@@ -19,9 +21,7 @@ const searchModel = ref({
 });
 
 const showModal = ref(false);
-const showPdf = ref(false);
 const selectedContractId = ref(null);
-const selectedPassword = ref('');
 const showUploadModal = ref(false);
 const selectedContractIdForUpload = ref(null);
 
@@ -32,7 +32,7 @@ const openUploadModal = (contractId) => {
 
 const handleUploadSuccess = () => {
   showUploadModal.value = false;
-  loadContracts(); // 다시 목록 조회
+  loadContracts();
 };
 
 const loadContracts = async () => {
@@ -68,18 +68,25 @@ const openPasswordModal = (id) => {
   showModal.value = true;
 };
 
-const handlePasswordSubmit = (password) => {
+const handlePasswordSubmit = async (password) => {
   if (!selectedContractId.value) return;
-  selectedPassword.value = password;
-  showModal.value = false;
-  showPdf.value = true;
-};
 
-const handleFileUpload = (event, item) => {
-  const file = event.target.files[0];
-  if (file) {
-    console.log(`파일 업로드됨: ${file.name}`);
-    item.status = '보기';
+  try {
+    const { data } = await fetchContractFile(selectedContractId.value, password);
+    const file = data.data.contractView[0];
+
+    const blob = await fetch(file.filePath).then(res => res.blob());
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = decodeURIComponent(file.originalName || 'contract.pdf');
+    link.click();
+    window.URL.revokeObjectURL(url);
+
+    showModal.value = false;
+  } catch (err) {
+    toast.error('비밀번호가 올바르지 않거나 다운로드에 실패했습니다.');
   }
 };
 
@@ -92,7 +99,6 @@ onMounted(() => {
   <div class="w-full">
     <div class="flex gap-6">
       <ContractFiltering v-model="searchModel" @search="handleSearch" />
-
       <div class="container">
         <div class="flex justify-between items-center mb-3">
           <div class="flex items-center">
@@ -115,11 +121,7 @@ onMounted(() => {
           </tr>
           </thead>
           <tbody>
-          <tr
-            v-for="(item, index) in contractList"
-            :key="index"
-            class="border-b"
-          >
+          <tr v-for="(item, index) in contractList" :key="index" class="border-b">
             <td class="py-2">{{ item.campaignName }}</td>
             <td>{{ item.productName }}</td>
             <td>{{ item.clientCompanyName }}</td>
@@ -139,11 +141,7 @@ onMounted(() => {
                 @click.prevent="openUploadModal(item.contractId)"
               >
                 등록
-                <input
-                  type="file"
-                  class="hidden"
-                  @change="handleFileUpload($event, item)"
-                />
+                <input type="file" class="hidden" />
               </label>
             </td>
           </tr>
@@ -160,12 +158,6 @@ onMounted(() => {
     </div>
 
     <PasswordModal v-if="showModal" @submit="handlePasswordSubmit" @close="showModal = false" />
-    <PdfViewerModal
-      v-if="showPdf"
-      :contract-id="selectedContractId"
-      :password="selectedPassword"
-      @close="showPdf = false"
-    />
     <ContractUploadModal
       v-if="showUploadModal"
       :contract-id="selectedContractIdForUpload"
