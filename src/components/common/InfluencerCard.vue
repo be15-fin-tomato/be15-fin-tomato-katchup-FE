@@ -109,7 +109,7 @@ function goToDashboard(target)  {
         </div>
 
         <!-- 태그 -->
-        <div class="flex flex-wrap gap-2 mt-4">
+        <div class="flex flex-wrap gap-2 mt-3">
              <span
                v-for="tag in influencer.tags ?? []"
                :key="tag.categoryId"
