@@ -52,14 +52,14 @@ function goToDashboard(target)  {
 </script>
 
 <template>
-    <div class="border-[1.5px] rounded-lg p-5 shadow-sm mb-10">
+    <div class="border-[1.5px] rounded-lg p-5 shadow-sm mb-5">
         <div class="flex flex-wrap items-center justify-between gap-4">
 
             <!-- 유튜브명 -->
-            <div class="flex items-center gap-4 min-w-[200px]">
-                <img :src="influencer.thumbnail" alt="프로필" class="w-[95px] rounded-full object-cover" />
-                <div class="font-semibold text-sm truncate w-[100px]" :title="influencer.name">
-                    {{ influencer.name }}
+            <div class="flex items-center gap-7 min-w-[200px]">
+                <img :src="influencer.youtube.thumbnailUrl" alt="프로필" class="w-[75px] rounded-full object-cover" />
+                <div class="font-bold text-md truncate w-[100px]" :title="influencer.name">
+                    {{ influencer.youtube.name }}
                 </div>
             </div>
 
@@ -70,7 +70,7 @@ function goToDashboard(target)  {
 
             <!-- 유튜브 구독자 -->
             <div class="flex flex-col items-center w-[130px]">
-                <span class="text-sm font-semibold truncate mb-2">{{ influencer.subscribers || '해당 없음' }}</span>
+                <span class="text-sm font-semibold truncate mb-2">{{ influencer.youtube.subscriber || '해당 없음' }}</span>
                 <button
                   @click="goToDashboard('youtube')"
                   class="flex items-center justify-center bg-white text-black border border-black rounded-lg text-sm font-bold p-2 whitespace-nowrap w-[150px]"
@@ -82,7 +82,7 @@ function goToDashboard(target)  {
 
             <!-- 인스타 팔로워 -->
             <div class="flex flex-col items-center w-[130px]">
-                <span class="text-sm font-semibold truncate mb-2">{{ influencer.instaFollowers || '해당 없음' }}</span>
+                <span class="text-sm font-semibold truncate mb-2">{{ influencer.instagram || '해당 없음' }}</span>
                 <button
                   @click="goToDashboard('instagram')"
                   class="flex items-center justify-center bg-white text-black border border-black rounded-lg font-semibold text-sm p-2 whitespace-nowrap w-[150px]"
