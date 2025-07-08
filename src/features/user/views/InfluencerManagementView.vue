@@ -1,78 +1,38 @@
-<script setup>
-import { computed, onMounted, ref } from 'vue';
-import InfluencerFormModal from '../components/InfluencerFormModal.vue';
-import CommonFiltering from '@/components/layout/CommonFiltering.vue';
-import { getMockInfluencers } from '@/features/user/api.js';
-import InfluencerManagementCard from '@/components/common/InfluencerManagementCard.vue';
-import PagingBar from '@/components/common/PagingBar.vue';
-
-const influencers = ref([]);
-const isModalOpen = ref(false);
-const selectedInfluencer = ref(null); // 등록/수정 구분용
-
-// 페이지네이션
-const currentPage = ref(1);
-const pageSize = 6;
-
-const openModal = () => {
-  selectedInfluencer.value = null; // 등록 모드
-  isModalOpen.value = true;
-};
-
-const openModalWithData = (influencer) => {
-  selectedInfluencer.value = influencer; // 수정 모드
-  isModalOpen.value = true;
-};
-
-const closeModal = () => {
-  isModalOpen.value = false;
-  selectedInfluencer.value = null;
-};
-
-const deleteInfluencer = (id) => {
-  const index = influencers.value.findIndex((i) => i.id === id);
-  if (index !== -1) {
-    influencers.value.splice(index, 1);
-  }
-};
-
-const totalCount = computed(() => influencers.value.length);
-const totalPages = computed(() => Math.ceil(totalCount.value / pageSize));
-
-onMounted(async () => {
-  const { data } = await getMockInfluencers();
-  influencers.value = data.data;
-});
-
-const saveInfluencer = (updated) => {
-  const index = influencers.value.findIndex((i) => i.id === updated.id);
-  if (index !== -1) {
-    // 수정
-    influencers.value[index] = updated;
-  } else {
-    // 신규 추가
-    influencers.value.push(updated);
-  }
-};
-</script>
-
 <template>
   <div class="w-full min-h-screen bg-background flex font-sans">
-    <CommonFiltering />
+    <CommonFiltering
+      @update:filters="newFilters => filters = { ...filters, ...newFilters }"
+    />
 
     <div class="container">
-      <!-- 헤더 -->
       <div class="page-header">
         <div class="page-title">
           인플루언서 관리
           <span class="cnt-search"> (검색결과: {{ totalCount }}건) </span>
         </div>
-        <button class="btn-create" @click="openModal">등록</button>
+        <div class="flex gap-2 items-center">
+          <button class="btn-create" @click="openModal">등록</button>
+          <!-- 유튜브 아이콘 버튼 수정 -->
+          <button
+            @click="isYoutubeConnectIdModalOpen = true"
+            class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
+            title="유튜브 계정 연동"
+          >
+            <Icon icon="logos:youtube-icon" class="text-red-600" width="32" height="32" />
+          </button>
+          <!-- 인스타그램 아이콘 버튼 수정 -->
+          <button
+            @click="openInstagramConnectModal"
+            class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
+            title="인스타그램 계정 연동"
+          >
+            <Icon icon="skill-icons:instagram" class="text-pink-600" width="32" height="32" />
+          </button>
+        </div>
       </div>
 
       <div class="blue-line"></div>
 
-      <!-- 카드 리스트 -->
       <div class="px-10">
         <div class="grid grid-cols-2 gap-8">
           <InfluencerManagementCard
@@ -87,13 +47,16 @@ const saveInfluencer = (updated) => {
             :tags="card.tags"
             :ownerName="card.ownerName"
             :thumbnail="card.thumbnail"
+            :_originalData="card._originalData"
             @edit="openModalWithData"
             @delete="deleteInfluencer"
           />
         </div>
+        <div v-if="influencers.length === 0" class="text-center py-10 text-gray-500">
+          검색된 인플루언서가 없습니다.
+        </div>
       </div>
 
-      <!-- 등록/수정 모달 -->
       <InfluencerFormModal
         v-if="isModalOpen"
         :initialData="selectedInfluencer"
@@ -101,14 +64,201 @@ const saveInfluencer = (updated) => {
         @save="saveInfluencer"
       />
 
-      <!-- 페이지네이션 -->
+      <YoutubeConnectIdModal
+        v-if="isYoutubeConnectIdModalOpen"
+        @close="isYoutubeConnectIdModalOpen = false"
+        @confirm="handleInfluencerIdConfirmed"
+      />
+
+      <InstagramConnectModal
+        v-if="isInstagramConnectModalOpen"
+        @close="isInstagramConnectModalOpen = false"
+        @confirm="handleInstagramIdConfirmed"
+        :influencerId="currentInfluencerIdForInstagram"
+      />
+
       <div class="flex justify-center mt-8">
         <PagingBar
           :totalPages="totalPages"
-          :currentPage="currentPage"
-          @update:currentPage="(val) => (currentPage = val)"
-        />
+          :currentPage="currentPageOneBased" @update:currentPage="updateCurrentPageFromPagingBar" />
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import InfluencerFormModal from '../components/InfluencerFormModal.vue';
+import CommonFiltering from '@/components/layout/CommonFiltering.vue';
+import { getInfluencers, registerInfluencer, updateInfluencer, deleteInfluencerApi } from '@/features/user/api.js';
+import InfluencerManagementCard from '@/components/common/InfluencerManagementCard.vue';
+import PagingBar from '@/components/common/PagingBar.vue';
+import YoutubeConnectIdModal from '@/features/influencer/components/YoutubeConnectModal.vue';
+import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
+
+// Icon 컴포넌트 임포트
+import { Icon } from '@iconify/vue';
+
+
+const influencers = ref([]);
+const isModalOpen = ref(false);
+const selectedInfluencer = ref(null);
+
+const currentPageZeroBased = ref(0);
+const pageSize = 6;
+const totalCount = ref(0);
+const totalPages = ref(0);
+
+const filters = ref({});
+
+const router = useRouter();
+
+const isYoutubeConnectIdModalOpen = ref(false); // 인플루언서 ID 입력 모달
+const isYoutubeConnectAuthModalOpen = ref(false); // 유튜브 인증 안내 모달 (새로 추가)
+const currentInfluencerIdForYoutube = ref(null); // 연동할 인플루언서 ID 저장
+
+const isInstagramConnectModalOpen = ref(false);
+const currentInfluencerIdForInstagram = ref(null);
+
+
+const fetchInfluencers = async () => {
+  try {
+    const params = {
+      ...filters.value,
+      page: currentPageZeroBased.value,
+      size: pageSize,
+    };
+
+    const apiResponse = await getInfluencers(params);
+    const apiData = apiResponse.data;
+
+    influencers.value = apiData.data.map(influencer => ({
+      id: influencer.influencerId,
+      name: influencer.youtube?.name || '',
+      realName: influencer.name,
+      subscribers: (() => {
+        const subscriberCount = influencer.youtube?.subscriber;
+        if (subscriberCount === undefined || subscriberCount === null) {
+          return '0명';
+        }
+        if (subscriberCount < 10000) {
+          return `${subscriberCount}명`;
+        } else {
+          return `${Math.round(subscriberCount / 10000)}만명`;
+        }
+      })(),
+      instagram: (influencer.instagramIsConnected === true && influencer.instagram && influencer.instagram.name)
+        ? influencer.instagram.name
+        : '미연결',
+      instaFollowers: (() => {
+        const followerCount = influencer.instagram?.follower;
+        if (followerCount === undefined || followerCount === null || followerCount === 0) {
+          return null; // 0이거나 미연결일 경우 null 반환
+        }
+        if (followerCount < 10000) {
+          return `${followerCount}명`; // 10000 미만일 경우 그대로 표시
+        } else {
+          return `${(followerCount / 10000).toFixed(1)}만명`; // 10000 이상일 경우 '만명' 단위로 표시
+        }
+      })(),
+      tags: influencer.tags ? influencer.tags.map(tag => tag.categoryName) : [],
+      ownerName: influencer.manager,
+      thumbnail: influencer.youtube?.thumbnailUrl || null,
+      _originalData: influencer, // 원본 데이터를 모달에 넘기기 위해 저장
+    }));
+
+    totalCount.value = apiData.pagination.totalCount;
+    totalPages.value = apiData.pagination.totalPage;
+
+  } catch (error) {
+    console.error('인플루언서 목록을 가져오는 데 실패했습니다:', error);
+    alert('인플루언서 목록을 불러오는 중 오류가 발생했습니다.');
+  }
+};
+
+onMounted(() => {
+  fetchInfluencers();
+});
+
+watch([currentPageZeroBased, filters], () => {
+  fetchInfluencers();
+}, { deep: true });
+
+const openModal = () => {
+  selectedInfluencer.value = null;
+  isModalOpen.value = true;
+};
+
+const openModalWithData = (influencerCardData) => {
+  selectedInfluencer.value = influencerCardData._originalData;
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  selectedInfluencer.value = null; // 모달 닫으면 선택된 인플루언서 초기화
+  fetchInfluencers(); // 변경사항 반영을 위해 목록 다시 불러오기
+};
+
+const deleteInfluencer = async (id) => {
+  if (confirm('정말로 이 인플루언서를 삭제하시겠습니까?')) {
+    try {
+      const payload = { influencerId: id }; // 백엔드 InfluencerDeleteRequestDTO에 맞춤
+      await deleteInfluencerApi(payload); // 백엔드 삭제 API 호출
+
+      alert('인플루언서가 성공적으로 삭제되었습니다.');
+      fetchInfluencers(); // 삭제 후 목록을 서버에서 다시 가져와 UI 업데이트
+    } catch (error) {
+      console.error('인플루언서 삭제 중 오류 발생:', error);
+      alert('인플루언서 삭제에 실패했습니다.');
+    }
+  }
+};
+
+const saveInfluencer = async (formDataFromModal) => { // 모달에서 넘어온 폼 데이터 (이제 influencerId를 포함할 수도 있음)
+  try {
+    let response;
+    // formDataFromModal에 influencerId가 있다면 수정 모드
+    if (formDataFromModal.influencerId) {
+      const { influencerId, ...restOfPayload } = formDataFromModal; // influencerId 분리
+      // updateInfluencer API는 influencerId를 path variable로, 나머지를 body로 받습니다.
+      response = await updateInfluencer({ influencerId, ...restOfPayload });
+      alert('인플루언서 정보가 성공적으로 수정되었습니다.');
+    } else { // influencerId가 없다면 등록 모드
+      response = await registerInfluencer(formDataFromModal); // 백엔드 등록 API 호출
+      alert('새로운 인플루언서가 성공적으로 등록되었습니다.');
+    }
+    closeModal(); // 모달 닫고 목록 새로고침 (closeModal에서 fetchInfluencers를 호출하므로 중복 호출 방지)
+  } catch (error) {
+    console.error('인플루언서 저장 중 오류 발생:', error);
+    const errorMessage = error.response && error.response.data && error.response.data.message
+      ? error.response.data.message
+      : '알 수 없는 오류가 발생했습니다. 입력값을 확인하거나 백엔드 로그를 확인해주세요.';
+    alert(`인플루언서 저장에 실패했습니다: ${errorMessage}`);
+  }
+};
+
+const currentPageOneBased = computed(() => currentPageZeroBased.value + 1);
+
+const updateCurrentPageFromPagingBar = (val) => {
+  currentPageZeroBased.value = val - 1;
+};
+
+const handleInfluencerIdConfirmed = (id) => {
+  currentInfluencerIdForYoutube.value = id; // 인플루언서 ID 저장
+  isYoutubeConnectIdModalOpen.value = false; // ID 입력 모달 닫기
+  isYoutubeConnectAuthModalOpen.value = true; // 인증 안내 모달 열기
+};
+
+const openInstagramConnectModal = () => {
+  isInstagramConnectModalOpen.value = true;
+};
+
+const handleInstagramIdConfirmed = (id) => {
+  currentInfluencerIdForInstagram.value = id;
+  isInstagramConnectModalOpen.value = false;
+  console.log("Instagram 연동을 위한 인플루언서 ID 확인:", id);
+  alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
+};
+</script>

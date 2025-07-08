@@ -28,8 +28,6 @@ const openUserSearch = () => {
     localValue.user = selectedItem;
   };
 
-
-
   window.open(
     `/search-popup?type=one-user&selected=${selectedIds}`,
     'SearchPopup',
@@ -99,6 +97,6 @@ onMounted(() => {
         </button>
       </div>
     </div>
-    <button type="submit" class="w-full bg-blue-400 text-white py-2 rounded">검색</button>
+    <button type="submit" class="btn-create">검색</button>
   </form>
 </template>

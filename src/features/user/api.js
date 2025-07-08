@@ -136,4 +136,45 @@ export const fetchSatisfactionScore = (satisfactionId) =>
 export const saveSatisfactionResult = (satisfactionId) =>
   api.post(`/satisfaction/save/${satisfactionId}`);
 
+/* 전체 만족도 조사 응답률 */
+export const fetchSatisfactionResponseRate = () => {
+  return api.get('/satisfaction/response');
+};
 
+/* 전체 만족도 평균 점수 */
+export const fetchSatisfactionAverage = () => {
+  return api.get('/satisfaction/average');
+};
+
+/* 인플루언서 목록 조회 */
+export const getInfluencers = async (params) => {
+  const response = await api.get('/influencer', { params });
+  return response.data;
+};
+
+/* 인플루언서 등록 */
+export const registerInfluencer = async (influencerData) => {
+  const response = await api.post('/influencer/regist', influencerData);
+  return response.data;
+};
+
+/* 인플루언서 수정*/
+export const updateInfluencer = async (params) => {
+  const { influencerId, ...requestDTO } = params;
+  try {
+    const response = await api.patch(`/influencer/${influencerId}`, requestDTO);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteInfluencerApi = async (params) => {
+  const { influencerId, ...requestDTO } = params;
+  try {
+    const response = await api.delete(`/influencer/delete/${influencerId}`, { data: requestDTO });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

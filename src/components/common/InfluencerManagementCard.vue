@@ -1,6 +1,5 @@
 <template>
   <div class="relative w-full p-4 border border-[color:var(--color-gray-dark)] rounded-xl bg-white font-sans flex flex-col min-h-[240px]">
-    <!-- 점 3개 버튼 -->
     <div class="absolute top-5 right-5">
       <button class="flex flex-col gap-[2px]" @click="toggleDropdown">
         <span class="w-1 h-1 bg-black rounded-full" v-for="i in 3" :key="i"></span>
@@ -25,7 +24,6 @@
       </div>
     </div>
 
-    <!-- 프로필 섹션 -->
     <div class="flex gap-5 items-start mb-3 ml-2 flex-wrap">
       <img
         :src="thumbnail || defaultThumbnail"
@@ -33,7 +31,6 @@
         class="w-[90px] h-[90px] rounded-full object-cover border border-[color:var(--color-gray-light)]"
       />
       <div class="flex-1 min-w-0">
-        <!-- 유튜브명 + 본명 -->
         <div class="flex items-center gap-2 text-base font-medium mb-1 mt-2">
           <Icon icon="logos:youtube-icon" class="w-7 h-6" />
           <span class="font-bold text-[color:var(--color-click)] truncate">
@@ -48,25 +45,25 @@
           {{ subscribers }}
         </div>
 
-        <!-- 인스타 -->
         <div class="flex items-center gap-3 text-base font-medium mb-1">
           <Icon icon="skill-icons:instagram" class="w-7 h-6" />
           <span class="font-bold truncate">{{ instagram }}</span>
         </div>
-        <div class="text-sm text-[color:var(--color-gray-dark)] mb-2 truncate">
+        <div v-if="instaFollowers" class="text-sm text-[color:var(--color-gray-dark)] mb-2 truncate">
           {{ instaFollowers }}
         </div>
-
-        <!-- 태그 -->
         <div class="flex flex-wrap gap-1 text-xs font-bold leading-snug text-black mt-2">
-          <span v-for="(tag, index) in tags" :key="index">
+          <span
+            v-for="(tag, index) in tags"
+            :key="index"
+            :class="[TAG_COLOR_MAP[tag] || 'bg-gray-200 text-black', 'px-2 py-1 rounded-full']"
+          >
             #{{ tag }}
           </span>
         </div>
       </div>
     </div>
 
-    <!-- 담당자 -->
     <div class="flex items-center gap-1 text-sm text-[color:var(--color-gray-dark)] mt-auto pl-[2px]">
       <Icon icon="tdesign:user" class="w-4 h-4" />
       <span class="truncate">{{ ownerName }}</span>
@@ -78,6 +75,7 @@
 import { ref } from 'vue'
 import defaultThumbnail from '@/assets/images/logo.png'
 import { Icon } from '@iconify/vue'
+import { TAG_COLOR_MAP } from '@/constants/tags.js';
 
 const props = defineProps({
   id: Number,
@@ -85,10 +83,11 @@ const props = defineProps({
   realName: String,
   subscribers: String,
   instagram: String,
-  instaFollowers: String,
+  instaFollowers: String, // 이제 null일 수 있음
   tags: Array,
   ownerName: String,
-  thumbnail: String
+  thumbnail: String,
+  _originalData: Object
 })
 
 const emit = defineEmits(['edit', 'delete'])
@@ -99,14 +98,12 @@ const toggleDropdown = () => {
 }
 
 const handleEdit = () => {
-  emit('edit', { ...props })
+  emit('edit', { ...props, _originalData: props._originalData })
+  showDropdown.value = false;
 }
 
 const handleDelete = () => {
   emit('delete', props.id)
+  showDropdown.value = false;
 }
 </script>
-
-<style scoped>
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
-</style>
