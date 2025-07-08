@@ -58,27 +58,27 @@ const openChatRoom = (room) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen relative">
-    <SalesDashboard />
+    <div class="flex min-h-screen relative">
+        <SalesDashboard />
 
-    <ChatFloatingButton
-      @toggle="isChatListVisible = !isChatListVisible"
-      :unreadCount="totalUnreadMessages"
-    />
+        <ChatFloatingButton
+          @toggle="isChatListVisible = !isChatListVisible"
+          :unreadCount="totalUnreadMessages"
+        />
 
-    <ChatListModal
-      v-if="isChatListVisible"
-      :chatRooms="chatRooms"
-      @close="isChatListVisible = false"
-      @open-room="openChatRoom"
-      @room-opened="handleRoomOpened"
-      @chat-rooms-changed="handleChatRoomsUpdated"
-    />
+        <ChatListModal
+          v-if="isChatListVisible"
+          :chatRooms="chatRooms"
+          @close="isChatListVisible = false"
+          @open-room="openChatRoom"
+          @room-opened="handleRoomOpened"
+          @chat-rooms-changed="handleChatRoomsUpdated"
+        />
 
-    <ChatRoom
-      v-if="selectedRoom"
-      :room="selectedRoom"
-      @close="selectedRoom = null"
-    />
-  </div>
+        <ChatRoom
+          v-if="selectedRoom"
+          :room="selectedRoom"
+          @close="selectedRoom = null"
+        />
+    </div>
 </template>
