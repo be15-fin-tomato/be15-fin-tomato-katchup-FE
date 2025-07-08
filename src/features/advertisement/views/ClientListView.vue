@@ -32,9 +32,9 @@ const fetchClients = async () => {
     console.log('🔥 응답:', res)
 
     // 응답 구조 반영 (items + pagination)
-    clientList.value = res.data.items
-    totalCount.value = res.data?.pagination?.totalCount || 0
-    totalPages.value = res.data?.pagination?.totalPages || 1
+    clientList.value = res.data.data.items
+    totalCount.value = res.data.data.pagination.totalCount || 0
+    totalPages.value = res.data.data.pagination.totalPage || 1
 
   } catch (e) {
     console.error('고객사 목록 조회 실패:', e)
@@ -90,8 +90,7 @@ onMounted(fetchClients)
       <div class="flex justify-center mt-8" v-if="totalPages > 0">
         <PagingBar
           :totalPages="totalPages"
-          :currentPage="currentPage"
-          @update:currentPage="(val) => currentPage.value = val"
+          v-model:currentPage="currentPage"
         />
       </div>
     </div>
