@@ -93,14 +93,16 @@ watch(currentPageZeroBased, () => {
         @update:selected="selectedCategory = $event"
       />
 
-      <div class="flex flex-1 py-5 px-5 justify-around text-gray-medium text-sm">
-        <span>프로필</span>
-        <span>채널명</span>
-        <span>인스타 아이디</span>
-        <span>유튜브 구독자 수</span>
-        <span>인스타 팔로워 수</span>
-        <span>타깃 성별</span>
-        <span>타깃 연령대</span>
+      <div class="grid w-full grid-cols-11 items-center px-5 py-5 text-gray-medium">
+        <div class="flex items-center gap-12 col-span-3">
+          <span>대표사진</span>
+          <span>유튜브 채널명</span>
+        </div>
+        <span class="col-span-2">인스타그램 ID</span>
+        <span class="text-center col-span-2">유튜브 구독자</span>
+        <span class="text-center col-span-2">인스타그램  팔로워</span>
+        <span class="text-center col-span-1">타깃 성별</span>
+        <span class="text-center col-span-1">타깃 연령대</span>
       </div>
 
       <div v-if="influencerList.length === 0" class="text-center text-gray-500 py-10">
