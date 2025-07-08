@@ -5,7 +5,11 @@ export const getScheduleList = async () => {
 };
 
 export const getScheduleDetail = async (scheduleDate) => {
-  return await api.get(`/calendar/schedule/${scheduleDate}/daily`)
+    return await api.get(`/calendar/schedule/${scheduleDate}/daily`)
+};
+
+export const getPipelineSchedule = async () => {
+    return await api.get('/calendar/schedule/pipeline')
 };
 
 export const postSchedule = async (data) => {
@@ -18,10 +22,4 @@ export const updateSchedule = async (scheduleId, data) => {
 
 export const deleteSchedule = async (scheduleId) => {
     return await api.delete(`/calendar/${scheduleId}`)
-};
-
-export const getPipelineSchedule = async (pipelineId) => {
-    return await api.get('/calendar/schedule/pipeline', {
-        params: { pipelineId },
-    });
 };

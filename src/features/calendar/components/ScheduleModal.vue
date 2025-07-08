@@ -8,7 +8,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'save'])
-
 const toast = useToast();
 const content = ref('')
 const startTime = ref('')
@@ -18,22 +17,39 @@ const backgroundColor = ref('#f87171')
 const isEditMode = computed(() => !!props.eventData)
 
 const colors = [
-  '#f87171', '#f97316', '#facc15', '#4ade80', '#22d3ee',
-  '#60a5fa', '#6366f1', '#a855f7', '#00FBFF'
+  '#f87171', '#f97316', '#facc15', '#4ade80',
+  '#22d3ee', '#60a5fa', '#6366f1', '#a855f7',
+  '#00FBFF'
 ]
+
+const colorIdMap = {
+  '#f87171': 1,
+  '#f97316': 2,
+  '#facc15': 3,
+  '#4ade80': 4,
+  '#22d3ee': 5,
+  '#60a5fa': 6,
+  '#6366f1': 7,
+  '#a855f7': 8,
+  '#00FBFF': 9
+}
+
+function getScheduleColorIdFromColorCode(hex) {
+  return colorIdMap[hex]
+}
 
 watch(
   () => props.eventData,
   async (event) => {
     if (event) {
-        content.value = event.content
-      startTime.value = event.start.slice(11, 16)
-      endTime.value = event.end.slice(11, 16)
+      content.value = event.content
+      startTime.value = event.startTime?.slice(0, 5) || ''
+      endTime.value = event.endTime?.slice(0, 5) || ''
       backgroundColor.value = ''
       await nextTick()
-      backgroundColor.value = event.backgroundColor || '#f87171'
+      backgroundColor.value = event.hexCode || '#f87171'
     } else {
-        content.value = ''
+      content.value = ''
       startTime.value = ''
       endTime.value = ''
       backgroundColor.value = '#f87171'
@@ -43,26 +59,34 @@ watch(
 )
 
 function submit() {
-    if (!content.value.trim()) {
-        alert('일정을 입력해주세요.')
-        return
-    }
+  if (!content.value.trim()) {
+    alert('일정을 입력해주세요.')
+    return
+  }
 
-    if (startTime.value >= endTime.value) {
+  if (startTime.value >= endTime.value) {
     alert('시작 시간은 종료 시간보다 빠르거나 같을 수 없습니다.')
     return
   }
 
-  emit('save', {
-      content: content.value,
-    start: `${props.date}T${startTime.value}`,
-    end: `${props.date}T${endTime.value}`,
-    backgroundColor: backgroundColor.value
-  })
+  const payload = {
+    content: content.value,
+    scheduleDate: props.date,
+    startTime: startTime.value + ':00',
+    endTime: endTime.value + ':00',
+    scheduleColorId: getScheduleColorIdFromColorCode(backgroundColor.value),
+    scheduleId: props.eventData?.id || null
+  }
+
+  if (isEditMode.value && props.eventData && props.eventData.id) {
+    payload.scheduleId = props.eventData.id
+  }
+
+  emit('save', payload)
+
   toast.success(`반영되었습니다.`)
   emit('close')
 }
-
 </script>
 
 <template>
