@@ -298,7 +298,7 @@ const goToCalendar = () => {
                     >
                         {{ proposal.statusName }}
                     </span>
-                    <span class="text-right text-gray-medium text-sm col-span-2">{{ proposal.createdAt.slice(0,10) }}</span>
+                    <span class="text-right text-gray-medium text-sm col-span-2">{{ proposal.presentedAt.slice(0,10) }}</span>
                 </li>
             </ul>
         </div>
@@ -344,7 +344,8 @@ const goToCalendar = () => {
                             >
                                 {{ contract.statusName }}
                             </span>
-                    </li>
+                            <span class="text-right text-gray-medium text-sm col-span-2">{{ contract.presentedAt.slice(0,10) }}</span>
+                        </li>
                     </template>
                 </ul>
               </div>
