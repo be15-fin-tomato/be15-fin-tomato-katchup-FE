@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -34,15 +34,16 @@ const dailySchedule = ref([])
 
 const fetchEvents = async () => {
     try {
-        const res = await getScheduleList();
-        const raw = res.data.data.scheduleListsAll || [];
+        const res = await getScheduleList(selectedDate.value);
+
+        const scheduleList = res.data.scheduleListsAll || [];
 
         const formatTime = (timeStr) => {
             if (!timeStr) return '00:00:00';
             return timeStr.length === 5 ? `${timeStr}:00` : timeStr;
         };
 
-        events.value = raw.map(item => {
+        events.value = scheduleList.map(item => {
             const scheduleDate = item.scheduleDate;
             const start = `${scheduleDate}T${formatTime(item.startTime)}`;
             const end = `${scheduleDate}T${formatTime(item.endTime)}`;
@@ -60,33 +61,44 @@ const fetchEvents = async () => {
                 hexCode: item.hexCode,
             };
         });
-
-        console.log('✅ events loaded:', events.value);
     } catch (err) {
-        toast.error('전체 일정을 불러오지 못했습니다.');
+        toast.error('해당 일정을 불러오지 못했습니다.');
         console.error(err);
     }
 };
 
+async function fetchScheduleDetail(date) {
+    try {
+        const res = await getScheduleDetail(date)
+        dailySchedule.value = res.data.data.scheduleListsAll || []
+    } catch (error) {
+        toast.error('해당 날짜의 일정을 불러오는데 실패했습니다.')
+        console.error(error)
+    }
+}
+
+watch(selectedDate, async (newDate) => {
+    if (newDate) {
+        await fetchEvents();
+        await fetchScheduleDetail(newDate);
+    }
+}, { immediate: true });
+
 onMounted(async () => {
-    await fetchEvents()
-    window._events = events.value
-    console.log('events를 window._events에 할당함')
+    await fetchEvents();
+    await fetchScheduleDetail(selectedDate.value);
 })
 
-const calendarOptions = computed(() => ({
-    plugins: [dayGridPlugin, interactionPlugin],
-    locale: koLocale,
-    initialView: 'dayGridMonth',
-    selectable: true,
-    events: events.value,
-
-    eventTimeFormat: {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    },
-
+const calendarOptions = {
+  plugins: [dayGridPlugin, interactionPlugin],
+  locale: koLocale,
+  initialView: 'dayGridMonth',
+  selectable: true,
+  eventTimeFormat: {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  },
   dateClick(info) {
     selectedDate.value = formatDateToLocalYYYYMMDD(info.date)
   },
@@ -98,7 +110,8 @@ const calendarOptions = computed(() => ({
       content: info.event.extendedProps.content,
       start: info.event.extendedProps.startTime,
       end: info.event.extendedProps.endTime,
-      hexCode: info.event.extendedProps.hexCode
+      hexCode: info.event.extendedProps.hexCode,
+      scheduleDate: formatDateToLocalYYYYMMDD(info.event.start),
     }
     isModalOpen.value = true
   },
@@ -124,7 +137,7 @@ const calendarOptions = computed(() => ({
         arg.el.style.fontWeight = '700'
     }
   },
-}))
+}
 
 function openAddModal() {
   selectedEvent.value = null
@@ -142,18 +155,18 @@ function closeModal() {
 
 async function handleSave(newEvent) {
   try {
-    if (selectedEvent.value && selectedEvent.value.id) {
-      await updateSchedule(selectedEvent.value.id, newEvent)
-      toast.success('수정되었습니다.')
+      if (newEvent.scheduleId) {
+          await updateSchedule(newEvent.scheduleId, newEvent);
+      toast.success('수정되었습니다.');
     } else {
-      await postSchedule(newEvent)
-      toast.success('등록되었습니다.')
+      await postSchedule(newEvent);
+      toast.success('등록되었습니다.');
     }
-    isModalOpen.value = false
-    await fetchEvents()
+    isModalOpen.value = false;
+    await fetchEvents();
   } catch (err) {
-    toast.error('저장에 실패했습니다.')
-    console.error(err)
+    toast.error('저장에 실패했습니다.');
+    console.error(err);
   }
 }
 
@@ -170,24 +183,6 @@ async function deleteEvent(eventToDelete) {
         console.error(err);
     }
 }
-
-async function fetchScheduleDetail(date) {
-  try {
-    const res = await getScheduleDetail(date)
-    // API 응답에 맞게 데이터 구조 확인 후 할당
-    dailySchedule.value = res.data.data.scheduleList || []
-  } catch (error) {
-    toast.error('해당 날짜의 일정을 불러오는데 실패했습니다.')
-    console.error(error)
-  }
-}
-
-// 선택된 날짜가 변경되면 다시 조회
-watch(selectedDate, (newDate) => {
-  if (newDate) {
-    fetchScheduleDetail(newDate)
-  }
-}, { immediate: true })
 </script>
 
 <template>
@@ -198,6 +193,7 @@ watch(selectedDate, (newDate) => {
           <FullCalendar
               ref="calendarRef"
               :options="calendarOptions"
+              :events="events.value"
           />
       </div>
 
@@ -211,6 +207,10 @@ watch(selectedDate, (newDate) => {
             :key="index"
             class="flex bg-gray-light rounded-md p-3 mb-3 min-h-[72px]"
           >
+
+
+
+              <!------------------------------------------------------------------------------------------------------------------------------------->
             <!-- 색상바 -->
             <div class="flex items-stretch">
               <div

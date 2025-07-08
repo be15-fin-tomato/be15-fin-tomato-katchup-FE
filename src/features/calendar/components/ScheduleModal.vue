@@ -17,8 +17,9 @@ const backgroundColor = ref('#f87171')
 const isEditMode = computed(() => !!props.eventData)
 
 const colors = [
-  '#f87171', '#f97316', '#facc15', '#4ade80', '#22d3ee',
-  '#60a5fa', '#6366f1', '#a855f7', '#00FBFF'
+  '#f87171', '#f97316', '#facc15', '#4ade80',
+    '#22d3ee', '#60a5fa', '#6366f1', '#a855f7',
+    '#00FBFF'
 ]
 
 const colorIdMap = {
@@ -38,23 +39,23 @@ function getScheduleColorIdFromColorCode(hex) {
 }
 
 watch(
-  () => props.eventData,
-  async (event) => {
-    if (event) {
-        content.value = event.content
-      startTime.value = event.start.slice(11, 16)
-      endTime.value = event.end.slice(11, 16)
-      backgroundColor.value = ''
-      await nextTick()
-      backgroundColor.value = event.backgroundColor || '#f87171'
-    } else {
-        content.value = ''
-      startTime.value = ''
-      endTime.value = ''
-      backgroundColor.value = '#f87171'
-    }
-  },
-  { immediate: true }
+    () => props.eventData,
+    async (event) => {
+        if (event) {
+            content.value = event.content
+            startTime.value = event.startTime?.slice(0, 5) || ''
+            endTime.value = event.endTime?.slice(0, 5) || ''
+            backgroundColor.value = ''
+            await nextTick()
+            backgroundColor.value = event.hexCode || '#f87171'
+        } else {
+            content.value = ''
+            startTime.value = ''
+            endTime.value = ''
+            backgroundColor.value = '#f87171'
+        }
+    },
+    { immediate: true }
 )
 
 function submit() {
@@ -68,16 +69,23 @@ function submit() {
         return
     }
 
-    emit('save', {
+    const payload = {
         content: content.value,
-        scheduleDate: props.date,  // "2025-07-07"
-        startTime: startTime.value + ':00', // "09:00" → "09:00:00"
+        scheduleDate: props.date,
+        startTime: startTime.value + ':00',
         endTime: endTime.value + ':00',
-        scheduleColorId: getScheduleColorIdFromColorCode(backgroundColor.value)
-    })
+        scheduleColorId: getScheduleColorIdFromColorCode(backgroundColor.value),
+        scheduleId: props.eventData?.id || null
+  }
+  //
+  // if (isEditMode.value && props.eventData && props.eventData.id) {
+  //     payload.scheduleId = props.eventData.id
+  // }
 
-    toast.success(`반영되었습니다.`)
-    emit('close')
+  emit('save', payload)
+
+  toast.success(`반영되었습니다.`)
+  emit('close')
 }
 </script>
 

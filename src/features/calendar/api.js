@@ -1,11 +1,7 @@
 import api from '@/plugin/axios.js';
 
-export const getScheduleList = async (scheduleDate) => {
-    if (scheduleDate) {
-        return await api.get(`/calendar/schedule/${scheduleDate}/daily`);
-    } else {
-        return await api.get('/calendar/schedule/all');
-    }
+export const getScheduleList = async () => {
+  return await api.get('/calendar/schedule/all');
 };
 
 export const getScheduleDetail = async (scheduleDate) => {
