@@ -136,4 +136,13 @@ export const fetchSatisfactionScore = (satisfactionId) =>
 export const saveSatisfactionResult = (satisfactionId) =>
   api.post(`/satisfaction/save/${satisfactionId}`);
 
+/* 전체 만족도 조사 응답률 */
+export const fetchSatisfactionResponseRate = () => {
+  return api.get('/satisfaction/response');
+};
+
+/* 전체 만족도 평균 점수 */
+export const fetchSatisfactionAverage = () => {
+  return api.get('/satisfaction/average');
+};
 
