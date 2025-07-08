@@ -2,7 +2,8 @@ import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
+    // baseURL: import.meta.env.VITE_API_BASE_URL,
+    baseURL: 'http://13.125.4.11:8080/api/v1',
     withCredentials: true,
 });
 
