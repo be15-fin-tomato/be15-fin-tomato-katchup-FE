@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue';
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -33,45 +33,59 @@ const events = ref([])
 const dailySchedule = ref([])
 
 const fetchEvents = async () => {
-  try {
-    const res = await getScheduleList()
-    const raw = res.data.data.scheduleList || []
+    try {
+        const res = await getScheduleList();
+        const raw = res.data.data.scheduleListsAll || [];
 
-      const formatTime = (timeStr) => {
-          return timeStr?.length === 5 ? `${timeStr}:00` : timeStr
-      }
+        const formatTime = (timeStr) => {
+            if (!timeStr) return '00:00:00';
+            return timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+        };
 
-    events.value = raw.map(item => ({
-      id: item.scheduleId,
-      title: item.content,
-      start: `${item.scheduleDate}T${formatTime(item.startTime)}`,
-      end: `${item.scheduleDate}T${formatTime(item.endTime)}`,
-      backgroundColor: item.hexCode,
-      content: item.content,
-      startTime: formatTime(item.startTime),
-      endTime: formatTime(item.endTime),
-      hexCode: item.hexCode,
-    }))
+        events.value = raw.map(item => {
+            const scheduleDate = item.scheduleDate;
+            const start = `${scheduleDate}T${formatTime(item.startTime)}`;
+            const end = `${scheduleDate}T${formatTime(item.endTime)}`;
 
-      console.log('✅ events loaded:', events.value)
-  } catch (err) {
-    toast.error('일정을 불러오지 못했습니다.')
-    console.error(err)
-  }
-}
+            return {
+                id: item.scheduleId,
+                title: item.content,
+                start,
+                end,
+                allDay: false,
+                backgroundColor: item.hexCode,
+                content: item.content,
+                startTime: formatTime(item.startTime),
+                endTime: formatTime(item.endTime),
+                hexCode: item.hexCode,
+            };
+        });
+
+        console.log('✅ events loaded:', events.value);
+    } catch (err) {
+        toast.error('전체 일정을 불러오지 못했습니다.');
+        console.error(err);
+    }
+};
+
 onMounted(async () => {
     await fetchEvents()
     window._events = events.value
     console.log('events를 window._events에 할당함')
 })
 
+const calendarOptions = computed(() => ({
+    plugins: [dayGridPlugin, interactionPlugin],
+    locale: koLocale,
+    initialView: 'dayGridMonth',
+    selectable: true,
+    events: events.value,
 
-
-const calendarOptions = {
-  plugins: [dayGridPlugin, interactionPlugin],
-  locale: koLocale,
-  initialView: 'dayGridMonth',
-  selectable: true,
+    eventTimeFormat: {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    },
 
   dateClick(info) {
     selectedDate.value = formatDateToLocalYYYYMMDD(info.date)
@@ -110,11 +124,7 @@ const calendarOptions = {
         arg.el.style.fontWeight = '700'
     }
   },
-}
-
-// const filteredEvents = computed(() =>
-//   events.value.filter(event => event.start.startsWith(selectedDate.value))
-// )
+}))
 
 function openAddModal() {
   selectedEvent.value = null
@@ -152,7 +162,7 @@ async function deleteEvent(eventToDelete) {
     if (!confirmed) return;
 
     try {
-        await deleteSchedule(eventToDelete.id);
+        await deleteSchedule(eventToDelete.scheduleId);
         toast.success("삭제되었습니다.");
         await fetchEvents();
     } catch (err) {
@@ -185,12 +195,10 @@ watch(selectedDate, (newDate) => {
     <div class="flex p-6 gap-6">
       <!-- 캘린더 -->
       <div class="w-2/3 bg-white rounded-xl shadow-md p-4">
-        <FullCalendar
-          ref="calendarRef"
-          :options="calendarOptions"
-          :key="selectedDate"
-          :events="events"
-        />
+          <FullCalendar
+              ref="calendarRef"
+              :options="calendarOptions"
+          />
       </div>
 
       <!-- 상세 패널 -->
