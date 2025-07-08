@@ -37,15 +37,23 @@ const currentPage = computed({
 })
 
 async function loadInfluencers() {
-  const selectedTag = categoryMap[selectedCategory.value];
   const params = {
     page: currentPageZeroBased.value,
     size: pageSize,
-    ...(selectedTag !== 'ALL' && { category: selectedTag })
   };
 
   const res = await fetchInfluencerList(params);
-  influencerList.value = res.data.data.data;
+  const rawList = res.data.data.data;
+
+  if (selectedCategory.value === '전체') {
+    influencerList.value = rawList;
+  } else {
+    const selectedEngCategory = categoryMap[selectedCategory.value];
+    influencerList.value = rawList.filter(influencer =>
+      influencer.tags?.some(tag => tag.categoryName === selectedEngCategory)
+    );
+  }
+
   totalCount.value = res.data.data.pagination.totalCount;
   totalPages.value = res.data.data.pagination.totalPage;
 }
@@ -85,7 +93,7 @@ watch(currentPageZeroBased, () => {
         @update:selected="selectedCategory = $event"
       />
 
-      <div class="flex flex-1 py-5 ml-5 mr-4 justify-between text-gray-medium text-sm">
+      <div class="flex flex-1 py-5 px-5 justify-around text-gray-medium text-sm">
         <span>프로필</span>
         <span>채널명</span>
         <span>인스타 아이디</span>
