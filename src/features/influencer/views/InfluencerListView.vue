@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import InfluencerCard from '@/components/common/InfluencerCard.vue'
 import CommonFiltering from '@/components/layout/CommonFiltering.vue';
 import InfluencerCategory from '@/features/influencer/components/InfluencerCategory.vue';
@@ -10,8 +10,10 @@ const influencerList = ref([])
 const selectedCategory = ref('전체')
 const categoryList = ref([])
 
-const currentPage = ref(1)
-const pageSize = 6
+const currentPageZeroBased = ref(0); // 0부터 시작하는 페이지 인덱스
+const pageSize = 6;
+const totalCount = ref(0);
+const totalPages = ref(0);
 
 const categoryMap = {
   '전체': 'ALL',
@@ -27,82 +29,89 @@ const categoryMap = {
   '건강/운동': 'Health & Fitness',
   '키즈': 'Family & Kids',
 }
+const reverseCategoryMap = Object.fromEntries(Object.entries(categoryMap).map(([ko, en]) => [en, ko]))
 
-const reverseCategoryMap = Object.fromEntries(
-  Object.entries(categoryMap).map(([ko, en]) => [en, ko])
-)
+const currentPage = computed({
+  get: () => currentPageZeroBased.value + 1,
+  set: (val) => currentPageZeroBased.value = val - 1
+})
+
+async function loadInfluencers() {
+  const selectedTag = categoryMap[selectedCategory.value];
+  const params = {
+    page: currentPageZeroBased.value,
+    size: pageSize,
+    ...(selectedTag !== 'ALL' && { category: selectedTag })
+  };
+
+  const res = await fetchInfluencerList(params);
+  influencerList.value = res.data.data.data;
+  totalCount.value = res.data.data.pagination.totalCount;
+  totalPages.value = res.data.data.pagination.totalPage;
+}
 
 onMounted(async () => {
-  // 카테고리 호출 및 한글화
-  const categoryRes = await fetchCategoryList()
-  const rawCategories = categoryRes.data.data
-  categoryList.value = ['전체', ...rawCategories.map(cat => reverseCategoryMap[cat.categoryName] || cat.categoryName)]
+  const categoryRes = await fetchCategoryList();
+  const rawCategories = categoryRes.data.data;
+  categoryList.value = ['전체', ...rawCategories.map(cat => reverseCategoryMap[cat.categoryName] || cat.categoryName)];
 
-  // 인플루언서 호출
-  const influencerRes = await fetchInfluencerList()
-  influencerList.value = influencerRes.data.data.data
+  await loadInfluencers();
 })
 
-const filteredList = computed(() => {
-  const selectedTag = categoryMap[selectedCategory.value]
-  if (selectedTag === 'ALL') return influencerList.value
-
-  return influencerList.value.filter(item =>
-    (item.tags ?? []).some(tag => tag.categoryName === selectedTag)
-  )
+watch(selectedCategory, () => {
+  currentPageZeroBased.value = 0; // 카테고리 바꾸면 페이지 0으로
+  loadInfluencers();
 })
 
-const totalCount = computed(() => filteredList.value.length)
-const totalPages = computed(() => Math.ceil(totalCount.value / pageSize))
-const paginatedList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredList.value.slice(start, start + pageSize)
+watch(currentPageZeroBased, () => {
+  loadInfluencers();
 })
 </script>
 
 <template>
-    <div class="w-full min-h-screen bg-background flex font-sans">
-        <CommonFiltering />
-        <div class="container">
-            <div class="page-header">
-                <div class="page-title">
-                    인플루언서
-                    <span class="cnt-search"> (검색 결과: {{ totalCount }}건) </span>
-                </div>
-            </div>
-            <div class="blue-line"></div>
-
-            <InfluencerCategory
-              :categories="categoryList"
-              @update:selected="selectedCategory = $event"
-            />
-
-        <div class="flex flex-1 py-5 ml-5 mr-4 justify-between text-gray-medium text-sm">
-          <span>프로필</span>
-          <span>채널명</span>
-          <span>인스타 아이디</span>
-          <span>유튜브 구독자 수</span>
-          <span>인스타 팔로워 수</span>
-          <span>타깃 성별</span>
-          <span>타깃 연령대</span>
+  <div class="w-full min-h-screen bg-background flex font-sans">
+    <CommonFiltering />
+    <div class="container">
+      <div class="page-header">
+        <div class="page-title">
+          인플루언서
+          <span class="cnt-search"> (검색 결과: {{ totalCount }}건) </span>
         </div>
-
-          <div v-if="paginatedList.length === 0" class="text-center text-gray-500 py-10">
-            해당하는 인플루언서가 없습니다.
-          </div>
-
-          <div v-else v-for="influencer in paginatedList" :key="influencer.influencerId">
-            <InfluencerCard :influencer="influencer" />
-          </div>
-
-        <!-- 페이지네이션 -->
-          <div v-if="totalPages > 0" class="flex justify-center mt-8">
-            <PagingBar
-              :totalPages="totalPages"
-              :currentPage="currentPage"
-              @update:currentPage="(val) => currentPage = val"
-            />
-          </div>
       </div>
+      <div class="blue-line"></div>
+
+      <InfluencerCategory
+        :categories="categoryList"
+        @update:selected="selectedCategory = $event"
+      />
+
+      <div class="flex flex-1 py-5 ml-5 mr-4 justify-between text-gray-medium text-sm">
+        <span>프로필</span>
+        <span>채널명</span>
+        <span>인스타 아이디</span>
+        <span>유튜브 구독자 수</span>
+        <span>인스타 팔로워 수</span>
+        <span>타깃 성별</span>
+        <span>타깃 연령대</span>
+      </div>
+
+      <div v-if="influencerList.length === 0" class="text-center text-gray-500 py-10">
+        해당하는 인플루언서가 없습니다.
+      </div>
+
+      <div v-else v-for="influencer in influencerList" :key="influencer.influencerId">
+        <InfluencerCard :influencer="influencer" />
+      </div>
+
+      <!-- 페이지네이션 -->
+      <div v-if="totalPages > 1" class="flex justify-center mt-8">
+        <PagingBar
+          :totalPages="totalPages"
+          :currentPage="currentPage"
+          @update:currentPage="(val) => currentPage = val"
+        />
+      </div>
+    </div>
   </div>
 </template>
+
