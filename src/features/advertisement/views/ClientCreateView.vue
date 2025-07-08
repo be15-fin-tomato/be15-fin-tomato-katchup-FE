@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import ClientCreateForm from '@/features/advertisement/components/ClientCreateForm.vue';
+import ClientCompanyForm from '@/features/advertisement/components/ClientCompanyForm.vue';
 import { createClientCompany } from '@/features/advertisement/api.js';
 import { useToast } from 'vue-toastification';
 import { Icon } from '@iconify/vue';
@@ -66,7 +66,7 @@ const handleSave = async () => {
         <div class="blue-line"></div>
 
         <!-- 고객사 등록 폼 본문 -->
-        <ClientCreateForm ref="formRef" :isEditing="true" />
+        <ClientCompanyForm ref="formRef" :isEditing="true" />
       </div>
     </div>
   </div>
