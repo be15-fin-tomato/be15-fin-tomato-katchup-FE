@@ -153,6 +153,14 @@ export async function uploadContractFile(contractId, formData) {
   });
 }
 
+/* 계약서 다운로드 */
+export const downloadContractFile = async (key) => {
+  return await api.get('/file/download/contract', {
+    params: { key },
+    responseType: 'blob',
+  });
+};
+
 
 
 

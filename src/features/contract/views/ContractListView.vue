@@ -3,9 +3,13 @@ import { ref, onMounted } from 'vue';
 import ContractFiltering from '@/features/contract/components/ContractFiltering.vue';
 import PasswordModal from '@/features/contract/components/PasswordModal.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
-import { fetchContractFile, fetchContractSuccessList } from '@/features/contract/api';
+import {
+  downloadContractFile,
+  fetchContractFile,
+  fetchContractSuccessList
+} from '@/features/contract/api';
 import ContractUploadModal from '@/features/contract/components/ContractUploadModal.vue';
-import { useToast } from 'vue-toastification'
+import { useToast } from 'vue-toastification';
 
 const toast = useToast();
 
@@ -42,7 +46,10 @@ const loadContracts = async () => {
       size: pageSize,
       searchType: searchModel.value.searchType,
       keyword: searchModel.value.keyword,
-      registrationStatus: searchModel.value.registrationStatus === 'all' ? null : searchModel.value.registrationStatus,
+      registrationStatus:
+        searchModel.value.registrationStatus === 'all'
+          ? null
+          : searchModel.value.registrationStatus,
     });
     contractList.value = data.data.contractSuccess;
     totalPages.value = data.data.pagination.totalPage;
@@ -74,13 +81,23 @@ const handlePasswordSubmit = async (password) => {
   try {
     const { data } = await fetchContractFile(selectedContractId.value, password);
     const file = data.data.contractView[0];
+    showModal.value = false;
 
-    const blob = await fetch(file.filePath).then(res => res.blob());
+    const fileKey = file.key || file.filePath;
+    if (!fileKey) {
+      toast.error('파일 경로가 존재하지 않습니다.');
+      return;
+    }
+
+    const res = await downloadContractFile(fileKey);
+    const blob = new Blob([res.data], { type: res.headers['content-type'] });
     const url = window.URL.createObjectURL(blob);
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = decodeURIComponent(file.originalName || 'contract.pdf');
+    link.download =
+      file.originalName ||
+      'contract.pdf';
     link.click();
     window.URL.revokeObjectURL(url);
 
@@ -121,7 +138,11 @@ onMounted(() => {
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(item, index) in contractList" :key="index" class="border-b">
+          <tr
+            v-for="(item, index) in contractList"
+            :key="index"
+            class="border-b"
+          >
             <td class="py-2">{{ item.campaignName }}</td>
             <td>{{ item.productName }}</td>
             <td>{{ item.clientCompanyName }}</td>
@@ -157,7 +178,12 @@ onMounted(() => {
       </div>
     </div>
 
-    <PasswordModal v-if="showModal" @submit="handlePasswordSubmit" @close="showModal = false" />
+    <!-- 모달 -->
+    <PasswordModal
+      v-if="showModal"
+      @submit="handlePasswordSubmit"
+      @close="showModal = false"
+    />
     <ContractUploadModal
       v-if="showUploadModal"
       :contract-id="selectedContractIdForUpload"

@@ -50,6 +50,7 @@ const triggerSearch = () => {
       <!-- 등록 상태 -->
       <select v-model="localValue.registrationStatus" class="input-form-box mb-2 w-full">
         <option value="all" disabled>계약서 등록 상태</option>
+        <option value="all">전체</option>
         <option value="registered">등록</option>
         <option value="unregistered">미등록</option>
       </select>

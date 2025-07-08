@@ -11,9 +11,10 @@
         type="password"
         placeholder="비밀번호 입력"
         class="w-full border rounded px-3 py-2 mb-4 text-sm"
+        @keyup.enter="handleConfirm"
       />
       <div class="flex justify-center gap-2">
-        <button @click="$emit('close')" class="btn-delete">
+        <button @click="handleCancel" class="btn-delete">
           취소
         </button>
         <button @click="handleConfirm" class="btn-create">
@@ -25,12 +26,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue';
 
-const emit = defineEmits(['submit', 'close']) // 이벤트 이름 'submit'임
-const password = ref('')
+const emit = defineEmits(['submit', 'close']);
+const password = ref('');
+
+watch(() => password.value, () => {}, { immediate: true });
 
 const handleConfirm = () => {
-  emit('submit', password.value) // submit 이벤트로 비밀번호 전달
-}
+  if (!password.value.trim()) return;
+  emit('submit', password.value);
+  password.value = '';
+};
+
+const handleCancel = () => {
+  password.value = '';
+  emit('close');
+};
 </script>
