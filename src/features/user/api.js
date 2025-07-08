@@ -146,3 +146,8 @@ export const fetchSatisfactionAverage = () => {
   return api.get('/satisfaction/average');
 };
 
+/* 인플루언서 목록 조회 */
+export const getInfluencers = async (params) => {
+  const response = await api.get('/influencer', { params });
+  return response.data;
+};
