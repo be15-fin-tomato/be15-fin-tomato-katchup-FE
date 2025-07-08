@@ -36,6 +36,13 @@ const salesActivity = ref({
   campaign: 0
 });
 
+
+const sortedEventList = computed(() =>
+    [...eventList.value].sort((a, b) => {
+        return a.startTime.localeCompare(b.startTime);
+    })
+);
+
 const fetchSalesActivityData = async () => {
   try {
     const res = await fetchSalesActivity();
@@ -183,95 +190,95 @@ const goToCalendar = () => {
                     </div>
                 </div>
             </div>
+
             <!-- 일정 정보 -->
             <div class="dashboard-section w-1/3">
                 <h2 class="text-xl font-bold">일정</h2>
                 <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full max-h-[200px] overflow-y-auto"></div>
-                    <ul>
-                        <li
-                            v-for="(event, index) in eventList"
-                            :key="index"
-                            class="flex items-center gap-2 py-0.5 border border-gray-medium rounded p-3 mb-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToCalendar"
-                        >
-                            <div class="w-2 h-5 rounded-sm" :style="{ backgroundColor: event.hexCode || event.hexCode }"></div>
-                            <span class="text-gray-medium">{{ event.startTime.slice(0, 5) }} ~</span>
-                            <span class="text-gray-medium">{{ event.endTime.slice(0, 5) }}</span>
-                            <span>{{ event.content }}</span>
-                        </li>
-                      </ul>
-                </div>
+                <ul>
+                    <li
+                        v-for="(event, index) in sortedEventList"
+                        :key="index"
+                        class="flex items-center gap-2 py-0.5 border border-gray-medium rounded p-3 mb-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                        @click="goToCalendar"
+                    >
+                        <div class="w-2 h-5 rounded-sm" :style="{ backgroundColor: event.hexCode || event.hexCode }"></div>
+                        <span class="text-gray-medium">{{ event.startTime.slice(0, 5) }} ~</span>
+                        <span class="text-gray-medium">{{ event.endTime.slice(0, 5) }}</span>
+                        <span>{{ event.content }}</span>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div class="flex gap-5">
             <!-- 리스트업 -->
             <div class="dashboard-section w-2/3">
             <h2 class="text-xl font-bold mb-2 px-3">리스트업</h2>
-            <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full"></div>
-            <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                <li
-                    v-for="(listUp, index) in listUpList"
-                    :key="index"
-                    class="grid w-full grid-cols-4 items-center gap-2 px-3 py-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                    @click="goToDetail('influencer/recommendation', listUp.id)"
-                >
-                    <div
-                        v-if="index > 0"
-                        class="col-span-full h-[1px] bg-gray-light mb-2"
-                        style="grid-column: 1 / -1"
-                    ></div>
-                    <span class="text-left font-bold truncate col-span-1">{{ listUp.companyName }}</span>
-                    <span class="text-left col-span-1">{{ listUp.campaignName }}</span>
-                    <span class="text-left col-span-1">{{ listUp.productName }}</span>
-                    <span class="text-left col-span-1">{{ listUp.listupTitle }}</span>
-                </li>
-            </ul>
+            <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
+                <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
+                    <template v-for="(listUp, index) in listUpList" :key="index">
+                        <li
+                            v-if="index > 0"
+                            class="h-[1px] bg-gray-light"
+                        ></li>
+                        <li
+                            class="grid w-full grid-cols-4 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                            @click="goToDetail('influencer/recommendation', listUp.id)"
+                        >
+                            <span class="text-left font-bold truncate col-span-1">{{ listUp.companyName }}</span>
+                            <span class="text-left col-span-1">{{ listUp.campaignName }}</span>
+                            <span class="text-left col-span-1">{{ listUp.productName }}</span>
+                            <span class="text-left col-span-1">{{ listUp.listupTitle }}</span>
+                        </li>
+                    </template>
+                </ul>
+
             </div>
                 <!-- 고객사 -->
                 <div class="dashboard-section w-1/3">
                     <h2 class="text-xl font-bold px-3">고객사</h2>
-                    <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full"></div>
-                        <ul class="max-h-[200px] overflow-y-auto">
+                    <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
+                    <ul class="max-h-[200px] overflow-y-auto">
+                        <template v-for="(company, index) in limitedCompanyList" :key="index">
+                            <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
+
                             <li
-                                v-for="(company, index) in limitedCompanyList"
-                                :key="index"
-                                class="grid w-full grid-cols-5 items-center gap-2 px-3 py-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                                class="grid w-full grid-cols-5 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                                 @click="goToDetail('management/client', company.id)"
                             >
-                                <div
-                                    v-if="index > 0"
-                                    class="col-span-full h-[1px] bg-gray-light mb-2"
-                                    style="grid-column: 1 / -1"
-                                ></div>
                                 <span class="text-left col-span-2">{{ company.clientCompanyName }}</span>
                                 <span class="text-left col-span-2">{{ company.telephone }}</span>
-                                <div class="col-span-1">
-                                    <p
-                                        class="text-xs font-semibold px-2 py-1 rounded-md w-fit"
-                                        :class="{
-                                             'bg-blue-400 text-white': company.statusName === '잠재',
-                                             'bg-green-400 text-white': company.statusName === '신규',
-                                             'bg-yellow-400 text-white': company.statusName === '기존',
-                                             'bg-gray-300 text-black': !['잠재', '신규', '기존'].includes(company.statusName)
-                                        }"
-                                    >
-                                        {{ company.statusName }}
-                                    </p>
-                                </div>
+                                <span class="col-span-1 flex justify-end">
+                                <span
+                                    class="text-xs font-semibold px-2 py-1 rounded-md w-fit"
+                                    :class="{
+                                    'bg-blue-400 text-white': company.statusName === '잠재',
+                                    'bg-green-400 text-white': company.statusName === '신규',
+                                    'bg-yellow-400 text-white': company.statusName === '기존',
+                                    'bg-gray-300 text-black': !['잠재', '신규', '기존'].includes(company.statusName)
+                                  }"
+                                >
+                                  {{ company.statusName }}
+                                </span>
+                              </span>
                             </li>
-                        </ul>
+                        </template>
+                    </ul>
+
+
                 </div>
           </div>
 
         <!-- 제안 -->
         <div class="dashboard-section w-full max-h-[320px] overflow-y-auto">
             <h2 class="text-xl font-bold mb-2 px-3">제안</h2>
-            <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full"></div>
+            <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
             <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
                 <li
                     v-for="(proposal, index) in proposalList"
                     :key="index"
-                    class="grid w-full grid-cols-18 items-center gap-2 px-3 py-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                    class="grid w-full grid-cols-18 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                     @click="goToDetail('sales/proposal', proposal.id)"
                 >
                     <div
@@ -291,7 +298,7 @@ const goToCalendar = () => {
                     >
                         {{ proposal.statusName }}
                     </span>
-                    <span class="text-right text-gray-medium text-sm col-span-2">{{ proposal.createdAt.slice(0,10) }}</span>
+                    <span class="text-right text-gray-medium text-sm col-span-2">{{ proposal.presentedAt.slice(0,10) }}</span>
                 </li>
             </ul>
         </div>
@@ -300,47 +307,46 @@ const goToCalendar = () => {
             <!-- 견적 -->
             <div class="dashboard-section w-1/2">
                 <h2 class="text-xl font-bold mb-2 px-3">견적</h2>
-                <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full"></div>
+                <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
                 <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                    <li
-                      v-for="(quotation, index) in quotationList"
-                      :key="index"
-                      class="grid w-full grid-cols-12 items-center gap-2 px-3 py-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                      @click="goToDetail('sales/quotation', quotation.id)"
-                    >
-                        <div
-                            v-if="index > 0"
-                            class="col-span-full h-[1px] bg-gray-light mb-2"
-                            style="grid-column: 1 / -1"
-                        ></div>
-                        <span class="text-left font-bold truncate col-span-2">{{ quotation.companyName }}</span>
-                        <span class="text-left col-span-6">{{ quotation.quotationTitle }}</span>
-                        <span class="text-left col-span-2">{{ formatPrice(quotation.adPrice) }}</span>
-                        <span class="text-left col-span-2 pl-3">{{ formatPrice(quotation.expectedProfit) }}</span>
-                    </li>
+                    <template v-for="(quotation, index) in quotationList" :key="index">
+                        <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
+                        <li
+                            class="grid w-full grid-cols-12 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                            @click="goToDetail('sales/quotation', quotation.id)"
+                        >
+                            <span class="text-left font-bold truncate col-span-2">{{ quotation.companyName }}</span>
+                            <span class="text-left col-span-6">{{ quotation.quotationTitle }}</span>
+                            <span class="text-left col-span-2">{{ formatPrice(quotation.adPrice) }}</span>
+                            <span class="text-left col-span-2 pl-3">{{ formatPrice(quotation.expectedProfit) }}</span>
+                        </li>
+                    </template>
                 </ul>
+
             </div>
             <!-- 계약 -->
             <div class="dashboard-section w-1/2">
                 <h2 class="text-xl font-bold mb-2 px-3">계약</h2>
-                <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full"></div>
+                <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
                 <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                    <li
-                        v-for="(contract, index) in contractList"
-                        :key="index"
-                        class="grid w-full grid-cols-10 items-center gap-2 px-3 py-2 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                        @click="goToDetail('sales/contract', contract.id)"
-                    >
-                        <span class="text-left font-bold truncate col-span-2">{{ contract.companyName }}</span>
-                        <span class="text-left col-span-3">{{ contract.campaignName }}</span>
-                        <span class="text-left col-span-3">{{ contract.contractTitle }}</span>
-                        <span
-                            class="text-center text-xs col-span-2 font-semibold px-2 py-1 rounded-md w-fit"
-                            :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
+                    <template v-for="(contract, index) in contractList" :key="index">
+                        <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
+                        <li
+                            class="grid w-full grid-cols-12 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                            @click="goToDetail('sales/quotation', contract.id)"
                         >
-                        {{ contract.statusName }}
-                    </span>
-                    </li>
+                            <span class="text-left font-bold truncate col-span-2">{{ contract.companyName }}</span>
+                            <span class="text-left col-span-3">{{ contract.campaignName }}</span>
+                            <span class="text-left col-span-3">{{ contract.contractTitle }}</span>
+                            <span
+                                class="text-center text-xs col-span-2 font-semibold px-2 py-1 rounded-md w-fit"
+                                :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
+                            >
+                                {{ contract.statusName }}
+                            </span>
+                            <span class="text-right text-gray-medium text-sm col-span-2">{{ contract.presentedAt.slice(0,10) }}</span>
+                        </li>
+                    </template>
                 </ul>
               </div>
         </div>
