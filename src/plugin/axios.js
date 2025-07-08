@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const api = axios.create({
     // baseURL: import.meta.env.VITE_API_BASE_URL,
-    baseURL: 'http://13.125.4.11:8080/api/v1',
+    baseURL: 'https://3.35.216.224:8080/api/v1',
     withCredentials: true,
 });
 
