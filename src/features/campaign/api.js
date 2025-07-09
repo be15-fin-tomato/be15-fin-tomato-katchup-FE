@@ -16,12 +16,18 @@ export const createCampaign = async (campaignInfo) => {
     return await api.post('/campaign', campaignInfo);
 };
 
+/* 캠페인 상세 조회 */
 export const getCampaignDetail = async (campaignId) => {
     return await api.get(`/campaign/${campaignId}`);
 };
 
-export const getCampaignHistory = async (campaignId) => {
-    return await api.get(`/campaign/history/${campaignId}`);
+/* 캠페인 수정 */
+export const updateCampaign = (data) => {
+  return api.put('/campaign/chance/update', data);
+};
+/* 캠페인 삭제 */
+export const deleteCampaign = (campaignId) => {
+  return api.delete(`/campaign/${campaignId}`);
 };
 
 export const getProposalList = async (page, size, filters = {}) => {
