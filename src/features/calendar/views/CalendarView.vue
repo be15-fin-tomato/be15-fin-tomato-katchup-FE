@@ -281,9 +281,8 @@ async function deleteEvent(eventToDelete) {
             </div>
           </div>
         </div>
-        <div v-else class="text-sm text-gray-400">
+        <div v-else class="text-sm text-gray-400 mt-5 mb-5">
           등록된 개인 일정이 없습니다.
-
         </div>
 
         <div v-if="pipelineDailySchedule.length > 0">
