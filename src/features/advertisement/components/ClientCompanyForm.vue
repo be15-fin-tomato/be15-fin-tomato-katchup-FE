@@ -8,8 +8,6 @@ const props = defineProps({
   users: { type: Array, default: () => [] }
 });
 
-// const emit = defineEmits(['save', 'cancel']);
-
 // 고객사 form
 const form = reactive({
   name: '',
@@ -105,8 +103,8 @@ const getFormData = () => ({
       clientManagerStatusId: employeeStatusMap[e.status],
       department: e.department || null,
       position: e.title || null,
-      phone: e.mobile || null,
       telephone: e.phone || null,
+      phone: e.mobile || null,
       email: e.email?.trim() || '',
       notes: e.note || null,
     }))
@@ -186,9 +184,22 @@ const deleteEmployee = (index) => {
 
 const editEmployee = (index) => {
   const target = employeeList.value[index];
-  Object.keys(newEmployee).forEach((key) => {
-    newEmployee[key] = target[key] ?? '';
+
+  if (!target) return;
+
+  // 수정 시 초기화
+  Object.assign(newEmployee, {
+    name: target.name || '',
+    status: target.status || '재직',
+    client: target.client || form.name,
+    department: target.department || '',
+    title: target.title || '',
+    phone: target.phone || '',
+    mobile: target.mobile || '',
+    email: target.email || '',
+    note: target.note || '',
   });
+
   editIndex.value = index;
   isAddingEmployee.value = true;
 };
