@@ -277,8 +277,7 @@ watch(isAddingEmployee, (val) => {
     <div class="container bg-white mt-12 w-full">
       <div class="flex justify-between items-center mb-4">
         <p class="font-bold">사원 정보 ({{ employeeList.length }})</p>
-        <button class="btn-create !py-1 !px-4 text-sm" @click="isAddingEmployee = true">추가</button>
-      </div>
+        <button class="btn-create !py-1 !px-4 text-sm" @click="isAddingEmployee = true" v-if="isEditing">추가</button>      </div>
 
       <div class="grid grid-cols-2 gap-4" v-if="employeeList.length > 0">
         <div v-for="(employee, index) in employeeList" :key="index" class="border rounded-lg p-4 flex items-center justify-between shadow-sm">
@@ -310,7 +309,7 @@ watch(isAddingEmployee, (val) => {
               <Icon icon="material-symbols:mail-outline" width="20" height="20" />
               MAIL
             </button>
-            <button class="btn-icon" @click="editEmployee(index)">
+            <button class="btn-icon" @click="editEmployee(index)" v-if="isEditing">
               <Icon icon="lucide:edit" width="20" height="20" />
               수정
             </button>
