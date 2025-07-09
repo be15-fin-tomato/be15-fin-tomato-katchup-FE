@@ -9,12 +9,13 @@ import ScheduleModal from '../components/ScheduleModal.vue'
 import { useToast } from 'vue-toastification';
 
 import {
-  getScheduleList,
-  getScheduleDetail,
-  postSchedule,
-  updateSchedule,
-  deleteSchedule
-} from '@/features/calendar/api.js'
+    getScheduleList,
+    getScheduleDetail,
+    postSchedule,
+    updateSchedule,
+    deleteSchedule,
+    getPipelineSchedule
+} from '@/features/calendar/api.js';
 
 function formatDateToLocalYYYYMMDD(date) {
   const year = date.getFullYear()
@@ -31,6 +32,46 @@ const selectedEvent = ref(null)
 const isModalOpen = ref(false)
 const events = ref([])
 const dailySchedule = ref([])
+const pipelineEvents = ref([])
+const pipelineDailySchedule = computed(() =>
+  pipelineEvents.value.filter(event =>
+    event.start === selectedDate.value
+  )
+)
+
+const fetchPipelineEvents = async () => {
+    try {
+        const res = await getPipelineSchedule();
+        const rawList = res.data.data.pipelineScheduleList || [];
+
+        const uniquePipelines = rawList
+            .filter(p => p.isDeleted === "N")
+            .reduce((acc, cur) => {
+                if (!acc.some(item => item.pipelineId === cur.pipelineId)) {
+                    acc.push(cur);
+                }
+                return acc;
+            }, []);
+
+        pipelineEvents.value = uniquePipelines.flatMap(item => {
+            const events = [];
+
+            // 제안 일정 (제안일)
+            if (item.presentedAt) {
+                events.push({
+                    id: `present-${item.pipelineId}`,
+                    title: `${item.name} (제안)`,
+                    start: item.presentedAt,
+                    allDay: true
+                });
+            }
+            return events;
+        });
+    } catch (err) {
+        toast.error("파이프라인 일정을 불러오는 데 실패했습니다.");
+        console.error("fetchPipelineEvents error:", err);
+    }
+}
 
 const fetchEvents = async () => {
   try {
@@ -57,9 +98,10 @@ const fetchEvents = async () => {
       };
     });
 
-    console.log('📅 events for calendar:', events.value);
+      await fetchPipelineEvents();
+      events.value = [...events.value, ...pipelineEvents.value];
   } catch (err) {
-    toast.error('📛 일정 데이터를 불러오지 못했습니다.');
+    toast.error('일정 데이터를 불러오지 못했습니다.');
     console.error('fetchEvents error:', err);
   }
 };
@@ -111,7 +153,6 @@ const calendarOptions = computed(() => ({
       hexCode: info.event.extendedProps.hexCode,
       scheduleDate: formatDateToLocalYYYYMMDD(info.event.start),
     }
-    isModalOpen.value = true
   },
 
   viewDidMount(arg) {
@@ -143,7 +184,7 @@ function openAddModal() {
 }
 
 function openEditModal(event) {
-  selectedEvent.value = event
+    selectedEvent.value = { ...event, id: event.scheduleId }
   isModalOpen.value = true
 }
 
@@ -177,6 +218,7 @@ async function deleteEvent(eventToDelete) {
     await deleteSchedule(eventToDelete.scheduleId);
     toast.success("삭제되었습니다.");
     await fetchEvents();
+      await fetchScheduleDetail(selectedDate.value);
   } catch (err) {
     toast.error('삭제에 실패했습니다.');
     console.error(err);
@@ -215,9 +257,9 @@ async function deleteEvent(eventToDelete) {
 
             <!-- 시간 + 제목 -->
             <div class="flex-1 pl-3 flex flex-col justify-center">
-              <span class="text-sm text-black-500">{{ event.startTime }}</span>
+              <span class="text-sm text-black-500">{{ event.startTime.slice(0,5) }}</span>
               <br />
-              <span class="text-sm text-black-500">{{ event.endTime }}</span>
+              <span class="text-sm text-black-500">{{ event.endTime.slice(0,5) }}</span>
             </div>
             <div class="flex-20 pl-5 flex flex-col justify-center">
               <span
@@ -240,6 +282,27 @@ async function deleteEvent(eventToDelete) {
           </div>
         </div>
         <div v-else class="text-sm text-gray-400">일정이 없습니다.</div>
+
+        <div v-if="pipelineDailySchedule.length > 0">
+          <div
+            v-for="(event, index) in pipelineDailySchedule"
+            :key="'pipeline-' + index"
+            class="flex bg-gray-100 rounded-md p-3 mb-3 min-h-[72px] border border-blue-300"
+          >
+            <div class="flex items-stretch">
+              <div
+                class="w-1.5 rounded-sm bg-blue-500"
+                style="width: 4px; height: 100%;"
+              ></div>
+            </div>
+
+            <div class="flex-1 pl-3 flex flex-col justify-center">
+      <span class="text-md text-black-700 whitespace-normal break-words">
+        {{ event.title }}
+      </span>
+            </div>
+          </div>
+        </div>
 
         <!-- 추가 버튼 -->
         <div class="flex justify-center mt-6">

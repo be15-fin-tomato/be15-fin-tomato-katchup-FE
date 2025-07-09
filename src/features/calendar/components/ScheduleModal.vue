@@ -17,21 +17,21 @@ const backgroundColor = ref('#f87171')
 const isEditMode = computed(() => !!props.eventData)
 
 const colors = [
-  '#f87171', '#f97316', '#facc15', '#4ade80',
-  '#22d3ee', '#60a5fa', '#6366f1', '#a855f7',
-  '#00FBFF'
+  '#FF8A8A', '#FFC15D', '#FFFF00', '#CEFFE2',
+  '#B1D1FF', '#000080', '#FFBAFF', '#BABABA',
+  '#C2FEFF'
 ]
 
 const colorIdMap = {
-  '#f87171': 1,
-  '#f97316': 2,
-  '#facc15': 3,
-  '#4ade80': 4,
-  '#22d3ee': 5,
-  '#60a5fa': 6,
-  '#6366f1': 7,
-  '#a855f7': 8,
-  '#00FBFF': 9
+  '#FF8A8A': 1,
+  '#FFC15D': 2,
+  '#FFFF00': 3,
+  '#CEFFE2': 4,
+  '#B1D1FF': 5,
+  '#000080': 6,
+  '#FFBAFF': 7,
+  '#BABABA': 8,
+  '#C2FEFF': 9
 }
 
 function getScheduleColorIdFromColorCode(hex) {
@@ -81,10 +81,7 @@ function submit() {
   if (isEditMode.value && props.eventData && props.eventData.id) {
     payload.scheduleId = props.eventData.id
   }
-
   emit('save', payload)
-
-  toast.success(`반영되었습니다.`)
   emit('close')
 }
 </script>
