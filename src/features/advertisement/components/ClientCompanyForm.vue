@@ -194,8 +194,8 @@ const editEmployee = (index) => {
     client: target.client || form.name,
     department: target.department || '',
     title: target.title || '',
-    phone: target.phone || '',
-    mobile: target.mobile || '',
+    phone: target.telephone || '',
+    mobile: target.phone || '',
     email: target.email || '',
     note: target.note || '',
   });
