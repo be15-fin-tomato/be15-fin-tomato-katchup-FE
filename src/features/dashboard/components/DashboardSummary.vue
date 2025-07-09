@@ -8,7 +8,7 @@ const props = defineProps({
   },
   data: {
     type: Object,
-    default: () => ({ shorts: 0, views: '0만', comments: '0개', likes: '0만' })
+    default: () => ({ totalVideos: '0개', views: '0만', comments: '0개', likes: '0만' })
   }
 })
 
@@ -17,12 +17,11 @@ const getTitle = () => {
 }
 </script>
 
-
 <template>
   <div class="dashboard-section">
     <div class="grid grid-cols-4 text-center divide-x divide-gray-medium">
       <div class="px-4">
-        <SummaryItem :title="getTitle()" :value="data.shorts" icon="ph:play-circle-bold" />
+        <SummaryItem :title="getTitle()" :value="data.totalVideos" icon="ph:play-circle-bold" />
       </div>
       <div class="px-4">
         <SummaryItem title="평균 조회 수" :value="data.views" icon="mdi:eye-outline" />
