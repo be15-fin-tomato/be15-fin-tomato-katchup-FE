@@ -74,11 +74,11 @@ const formatGender = (gender) => {
         </div>
          <!-- SNS 영역 -->
           <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 text-md text-gray-dark">
               <Icon icon="logos:youtube-icon" class="w-7 h-7" />
               <span>구독자 {{ formatCount(influencer?.youtube.subscriber) }}</span>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 text-md text-gray-dark">
               <Icon icon="skill-icons:instagram" class="w-7 h-7" />
               <span>팔로워 {{ formatCount(influencer?.instagram.follower) }}</span>
             </div>
