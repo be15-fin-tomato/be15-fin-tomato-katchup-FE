@@ -30,7 +30,12 @@ export const getClientCompanyDetail = async (clientCompanyId) => {
   return await api.get(`/client-companies/${clientCompanyId}/detail`);
 };
 
-// 고객사를 담당하는 유저 조회
+// 고객사를 담당하는 유저 조회 API
 export const getClientCompanyUsers = async (clientCompanyId) => {
   return await api.get(`/client-companies/${clientCompanyId}/users`);
+};
+
+// 고객사의 사원 단독 삭제 API
+export const deleteClientManager = async (clientManagerId) => {
+  return await api.delete(`/client-managers/${clientManagerId}`);
 };

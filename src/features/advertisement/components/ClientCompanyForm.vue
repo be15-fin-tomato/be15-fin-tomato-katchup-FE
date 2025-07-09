@@ -7,6 +7,7 @@ const props = defineProps({
   initialData: { type: Object, default: () => ({}) },
   users: { type: Array, default: () => [] }
 });
+const emit = defineEmits(['delete-employee']);
 
 // 고객사 form
 const form = reactive({
@@ -59,7 +60,8 @@ watch(() => props.initialData, (data) => {
     console.log('📦 props.users:', props.users);
 
     form.name = data.clientCompanyName || '';
-    form.status = Object.entries(companyStatusMap).find(([, v]) => v === data.clientCompanyStatusId)?.[0] || '';    form.revenue = data.sales?.toString() || '';
+    form.status = Object.entries(companyStatusMap).find(([, v]) => v === data.clientCompanyStatusId)?.[0] || '';
+    form.revenue = data.sales?.toString() || '';
     form.employeeCount = data.numberOfEmployees?.toString() || '';
     form.businessNumber = data.businessId || '';
     form.note = data.notes || '';
@@ -110,7 +112,18 @@ const getFormData = () => ({
     }))
     : [],
 });
-defineExpose({ getFormData });
+
+const closeEmployeeForm = () => {
+    isAddingEmployee.value = false;
+    editIndex.value = -1;
+    // newEmployee 폼 초기화
+    Object.keys(newEmployee).forEach((key) => {
+        if (key !== 'client') newEmployee[key] = '';
+    });
+    newEmployee.status = '재직';
+};
+
+defineExpose({ getFormData, closeEmployeeForm });
 
 watch(() => form.name, (newVal) => {
   newEmployee.client = newVal;
@@ -169,17 +182,8 @@ const addEmployee = () => {
     employeeList.value[editIndex.value] = employeeData;
   }
 
-  // 초기화
-  Object.keys(newEmployee).forEach((key) => {
-    if (key !== 'client') newEmployee[key] = '';
-  });
-  newEmployee.status = '재직';
-  editIndex.value = -1;
-  isAddingEmployee.value = false;
-};
+    closeEmployeeForm();
 
-const deleteEmployee = (index) => {
-  employeeList.value.splice(index, 1);
 };
 
 const editEmployee = (index) => {
@@ -204,10 +208,24 @@ const editEmployee = (index) => {
   isAddingEmployee.value = true;
 };
 
+const deleteEmployee = (index) => {
+    const employee = employeeList.value[index];
+    if (!employee) return;
+
+    if (!employee.clientManagerId) {
+        // 새로 추가된 사원이면 바로 제거
+        employeeList.value.splice(index, 1);
+        closeEmployeeForm(); // 삭제 후 폼 닫기 및 초기화
+    } else {
+        // 기존 DB에 있던 사원이면 부모에 삭제 요청 emit
+        emit('delete-employee', employee.clientManagerId);
+    }
+};
+
 watch(isAddingEmployee, (val) => {
-  if (val && editIndex.value === -1) {
-    newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
-  }
+    if (val && editIndex.value === -1) {
+        newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
+    }
 });
 </script>
 <template>
@@ -304,20 +322,22 @@ watch(isAddingEmployee, (val) => {
               {{ employee.email }}
             </p>
           </div>
-          <div class="flex gap-2">
-            <button class="btn-icon">
-              <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-              MAIL
-            </button>
-            <button class="btn-icon" @click="editEmployee(index)" v-if="isEditing">
-              <Icon icon="lucide:edit" width="20" height="20" />
-              수정
-            </button>
-            <button class="btn-icon" @click="deleteEmployee(index)">
-              <Icon icon="gg:trash" width="20" height="20" />
-              삭제
-            </button>
-          </div>
+            <div class="flex gap-2">
+                <button class="btn-icon">
+                    <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                    MAIL
+                </button>
+                <template v-if="isEditing">
+                    <button class="btn-icon" @click="editEmployee(index)">
+                        <Icon icon="lucide:edit" width="20" height="20" />
+                        수정
+                    </button>
+                    <button class="btn-icon" @click="deleteEmployee(index)">
+                        <Icon icon="gg:trash" width="20" height="20" />
+                        삭제
+                    </button>
+                </template>
+            </div>
         </div>
       </div>
     </div>
@@ -370,6 +390,7 @@ watch(isAddingEmployee, (val) => {
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-4">
+        <button v-if="editIndex !== -1" class="btn-delete !px-5" @click="() => { deleteEmployee(editIndex); isAddingEmployee = false; }">삭제</button>
         <button class="btn-delete !px-5" @click="isAddingEmployee = false">취소</button>
         <button class="btn-create !px-5" @click="addEmployee">
           {{ editIndex === -1 ? '등록' : '수정 완료' }}
