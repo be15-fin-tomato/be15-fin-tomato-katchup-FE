@@ -1,3 +1,193 @@
+<template>
+  <div class="container" v-bind="$attrs">
+    <div class="page-header">
+      <div class="page-title">템플릿 목록</div>
+    </div>
+    <div class="blue-line mb-6"></div>
+
+    <div class="tem-box w-full max-w-full">
+      <div class="flex gap-6 min-w-0">
+        <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
+          <div class="flex items-center justify-between px-4 pt-4 pb-2">
+            <h3 class="font-bold text-sm">종류</h3>
+            <button
+              class="text-gray-dark text-sm cursor-pointer"
+              @click="showBigInput = true"
+            >
+              <Icon icon="tdesign:plus" width="24" height="24" />
+            </button>
+          </div>
+          <div class="border-t border-gray-dark mb-2"></div>
+
+          <div class="overflow-y-auto flex-1 px-4">
+            <div v-for="item in bigList" :key="item.id" class="group relative mb-2">
+              <div class="flex items-center gap-2">
+                <template v-if="editingBigId === item.id">
+                  <input
+                    v-model="editBigName"
+                    class="w-full border px-2 py-1 rounded text-sm"
+                  />
+                  <button @click="confirmEditBig(item)">
+                    <Icon
+                      icon="teenyicons:tick-small-outline"
+                      class="w-5 h-5"
+                    />
+                  </button>
+                  <button @click="cancelEditBig">
+                    <Icon icon="iconoir:cancel" width="18" height="18" />
+                  </button>
+                </template>
+                <template v-else>
+                  <input
+                    type="radio"
+                    :value="item"
+                    v-model="selectedBig"
+                    :disabled="showBigInput"
+                  />
+                  <input
+                    type="text"
+                    :value="item.name"
+                    readonly
+                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer"
+                  />
+                  <div
+                    class="absolute right-0 top-1 hidden group-hover:flex gap-1"
+                  >
+                    <button @click="startEditBig(item)">
+                      <Icon icon="ei:pencil" class="w-5 h-5" />
+                    </button>
+                    <button @click="deleteItem(item,'big')">
+                      <Icon icon="iconoir:cancel" width="18" height="18" />
+                    </button>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <div v-if="showBigInput" class="flex items-center gap-2 mb-2">
+              <input
+                v-model="newBigName"
+                placeholder="종류를 입력하세요."
+                class="w-full border border-gray-dark px-2 py-1 rounded text-sm"
+              />
+              <button @click="confirmAddBig">
+                <Icon icon="teenyicons:tick-small-outline" class="w-6 h-6" />
+              </button>
+              <button @click="cancelAddBig">
+                <Icon icon="iconoir:cancel" width="20" height="20" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
+          <div class="flex items-center justify-between px-4 pt-4 pb-2">
+            <h3 class="font-bold text-sm">목록</h3>
+            <button
+              class="text-gray-dark text-sm cursor-pointer"
+              @click="showSmallModal = true"
+            >
+              <Icon icon="tdesign:plus" width="24" height="24" />
+            </button>
+          </div>
+          <div class="border-t border-gray-dark mb-2"></div>
+
+          <div class="overflow-y-auto flex-1 px-4">
+            <div
+              v-for="item in filteredSmallList"
+              :key="item.id"
+              class="group relative mb-2"
+            >
+              <div class="flex items-center gap-2">
+                <input type="radio" :value="item" :checked="selectedSmall?.id === item.id" @change="selectSmallItem(item)" />
+                <input
+                  type="text"
+                  :value="item.name"
+                  readonly
+                  class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer"
+                />
+                <div class="absolute right-0 top-1 hidden group-hover:flex gap-1">
+                  <button @click="editItem(item)">
+                    <Icon icon="ei:pencil" class="w-6 h-6" />
+                  </button>
+                  <button @click="deleteItem(item,'small')">
+                    <Icon icon="iconoir:cancel" width="20" height="20" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-[650px] border border-gray-dark rounded bg-white flex flex-col">
+          <div class="flex items-center justify-between px-4 pt-4 pb-2">
+            <h3 class="font-bold text-sm">정보</h3>
+          </div>
+          <div class="border-t border-gray-dark mb-2"></div>
+
+          <div class="flex-1 px-4 overflow-y-auto">
+            <template v-if="selectedSmall">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="flex items-center gap-2">
+                  <label class="font-semibold whitespace-nowrap">계약서명</label>
+                  <input
+                    v-model="selectedSmall.name"
+                    class="border rounded px-2 py-1 text-sm w-[150px]"
+                    readonly
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">내용</label>
+                <textarea
+                  v-model="selectedSmall.content"
+                  class="w-full border rounded px-2 py-1 text-sm h-24"
+                  readonly
+                ></textarea>
+              </div>
+              <div v-if="selectedSmall.file" class="mt-4">
+                <label class="block font-semibold mb-1">첨부 파일</label>
+                <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm">
+                  <Icon icon="codex:file" class="text-blue-500 w-4 h-4" />
+                  <span class="text-gray-700">
+                    {{ selectedSmall.file.originalName }}
+                  </span>
+                  <span class="text-gray-500 text-xs">({{ selectedSmall.file.program }})</span>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <p class="text-gray-400">템플릿을 선택해주세요.</p>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="editor-tem-box flex flex-col gap-6 my-6">
+      <SendEmail
+        :title="selectedSmall"
+        :initialContent="selectedSmall?.content"
+        :initialFile="selectedSmall?.file"
+        :name="null"
+        :email="null"
+      />
+    </div>
+  </div>
+
+  <SmallTemplateModal
+    :selectedBig="selectedBig"
+    :show="showSmallModal"
+    @submit="handleAddSmall"
+    @close="showSmallModal = false"
+  />
+
+  <SmallTemplateEditModal
+    :show="showEditModal"
+    :item="editTarget"
+    @submit="handleUpdateSmall"
+    @close="showEditModal = false"
+  />
+</template>
+
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { Icon } from '@iconify/vue';
@@ -74,7 +264,7 @@ async function fetchSmallListAndDetails(objectId, detailId = null) {
         createdAt: data.selectedDetail.createdAt,
         updatedAt: data.selectedDetail.updatedAt,
         parentName: data.object?.title || selectedBig.value?.name,
-        file: data.selectedDetail.file // 파일 정보도 selectedSmall에 포함되어야 합니다.
+        file: data.selectedDetail.file
       };
     } else {
       selectedSmall.value = null;
@@ -270,194 +460,3 @@ function cancelAddBig() {
   showBigInput.value = false;
 }
 </script>
-
-<template>
-  <div class="container" v-bind="$attrs">
-    <div class="page-header">
-      <div class="page-title">템플릿 목록</div>
-    </div>
-    <div class="blue-line mb-6"></div>
-
-    <div class="tem-box w-full max-w-full">
-      <div class="flex gap-6 min-w-0">
-        <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
-          <div class="flex items-center justify-between px-4 pt-4 pb-2">
-            <h3 class="font-bold text-sm">종류</h3>
-            <button
-              class="text-gray-dark text-sm cursor-pointer"
-              @click="showBigInput = true"
-            >
-              <Icon icon="tdesign:plus" width="24" height="24" />
-            </button>
-          </div>
-          <div class="border-t border-gray-dark mb-2"></div>
-
-          <div class="overflow-y-auto flex-1 px-4">
-            <div v-for="item in bigList" :key="item.id" class="group relative mb-2">
-              <div class="flex items-center gap-2">
-                <template v-if="editingBigId === item.id">
-                  <input
-                    v-model="editBigName"
-                    class="w-full border px-2 py-1 rounded text-sm"
-                  />
-                  <button @click="confirmEditBig(item)">
-                    <Icon
-                      icon="teenyicons:tick-small-outline"
-                      class="w-5 h-5"
-                    />
-                  </button>
-                  <button @click="cancelEditBig">
-                    <Icon icon="iconoir:cancel" width="18" height="18" />
-                  </button>
-                </template>
-                <template v-else>
-                  <input
-                    type="radio"
-                    :value="item"
-                    v-model="selectedBig"
-                    :disabled="showBigInput"
-                  />
-                  <input
-                    type="text"
-                    :value="item.name"
-                    readonly
-                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer"
-                  />
-                  <div
-                    class="absolute right-0 top-1 hidden group-hover:flex gap-1"
-                  >
-                    <button @click="startEditBig(item)">
-                      <Icon icon="ei:pencil" class="w-5 h-5" />
-                    </button>
-                    <button @click="deleteItem(item,'big')">
-                      <Icon icon="iconoir:cancel" width="18" height="18" />
-                    </button>
-                  </div>
-                </template>
-              </div>
-            </div>
-            <div v-if="showBigInput" class="flex items-center gap-2 mb-2">
-              <input
-                v-model="newBigName"
-                placeholder="종류를 입력하세요."
-                class="w-full border border-gray-dark px-2 py-1 rounded text-sm"
-              />
-              <button @click="confirmAddBig">
-                <Icon icon="teenyicons:tick-small-outline" class="w-6 h-6" />
-              </button>
-              <button @click="cancelAddBig">
-                <Icon icon="iconoir:cancel" width="20" height="20" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
-          <div class="flex items-center justify-between px-4 pt-4 pb-2">
-            <h3 class="font-bold text-sm">목록</h3>
-            <button
-              class="text-gray-dark text-sm cursor-pointer"
-              @click="showSmallModal = true"
-            >
-              <Icon icon="tdesign:plus" width="24" height="24" />
-            </button>
-          </div>
-          <div class="border-t border-gray-dark mb-2"></div>
-
-          <div class="overflow-y-auto flex-1 px-4">
-            <div
-              v-for="item in filteredSmallList"
-              :key="item.id"
-              class="group relative mb-2"
-            >
-              <div class="flex items-center gap-2">
-                <input type="radio" :value="item" :checked="selectedSmall?.id === item.id" @change="selectSmallItem(item)" />
-                <input
-                  type="text"
-                  :value="item.name"
-                  readonly
-                  class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer"
-                />
-                <div class="absolute right-0 top-1 hidden group-hover:flex gap-1">
-                  <button @click="editItem(item)">
-                    <Icon icon="ei:pencil" class="w-6 h-6" />
-                  </button>
-                  <button @click="deleteItem(item,'small')">
-                    <Icon icon="iconoir:cancel" width="20" height="20" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="w-[650px] border border-gray-dark rounded bg-white flex flex-col">
-          <div class="flex items-center justify-between px-4 pt-4 pb-2">
-            <h3 class="font-bold text-sm">정보</h3>
-          </div>
-          <div class="border-t border-gray-dark mb-2"></div>
-
-          <div class="flex-1 px-4 overflow-y-auto">
-            <template v-if="selectedSmall">
-              <div class="flex items-center gap-4 mb-4">
-                <div class="flex items-center gap-2">
-                  <label class="font-semibold whitespace-nowrap">계약서명</label>
-                  <input
-                    v-model="selectedSmall.name"
-                    class="border rounded px-2 py-1 text-sm w-[150px]"
-                    readonly
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block font-semibold mb-1">내용</label>
-                <textarea
-                  v-model="selectedSmall.content"
-                  class="w-full border rounded px-2 py-1 text-sm h-24"
-                  readonly
-                ></textarea>
-              </div>
-              <div v-if="selectedSmall.file" class="mt-4">
-                <label class="block font-semibold mb-1">첨부 파일</label>
-                <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm">
-                  <Icon icon="codex:file" class="text-blue-500 w-4 h-4" />
-                  <span class="text-gray-700">
-                    {{ selectedSmall.file.originalName }}
-                  </span>
-                  <span class="text-gray-500 text-xs">({{ selectedSmall.file.program }})</span>
-                </div>
-              </div>
-            </template>
-            <template v-else>
-              <p class="text-gray-400">템플릿을 선택해주세요.</p>
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="editor-tem-box flex flex-col gap-6 my-6">
-      <!-- SendEmail 컴포넌트가 항상 렌더링되도록 조건부 렌더링 제거 -->
-      <SendEmail
-        :name="selectedSmall?.name"
-        :email="' '"
-        :title="selectedSmall"
-        :initialContent="selectedSmall?.content"
-        :initialFile="selectedSmall?.file"
-      />
-    </div>
-  </div>
-
-  <SmallTemplateModal
-    :selectedBig="selectedBig"
-    :show="showSmallModal"
-    @submit="handleAddSmall"
-    @close="showSmallModal = false"
-  />
-
-  <SmallTemplateEditModal
-    :show="showEditModal"
-    :item="editTarget"
-    @submit="handleUpdateSmall"
-    @close="showEditModal = false"
-  />
-</template>
