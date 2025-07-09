@@ -30,12 +30,12 @@ const formatNumber = (num) => {
     return Math.floor(parsedNum).toLocaleString();
   } else {
     // 10,000 이상일 때는 '만' 단위로 소수점 첫째 자리까지 표시
-    const 만단위 = parsedNum / 10000;
-    const fixedNum = 만단위.toFixed(1);
+    const inTenThousands = parsedNum / 10000;
+    const fixedNum = inTenThousands.toFixed(1);
 
     // 소수점 첫째 자리가 0이면 .0을 제거
     if (fixedNum.endsWith('.0')) {
-      return `${Math.floor(만단위)}만`;
+      return `${Math.floor(inTenThousands)}만`;
     } else {
       return `${fixedNum}만`;
     }
