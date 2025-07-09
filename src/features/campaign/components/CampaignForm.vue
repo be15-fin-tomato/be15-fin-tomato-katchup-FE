@@ -35,22 +35,6 @@ const parseNumberInput = (e, key) => {
   form[key] = raw ? parseInt(raw, 10) : 0;
 };
 
-function openPostcodeSearch() {
-  new daum.Postcode({
-    oncomplete: function (data) {
-      const selectedAddress = data.roadAddress || data.jibunAddress;
-      form.address = selectedAddress;
-      nextTick(() => {
-        const detailInput = document.getElementById('detailAddress');
-        detailInput?.focus();
-      });
-    },
-  }).open({
-    left: window.screen.width / 2 - popupWidth / 2,
-    top: window.screen.height / 2 - popupHeight / 2,
-  });
-}
-
 const openSearchPopup = (key, type) => {
   currentFieldKey.value = key;
   const currentValue = form[key];
@@ -65,11 +49,17 @@ const openSearchPopup = (key, type) => {
   );
 
   window.handleUserSelect = (selectedItems) => {
-    form[currentFieldKey.value] = Array.isArray(selectedItems)
-      ? selectedItems
-      : [selectedItems];
+    // key마다 단일/다중 여부 구분
+    if (['clientCompany', 'clientManager'].includes(currentFieldKey.value)) {
+      form[currentFieldKey.value] = selectedItems;
+    } else {
+      form[currentFieldKey.value] = Array.isArray(selectedItems)
+        ? selectedItems
+        : [selectedItems];
+    }
     popup.close();
   };
+
 };
 
 function formatToDate(value) {
@@ -207,14 +197,6 @@ const groups = [
                   readonly
                   class="input-form-box flex-1 bg-gray-100"
                 />
-                <button
-                  type="button"
-                  class="btn-open-popup"
-                  @click="openPostcodeSearch"
-                  v-if="isEditing"
-                >
-                  검색
-                </button>
               </div>
             </div>
 
@@ -246,8 +228,8 @@ const groups = [
               <input
                 type="text"
                 :value="Array.isArray(form[field.key])
-    ? form[field.key].map(u => u.name).join(', ')
-    : (form[field.key]?.name ?? '')"
+                  ? form[field.key].map(u => u.name).join(', ')
+                  : (form[field.key]?.name ?? '')"
                 readonly
                 class="input-form-box flex-1"
               />

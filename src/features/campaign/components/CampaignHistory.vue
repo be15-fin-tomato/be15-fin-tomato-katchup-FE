@@ -2,6 +2,9 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const props = defineProps({
   campaignHistory: {
@@ -13,7 +16,7 @@ const props = defineProps({
 const selectedFilters = ref(['all']);
 const startDate = ref('');
 const endDate = ref('');
-const createStep = ref('listup');
+const createStep = ref('listup'); // 초기 생성값
 const router = useRouter();
 
 // 필터 목록
@@ -37,14 +40,13 @@ const stepTypeToValue = {
   '계약': 'contract',
 };
 
-// 생성 URL 매핑
+// 생성 경로 매핑 (기획 인지 제외)
 const createUrlMap = {
-  chance: null,
-  listup: '/pipeline/list-up/create',
-  proposal: '/pipeline/proposal/create',
-  quotation: '/pipeline/quotation/create',
-  sales: '/pipeline/sales/create',
-  contract: '/pipeline/contract/create',
+  listup: '/influencer/recommendation',
+  proposal: '/sales/proposal/create',
+  quotation: '/sales/quotation/create',
+  contract: '/sales/contract/create',
+  sales: '/sales/revenue/create',
 };
 
 // 필터 토글
@@ -80,39 +82,21 @@ const filteredList = computed(() => {
     );
   }
 
-  const parseDate = (dateStr) => {
-    const d = new Date(dateStr);
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate()); // 시간 제거
-  };
-
   if (startDate.value) {
-    const start = parseDate(startDate.value);
-    list = list.filter((item) => {
-      const itemStart = item.startedAt ? parseDate(item.startedAt) : null;
-      return itemStart && itemStart >= start;
-    });
+    list = list.filter((item) => new Date(item.startedAt) >= new Date(startDate.value));
   }
-
   if (endDate.value) {
-    const end = parseDate(endDate.value);
-    list = list.filter((item) => {
-      const itemEnd = item.endedAt ? parseDate(item.endedAt) : null;
-      return itemEnd && itemEnd <= end;
-    });
+    list = list.filter((item) => new Date(item.endedAt) <= new Date(endDate.value));
   }
 
   return list;
 });
 
-
-
-
-
-// 생성 버튼 클릭 시 이동
+// + 생성 버튼
 const goToCreate = () => {
   const url = createUrlMap[createStep.value];
   if (url) router.push(url);
-  else alert('URL 미정의');
+  else toast.error('이동할 곳이 없습니다.');
 };
 
 // 상세 이동
@@ -138,7 +122,7 @@ const goToDetail = async (item) => {
   }
 };
 
-// 아이콘
+// 아이콘 매핑
 const getStepIcon = (step) => {
   const map = {
     '기획 인지': 'bxs:contact',
@@ -151,7 +135,7 @@ const getStepIcon = (step) => {
   return map[step] || 'material-symbols:circle';
 };
 
-// 색상
+// 색상 매핑
 const getStepColor = (step) => {
   const map = {
     '기획 인지': 'bg-pipeline-chance',
@@ -187,18 +171,17 @@ const formatPrice = (price) => {
 };
 </script>
 
-
 <template>
   <div class="flex flex-col gap-4 px-4">
+    <!-- 필터 버튼 -->
     <div class="flex flex-wrap gap-2">
       <button
         v-for="filter in filters"
         :key="filter.value"
-        :class="[
-          'flex items-center gap-1 px-3 py-1 rounded text-sm border',
+        :class="[ 'flex items-center gap-1 px-3 py-1 rounded text-sm border',
           selectedFilters.includes(filter.value)
             ? filter.color + ' text-white'
-            : 'bg-white',
+            : 'bg-white'
         ]"
         @click="toggleFilter(filter.value)"
       >
@@ -206,6 +189,7 @@ const formatPrice = (price) => {
       </button>
     </div>
 
+    <!-- 날짜 & 생성 -->
     <div class="flex justify-between items-center">
       <div class="flex gap-2">
         <input type="date" v-model="startDate" class="border rounded px-2 py-1 text-sm" />
@@ -214,14 +198,21 @@ const formatPrice = (price) => {
       </div>
       <div class="flex gap-2">
         <select v-model="createStep" class="border rounded px-2 py-1 text-sm">
-          <option v-for="filter in filters.filter(f => f.value !== 'all')" :key="filter.value" :value="filter.value">
+          <option
+            v-for="filter in filters.filter(f => f.value !== 'all' && f.value !== 'chance')"
+            :key="filter.value"
+            :value="filter.value"
+          >
             {{ filter.label }}
           </option>
         </select>
-        <button class="bg-blue-500 text-white rounded px-3 py-1 text-sm" @click="goToCreate">+ 생성</button>
+        <button class="bg-blue-500 text-white rounded px-3 py-1 text-sm" @click="goToCreate">
+          + 생성
+        </button>
       </div>
     </div>
 
+    <!-- 타임라인 리스트 -->
     <div class="relative max-h-[960px] overflow-y-auto">
       <div
         v-for="(item, index) in filteredList"

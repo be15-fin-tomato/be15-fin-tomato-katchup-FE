@@ -1,13 +1,15 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getCampaignDetail } from '@/features/campaign/api.js';
+import { getCampaignDetail, updateCampaign, deleteCampaign } from '@/features/campaign/api.js'; // ✅ 수정
+import { useToast } from 'vue-toastification'; // ✅ 알림용
 import { Icon } from '@iconify/vue';
 
 import CampaignForm from '@/features/campaign/components/CampaignForm.vue';
 import PipelineDiagram from '@/features/campaign/components/PipelineDiagram.vue';
 import CampaignHistory from '@/features/campaign/components/CampaignHistory.vue';
 
+const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 const campaignDetail = ref(null);
@@ -45,6 +47,11 @@ function initializeForm(detail) {
   });
 }
 
+function formatToDash(dateStr) {
+  if (!dateStr) return null;
+  return dateStr.replace(/\./g, '-');
+}
+
 // 캠페인 상세 + 타임라인 조회
 const fetchCampaignDetail = async () => {
   const res = await getCampaignDetail(route.params.campaignId);
@@ -66,7 +73,6 @@ const fetchCampaignDetail = async () => {
 
   const stepOrder = [1, 2, 3, 4, 5, 6, 7];
 
-  // 최신 단계 계산
   const presentedList = data.timeline
     .filter(item => item.presentedAt !== null)
     .sort((a, b) => new Date(b.presentedAt) - new Date(a.presentedAt));
@@ -74,17 +80,14 @@ const fetchCampaignDetail = async () => {
   const currentStep = presentedList[0]?.pipelineStepId ?? null;
 
   const stepStatus = stepOrder.map(stepId => {
-    const matched = data.timeline.find(
-      item => item.pipelineStepId === stepId
-    );
+    const matched = data.timeline.find(item => item.pipelineStepId === stepId);
     return {
       pipelineStepId: stepId,
       stepType: stepMap[stepId],
       done: matched?.presentedAt != null,
-      startedAt: matched?.startedAt || null, // ✅ 날짜 전달
+      startedAt: matched?.startedAt || null,
     };
   });
-
 
   campaignDetail.value.pipeLine = {
     stepStatus,
@@ -94,19 +97,53 @@ const fetchCampaignDetail = async () => {
   initializeForm(campaignDetail.value);
 };
 
-
 onMounted(() => {
   fetchCampaignDetail();
 });
 
 // 저장
-const save = () => {
-  const payload = {
-    ...form,
-    campaignStatusId: form.status,
-  };
-  console.log('저장할 값:', payload);
-  isEditing.value = false;
+const save = async () => {
+  try {
+    const payload = {
+      campaignId: route.params.campaignId,
+      campaignName: form.title,
+      campaignStatusId: form.status,
+      clientCompanyId: form.clientCompany?.id,
+      clientManagerId: form.clientManager?.id,
+      startedAt: formatToDash(form.startedAt),
+      endedAt: formatToDash(form.endedAt),
+      awarenessPath: form.awarenessPath,
+      productName: form.productName,
+      productPrice: form.productPrice,
+      expectedRevenue: form.expectedRevenue,
+      expectedProfitMargin: form.expectedProfitMargin,
+      notes: form.notes,
+      userList: form.userList.map(u => u.id),
+      categoryList: form.category ? [form.category] : [],
+    };
+    console.log('clientCompany:', form.clientCompany);
+    console.log('clientManager:', form.clientManager);
+
+    await updateCampaign(payload);
+    toast.success('캠페인이 수정되었습니다.');
+    isEditing.value = false;
+    await fetchCampaignDetail();
+  } catch (e) {
+    toast.error(e?.response?.data?.message || '수정 중 오류가 발생했습니다.');
+  }
+};
+
+// 삭제
+const remove = async () => {
+  if (!confirm('정말 삭제하시겠습니까?')) return;
+
+  try {
+    await deleteCampaign(route.params.campaignId);
+    toast.success('캠페인이 삭제되었습니다.');
+    router.push('/campaign');
+  } catch (e) {
+    toast.error(e?.response?.data?.message || '삭제 중 오류가 발생했습니다.');
+  }
 };
 
 // 취소
@@ -166,7 +203,7 @@ const groups = [
         key: 'userList',
         label: '고객사 담당자',
         type: 'readonly',
-        getValue: (value) => value.map((u) => u.name).join(', '), // 이름만 표시
+        getValue: (value) => value.map((u) => u.name).join(', '),
       },
     ],
   },
