@@ -9,7 +9,7 @@ const props = defineProps({
 const router = useRouter()
 
 const goToDetail = () => {
-  router.push(`/management/client/${props.client.clientCompanyId}`)
+  router.push(`/management/client/${props.client.clientCompanyId}/detail`)
 }
 </script>
 
