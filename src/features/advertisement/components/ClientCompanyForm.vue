@@ -100,6 +100,7 @@ const getFormData = () => ({
   userIds: Array.isArray(form.user) ? form.user.map(u => u.id) : [],
   clientManagers: Array.isArray(employeeList.value)
     ? toRaw(employeeList.value).map(e => ({
+      ...(e.clientManagerId ? { clientManagerId: e.clientManagerId } : {}),
       name: e.name,
       clientManagerStatusId: employeeStatusMap[e.status],
       department: e.department || null,
@@ -184,7 +185,10 @@ const deleteEmployee = (index) => {
 };
 
 const editEmployee = (index) => {
-  Object.assign(newEmployee, employeeList.value[index]);
+  const target = employeeList.value[index];
+  Object.keys(newEmployee).forEach((key) => {
+    newEmployee[key] = target[key] ?? '';
+  });
   editIndex.value = index;
   isAddingEmployee.value = true;
 };
@@ -322,7 +326,9 @@ watch(isAddingEmployee, (val) => {
             이름<span class="text-red-500 ml-1">*</span>
           </label>
           <input v-model="newEmployee.name" class="input-form-box" />
-          <label class="input-form-label">상태</label>
+          <label class="input-form-label">
+            상태<span class="text-red-500 ml-1">*</span>
+          </label>
           <select v-model="newEmployee.status" class="input-form-box">
             <option value="재직">재직</option>
             <option value="휴직">휴직</option>
