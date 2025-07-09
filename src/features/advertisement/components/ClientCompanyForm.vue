@@ -34,7 +34,7 @@ const newEmployee = reactive({
   department: '',
   title: '',
   phone: '',
-  mobile: '',
+  telephone: '',
   email: '',
   note: ''
 });
@@ -103,8 +103,8 @@ const getFormData = () => ({
       clientManagerStatusId: employeeStatusMap[e.status],
       department: e.department || null,
       position: e.title || null,
-      telephone: e.phone || null,
-      phone: e.mobile || null,
+      telephone: e.telephone || null,
+      phone: e.phone || null,
       email: e.email?.trim() || '',
       notes: e.note || null,
     }))
@@ -150,7 +150,7 @@ const addEmployee = () => {
     alert('이름은 필수입니다.');
     return;
   }
-  if (!newEmployee.mobile.trim()) {
+  if (!newEmployee.phone.trim()) {
     alert('휴대폰번호는 필수입니다.');
     return;
   }
@@ -194,8 +194,8 @@ const editEmployee = (index) => {
     client: target.client || form.name,
     department: target.department || '',
     title: target.title || '',
-    phone: target.telephone || '',
-    mobile: target.phone || '',
+    phone: target.phone || '',
+    telephone: target.telephone || '',
     email: target.email || '',
     note: target.note || '',
   });
@@ -251,7 +251,7 @@ watch(isAddingEmployee, (val) => {
             <option value="신규">신규</option>
           </select>
           <label class="input-form-label">유선번호</label>
-          <input class="input-form-box" v-model="form.phone" :disabled="!isEditing" />
+          <input class="input-form-box" v-model="form.telephone" :disabled="!isEditing" />
           <label class="input-form-label">팩스번호</label>
           <input class="input-form-box" v-model="form.fax" :disabled="!isEditing" />
           <label class="input-form-label">
@@ -298,9 +298,9 @@ watch(isAddingEmployee, (val) => {
             </p>
             <p class="text-sm text-gray-500">
               {{ employee.position }} <!-- 차장, 대리 같은 직책 -->
-              <template v-if="employee.mobile || employee.email"> | </template>
-              {{ employee.mobile }}
-              <template v-if="employee.mobile && employee.email"> / </template>
+              <template v-if="employee.phone || employee.email"> | </template>
+              {{ employee.phone }}
+              <template v-if="employee.phone && employee.email"> / </template>
               {{ employee.email }}
             </p>
           </div>
@@ -347,7 +347,7 @@ watch(isAddingEmployee, (val) => {
           <label class="input-form-label">부서</label>
           <input v-model="newEmployee.department" class="input-form-box" />
           <label class="input-form-label">유선번호</label>
-          <input v-model="newEmployee.phone" class="input-form-box" />
+          <input v-model="newEmployee.telephone" class="input-form-box" />
           <label class="input-form-label">비고</label>
           <textarea v-model="newEmployee.note" class="input-form-box" rows="3" />
         </div>
@@ -361,7 +361,7 @@ watch(isAddingEmployee, (val) => {
           <label class="input-form-label">
             휴대폰번호<span class="text-red-500 ml-1">*</span>
           </label>
-          <input v-model="newEmployee.mobile" class="input-form-box" />
+          <input v-model="newEmployee.phone" class="input-form-box" />
 
           <label class="input-form-label">
             이메일<span class="text-red-500 ml-1">*</span>
