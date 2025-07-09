@@ -19,6 +19,10 @@ export const fetchYoutubeInfo = async (influencerId) => {
   });
 }
 
+// 인플루언서 평균 만족도 조회
+export const fetchSatisfaction = async (influencerId) => {
+  return await api.get(`/satisfaction/average/${influencerId}`);
+}
 
 
 
