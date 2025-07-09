@@ -108,13 +108,15 @@ export const deleteContractDetail = async (detailId) => {
   }
 };
 
-export const sendContractEmail = async (requestData, file = null) => {
+export const sendContractEmail = async (requestData, files = null) => {
   try {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
 
-    if (file) {
-      formData.append('file', file);
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        formData.append('files', file);
+      });
     }
 
     const response = await api.post('/contracts/send', formData, {
@@ -124,6 +126,41 @@ export const sendContractEmail = async (requestData, file = null) => {
     console.error('계약서 파일 전송 (이메일) API 호출 실패:', error);
     throw error;
   }
+};
+
+/* 계약 완료 목록 조회 */
+export const fetchContractSuccessList = (params) => {
+  return api.get('/contract/success', { params });
+};
+
+/* 계약서 조회 */
+export const fetchContractFile = (contractId, password) => {
+  const formData = new FormData();
+  formData.append('password', password);
+
+  return api.post(`/contract/success/view/${contractId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+
+/* 계약서 등록 */
+export async function uploadContractFile(contractId, formData) {
+  return api.put(`/contract/sign/${contractId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
+
+/* 계약서 다운로드 */
+export const downloadContractFile = async (key) => {
+  return await api.get('/file/download/contract', {
+    params: { key },
+    responseType: 'blob',
+  });
 };
 
 

@@ -18,7 +18,7 @@ export const advertisementRoutes = [
   },
   // 고객사 상세 조회/수정/삭제
   {
-    path: '/management/client/:id',
+    path: '/management/client/:id/detail',
     name: 'ClientDetail',
     component: ClientDetailView,
   }

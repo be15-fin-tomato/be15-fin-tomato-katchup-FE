@@ -17,7 +17,7 @@
                     {{ managementOption.statusName }}
                 </div>
 
-                <div class="relative">
+                <div v-if="pageType !== 'campaignResult'" class="relative">
                     <button
                         @click.stop="$emit('menuToggle', managementOption.pipelineId)"
                         class="p-1 hover:bg-gray-100 rounded"
@@ -61,13 +61,15 @@
             </div>
 
             <div class="flex gap-4 items-center truncate max-w-[50%]">
-                <div class="flex items-center gap-1 truncate">
+                <div v-if="pageType !== 'campaignResult'" class="flex items-center gap-1 truncate">
                     <Icon icon="mdi:person-tie" width="24" height="24" class="mr-2" />
                     <span>{{ renderListupCount(managementOption.userName) }}</span>
                 </div>
-                <div class="flex items-center gap-1 truncate">
+                <div v-if="pageType !== 'listup'" class="flex items-center gap-1 truncate">
                     <Icon icon="mdi:account-check" width="24" height="24" class="mr-2" />
-                    <span>{{ managementOption.clientManagerName }}</span>
+                    <span>{{
+                        managementOption.clientManagerName || managementOption.clientName
+                    }}</span>
                 </div>
             </div>
         </div>
@@ -100,7 +102,10 @@
                 <!-- 인플루언서 (우측 시작) -->
                 <div class="flex w-full justify-end max-w-[40%]">
                     <div class="truncate text-right">
-                        {{ renderListupCount(managementOption.influencers) }}
+                        {{
+                            managementOption.influencerName ||
+                            renderListupCount(managementOption.influencerList)
+                        }}
                     </div>
                 </div>
             </template>

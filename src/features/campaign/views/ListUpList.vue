@@ -1,12 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getListUpList } from '@/features/campaign/api.js';
+import { deleteListup, getListUpList } from '@/features/campaign/api.js';
 import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
 import Pagination from '@/components/common/PagingBar.vue';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 
 const listupList = ref([]);
 const page = ref(1);
@@ -17,7 +19,7 @@ const totalPages = computed(() => Math.ceil(total.value / size.value));
 const categoryOptions = [
     { value: 'title', label: '제목' },
     { value: 'clientCompany', label: '고객사' },
-    { value: 'user', label: '담당자' },
+    // { value: 'user', label: '담당자' },
 ];
 
 const filterOptions = [
@@ -30,7 +32,7 @@ const filterOptions = [
 const searchFilters = ref({
     category: '',
     keyword: '',
-    manager: null,
+    userId: null,
     filter: '',
     sort: 'date',
     sortOrder: 'asc',
@@ -40,8 +42,8 @@ const searchFilters = ref({
 const fetchListUpList = async () => {
     try {
         const res = await getListUpList(page.value, size.value, searchFilters.value);
-        listupList.value = res.data.data;
-        total.value = res.data.total;
+        listupList.value = res.data.data.response;
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
         console.error(e);
     }
@@ -63,8 +65,14 @@ const goDetail = (id) => {
     router.push(`/influencer/recommendation/${id}`);
 };
 
-const handleDelete = (id) => {
-    listupList.value = listupList.value.filter((item) => item.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteListup(id);
+        toast.success('리스트업이 삭제되었습니다.');
+        await fetchListUpList();
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 const menuOpenId = ref(null);
@@ -101,13 +109,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="listup in listupList"
-                    :key="listup.id"
+                    :key="listup.pipelineId"
                     :management-option="listup"
                     :openMenuId="menuOpenId"
                     :pageType="'listup'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(listup.id)"
+                    @click="goDetail(listup.pipelineId)"
                 />
             </div>
 

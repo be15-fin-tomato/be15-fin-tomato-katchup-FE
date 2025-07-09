@@ -1,11 +1,13 @@
 <script setup>
 import { reactive, ref, watch, nextTick, toRaw } from 'vue';
+import { Icon } from '@iconify/vue';
 
 const props = defineProps({
   isEditing: { type: Boolean, default: false },
+  initialData: { type: Object, default: () => ({}) },
+  users: { type: Array, default: () => [] }
 });
-
-// const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits(['delete-employee']);
 
 // 고객사 form
 const form = reactive({
@@ -14,7 +16,7 @@ const form = reactive({
   employeeCount: '',
   businessNumber: '',
   note: '',
-  status: '',
+  status: 'null',
   phone: '',
   fax: '',
   user: [],
@@ -33,28 +35,60 @@ const newEmployee = reactive({
   department: '',
   title: '',
   phone: '',
-  mobile: '',
+  telephone: '',
   email: '',
   note: ''
 });
 
-// 고객사명이 바뀌면 사원 등록에도 반영
-watch(() => form.name, (newVal) => {
-  newEmployee.client = newVal;
-});
-
-const statusMap = {
+const companyStatusMap = {
   '잠재': 1,
   '기존': 2,
   '신규': 3,
+};
+
+const employeeStatusMap = {
   '재직': 1,
   '휴직': 2,
   '퇴직': 3,
 };
 
+// 초기 데이터 반영
+watch(() => props.initialData, (data) => {
+  if (data) {
+    console.log('📦 초기 데이터:', data);
+    console.log('📦 data.userIds:', data.userIds);
+    console.log('📦 props.users:', props.users);
+
+    form.name = data.clientCompanyName || '';
+    form.status = Object.entries(companyStatusMap).find(([, v]) => v === data.clientCompanyStatusId)?.[0] || '';
+    form.revenue = data.sales?.toString() || '';
+    form.employeeCount = data.numberOfEmployees?.toString() || '';
+    form.businessNumber = data.businessId || '';
+    form.note = data.notes || '';
+    form.phone = data.telephone || '';
+    form.fax = data.fax || '';
+    form.user = (data.userIds || []).map((id) => {
+      const matched = props.users.find((u) => u.userId === id);
+      return {
+        id,
+        name: matched?.userName || `ID ${id}`,
+      };
+    });
+    form.address1 = data.address || '';
+    form.address2 = data.detailAddress || '';
+    employeeList.value = (data.clientManagers || []).map((e) => ({
+      ...e,
+      status: Object.entries(employeeStatusMap).find(([, id]) => id === e.clientManagerStatusId)?.[0] || '재직',
+      title: e.position || '',
+    }));
+  }
+}, { immediate: true });
+
+
+
 const getFormData = () => ({
   clientCompanyName: form.name,
-  clientCompanyStatusId: statusMap[form.status],
+  clientCompanyStatusId: companyStatusMap[form.status],
   businessId: form.businessNumber ? Number(form.businessNumber) : null,
   sales: form.revenue ? Number(form.revenue) : null,
   numberOfEmployees: form.employeeCount ? Number(form.employeeCount) : null,
@@ -66,18 +100,30 @@ const getFormData = () => ({
   userIds: Array.isArray(form.user) ? form.user.map(u => u.id) : [],
   clientManagers: Array.isArray(employeeList.value)
     ? toRaw(employeeList.value).map(e => ({
+      ...(e.clientManagerId ? { clientManagerId: e.clientManagerId } : {}),
       name: e.name,
-      clientManagerStatusId: statusMap[e.position],
+      clientManagerStatusId: employeeStatusMap[e.status],
       department: e.department || null,
       position: e.title || null,
-      phone: e.mobile || null,
-      telephone: e.phone || null,
+      telephone: e.telephone || null,
+      phone: e.phone || null,
       email: e.email?.trim() || '',
       notes: e.note || null,
     }))
     : [],
 });
-defineExpose({ getFormData });
+
+const closeEmployeeForm = () => {
+    isAddingEmployee.value = false;
+    editIndex.value = -1;
+    // newEmployee 폼 초기화
+    Object.keys(newEmployee).forEach((key) => {
+        if (key !== 'client') newEmployee[key] = '';
+    });
+    newEmployee.status = '재직';
+};
+
+defineExpose({ getFormData, closeEmployeeForm });
 
 watch(() => form.name, (newVal) => {
   newEmployee.client = newVal;
@@ -113,12 +159,11 @@ const openPostcodeSearch = () => {
 
 // 사원 추가/수정
 const addEmployee = () => {
-  // 🔐 유효성 검사
   if (!newEmployee.name.trim()) {
     alert('이름은 필수입니다.');
     return;
   }
-  if (!newEmployee.mobile.trim()) {
+  if (!newEmployee.phone.trim()) {
     alert('휴대폰번호는 필수입니다.');
     return;
   }
@@ -137,24 +182,51 @@ const addEmployee = () => {
     employeeList.value[editIndex.value] = employeeData;
   }
 
-  // 초기화
-  Object.keys(newEmployee).forEach((key) => {
-    if (key !== 'client') newEmployee[key] = '';
-  });
-  newEmployee.position = '재직';
-  editIndex.value = -1;
-  isAddingEmployee.value = false;
-};
+    closeEmployeeForm();
 
-const deleteEmployee = (index) => {
-  employeeList.value.splice(index, 1);
 };
 
 const editEmployee = (index) => {
-  Object.assign(newEmployee, employeeList.value[index]);
+  const target = employeeList.value[index];
+
+  if (!target) return;
+
+  // 수정 시 초기화
+  Object.assign(newEmployee, {
+    name: target.name || '',
+    status: target.status || '재직',
+    client: target.client || form.name,
+    department: target.department || '',
+    title: target.title || '',
+    phone: target.phone || '',
+    telephone: target.telephone || '',
+    email: target.email || '',
+    note: target.note || '',
+  });
+
   editIndex.value = index;
   isAddingEmployee.value = true;
 };
+
+const deleteEmployee = (index) => {
+    const employee = employeeList.value[index];
+    if (!employee) return;
+
+    if (!employee.clientManagerId) {
+        // 새로 추가된 사원이면 바로 제거
+        employeeList.value.splice(index, 1);
+        closeEmployeeForm(); // 삭제 후 폼 닫기 및 초기화
+    } else {
+        // 기존 DB에 있던 사원이면 부모에 삭제 요청 emit
+        emit('delete-employee', employee.clientManagerId);
+    }
+};
+
+watch(isAddingEmployee, (val) => {
+    if (val && editIndex.value === -1) {
+        newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
+    }
+});
 </script>
 <template>
   <!-- 상단 고객사 등록 영역 -->
@@ -197,7 +269,7 @@ const editEmployee = (index) => {
             <option value="신규">신규</option>
           </select>
           <label class="input-form-label">유선번호</label>
-          <input class="input-form-box" v-model="form.phone" :disabled="!isEditing" />
+          <input class="input-form-box" v-model="form.telephone" :disabled="!isEditing" />
           <label class="input-form-label">팩스번호</label>
           <input class="input-form-box" v-model="form.fax" :disabled="!isEditing" />
           <label class="input-form-label">
@@ -223,8 +295,7 @@ const editEmployee = (index) => {
     <div class="container bg-white mt-12 w-full">
       <div class="flex justify-between items-center mb-4">
         <p class="font-bold">사원 정보 ({{ employeeList.length }})</p>
-        <button class="btn-create !py-1 !px-4 text-sm" @click="isAddingEmployee = true">추가</button>
-      </div>
+        <button class="btn-create !py-1 !px-4 text-sm" @click="isAddingEmployee = true" v-if="isEditing">추가</button>      </div>
 
       <div class="grid grid-cols-2 gap-4" v-if="employeeList.length > 0">
         <div v-for="(employee, index) in employeeList" :key="index" class="border rounded-lg p-4 flex items-center justify-between shadow-sm">
@@ -235,34 +306,38 @@ const editEmployee = (index) => {
               <span
                 class="text-xs font-semibold ml-2 px-2 py-0.5 rounded"
                 :class="{
-        'bg-[#A2D9FF] text-white': employee.position === '재직',
-        'bg-[#FFD000] text-white': employee.position === '휴직',
-        'bg-[#FF6D6D] text-white': employee.position === '퇴직',
+        'bg-[#A2D9FF] text-white': employee.status === '재직',
+        'bg-[#FFD000] text-white': employee.status === '휴직',
+        'bg-[#FF6D6D] text-white': employee.status === '퇴직',
       }"
               >
-      {{ employee.position }}
+      {{ employee.status }}
     </span>
             </p>
             <p class="text-sm text-gray-500">
-              {{ employee.mobile }}
-              <template v-if="employee.mobile && employee.email"> / </template>
+              {{ employee.position }} <!-- 차장, 대리 같은 직책 -->
+              <template v-if="employee.phone || employee.email"> | </template>
+              {{ employee.phone }}
+              <template v-if="employee.phone && employee.email"> / </template>
               {{ employee.email }}
             </p>
           </div>
-          <div class="flex gap-2">
-            <button class="btn-icon">
-              <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-              MAIL
-            </button>
-            <button class="btn-icon" @click="editEmployee(index)">
-              <Icon icon="lucide:edit" width="20" height="20" />
-              수정
-            </button>
-            <button class="btn-icon" @click="deleteEmployee(index)">
-              <Icon icon="gg:trash" width="20" height="20" />
-              삭제
-            </button>
-          </div>
+            <div class="flex gap-2">
+                <button class="btn-icon">
+                    <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                    MAIL
+                </button>
+                <template v-if="isEditing">
+                    <button class="btn-icon" @click="editEmployee(index)">
+                        <Icon icon="lucide:edit" width="20" height="20" />
+                        수정
+                    </button>
+                    <button class="btn-icon" @click="deleteEmployee(index)">
+                        <Icon icon="gg:trash" width="20" height="20" />
+                        삭제
+                    </button>
+                </template>
+            </div>
         </div>
       </div>
     </div>
@@ -281,8 +356,10 @@ const editEmployee = (index) => {
             이름<span class="text-red-500 ml-1">*</span>
           </label>
           <input v-model="newEmployee.name" class="input-form-box" />
-          <label class="input-form-label">상태</label>
-          <select v-model="newEmployee.position" class="input-form-box">
+          <label class="input-form-label">
+            상태<span class="text-red-500 ml-1">*</span>
+          </label>
+          <select v-model="newEmployee.status" class="input-form-box">
             <option value="재직">재직</option>
             <option value="휴직">휴직</option>
             <option value="퇴직">퇴직</option>
@@ -290,7 +367,7 @@ const editEmployee = (index) => {
           <label class="input-form-label">부서</label>
           <input v-model="newEmployee.department" class="input-form-box" />
           <label class="input-form-label">유선번호</label>
-          <input v-model="newEmployee.phone" class="input-form-box" />
+          <input v-model="newEmployee.telephone" class="input-form-box" />
           <label class="input-form-label">비고</label>
           <textarea v-model="newEmployee.note" class="input-form-box" rows="3" />
         </div>
@@ -304,7 +381,7 @@ const editEmployee = (index) => {
           <label class="input-form-label">
             휴대폰번호<span class="text-red-500 ml-1">*</span>
           </label>
-          <input v-model="newEmployee.mobile" class="input-form-box" />
+          <input v-model="newEmployee.phone" class="input-form-box" />
 
           <label class="input-form-label">
             이메일<span class="text-red-500 ml-1">*</span>
@@ -313,6 +390,7 @@ const editEmployee = (index) => {
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-4">
+        <button v-if="editIndex !== -1" class="btn-delete !px-5" @click="() => { deleteEmployee(editIndex); isAddingEmployee = false; }">삭제</button>
         <button class="btn-delete !px-5" @click="isAddingEmployee = false">취소</button>
         <button class="btn-create !px-5" @click="addEmployee">
           {{ editIndex === -1 ? '등록' : '수정 완료' }}

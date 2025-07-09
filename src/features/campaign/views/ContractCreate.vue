@@ -13,6 +13,7 @@ import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import FileUploadCard from '@/features/campaign/components/FileUploadCard.vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '@/stores/auth.js';
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -28,7 +29,7 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'name', label: '제목', type: 'input' },
+            { key: 'name', label: '제목', type: 'input', essential: true },
             { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
@@ -37,9 +38,10 @@ const groups = [
         fields: [
             {
                 key: 'clientCompany',
-                label: '광고업체',
+                label: '고객사',
                 type: 'search-company',
                 searchType: 'company',
+                essential: true,
             },
             { key: 'period', label: '제안 기간', type: 'date-range' },
         ],
@@ -52,6 +54,7 @@ const groups = [
                 label: '광고담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                essential: true,
             },
             { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
@@ -64,8 +67,15 @@ const groups = [
                 label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
+                essential: true,
             },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+            {
+                key: 'username',
+                label: '담당자',
+                type: 'search-user',
+                searchType: 'user',
+                essential: true,
+            },
         ],
     },
     {
@@ -76,6 +86,7 @@ const groups = [
                 label: '인플루언서',
                 type: 'search-influencer',
                 searchType: 'influencer',
+                essential: true,
             },
             { key: 'price', label: '견적가', type: 'input', inputType: 'number' },
         ],
@@ -93,6 +104,7 @@ const groups = [
                     { value: 3, label: '보류/대기' },
                     { value: 4, label: '승인거절' },
                 ],
+                essential: true,
             },
             { key: 'supplyAmount', label: '공급가능수량', type: 'input', inputType: 'number' },
         ],
@@ -176,6 +188,17 @@ const handleReferenceSelect = async (item) => {
 // 저장 및 취소
 const save = async () => {
     try {
+        const requiredFields = [
+            { key: 'name', label: '제목' },
+            { key: 'clientCompany', label: '고객사' },
+            { key: 'clientManager', label: '광고담당자' },
+            { key: 'campaign', label: '캠페인' },
+            { key: 'username', label: '담당자' },
+            { key: 'influencer', label: '인플루언서' },
+            { key: 'status', label: '진행단계' },
+        ];
+        if (!validateRequiredFields(form, requiredFields, toast)) return;
+
         const requestForm = {
             campaignId: form.campaign?.id ?? null,
             pipelineStatusId: form.status,
@@ -254,7 +277,7 @@ onMounted(async () => {
                             width="32"
                             height="32"
                             class="text-btn-gray"
-                            @click="router.push('/sales/revenue')"
+                            @click="router.push('/sales/contract')"
                         />
                     </div>
                 </div>
@@ -266,7 +289,11 @@ onMounted(async () => {
 
             <!-- 하단: 참조 리스트 -->
             <div class="container">
-                <DetailReferenceList :items="quotationReferences" @select="handleReferenceSelect" />
+                <DetailReferenceList
+                    :title="'계약 정보 자동 입력'"
+                    :items="quotationReferences"
+                    @select="handleReferenceSelect"
+                />
             </div>
             <div class="container">
                 <FileUploadCard :isEditing="isEditing" v-model="form.attachment" />
