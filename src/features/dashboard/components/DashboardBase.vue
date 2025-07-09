@@ -15,6 +15,7 @@ const props = defineProps({
     data: Object,
     summaryData: Object,
     satisfaction: Number,
+    formatNumber: Function,
 });
 
 const emit = defineEmits(['switch']);
@@ -68,35 +69,35 @@ const satisfactionColorClass = computed(() => {
 
         <DashboardSummary :platform="platform" :data="props.summaryData" />
 
-<!--        <div class="flex gap-8">-->
-<!--            <AverageChart-->
-<!--              platform="platform"-->
-<!--              :daily="props.data?.dailyAvgViews ?? 0"-->
-<!--              :monthly="props.data?.monthlyAvgViews ?? 0"-->
-<!--              class="w-1/3"-->
-<!--            />-->
-<!--            <AlgorithmChart :platform="platform" :data="props.data" class="w-1/3" />-->
-<!--            <div class="dashboard-section w-1/3">-->
-<!--                <div class="flex items-center gap-1">-->
-<!--                    <h3 class="font-bold text-gray-dark">평균 만족도</h3>-->
-<!--                    <div class="relative group">-->
-<!--                        <Icon-->
-<!--                            icon="material-symbols:info-outline-rounded"-->
-<!--                            class="w-5 h-5 text-gray-dark cursor-pointer"-->
-<!--                        />-->
-<!--                        <div-->
-<!--                            class="absolute left-1/2 -translate-x-1/2 top-8 w-max bg-black text-white text-xs rounded px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 transition duration-300 z-10"-->
-<!--                        >-->
-<!--                            고객들의 평균 만족도를 계산한 값-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="flex flex-col justify-center items-center mt-10 gap-5">-->
-<!--                  <Icon :icon="satisfactionIcon" :class="`w-36 h-36 ${satisfactionColorClass}`" />-->
-<!--                  <p class="text-5xl font-extrabold">{{ satisfaction }}</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+        <div class="flex gap-8">
+            <AverageChart
+              :platform="platform"
+              :daily="props.data?.dailyAvgViews ?? 0"
+              :monthly="props.data?.monthlyAvgViews ?? 0"
+              :formatNumber="props.formatNumber" class="w-1/3"
+            />
+            <AlgorithmChart :platform="platform" :data="props.data" class="w-1/3" />
+            <div class="dashboard-section w-1/3">
+                <div class="flex items-center gap-1">
+                    <h3 class="font-bold text-gray-dark">평균 만족도</h3>
+                    <div class="relative group">
+                        <Icon
+                            icon="material-symbols:info-outline-rounded"
+                            class="w-5 h-5 text-gray-dark cursor-pointer"
+                        />
+                        <div
+                            class="absolute left-1/2 -translate-x-1/2 top-8 w-max bg-black text-white text-xs rounded px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 transition duration-300 z-10"
+                        >
+                            고객들의 평균 만족도를 계산한 값
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center items-center mt-10 gap-5">
+                  <Icon :icon="satisfactionIcon" :class="`w-36 h-36 ${satisfactionColorClass}`" />
+                  <p class="text-5xl font-extrabold">{{ satisfaction }}</p>
+                </div>
+            </div>
+        </div>
 
 <!--        <div class="flex gap-8">-->
 <!--            <AgeChart-->
