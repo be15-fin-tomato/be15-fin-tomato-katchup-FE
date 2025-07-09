@@ -8,17 +8,17 @@ import { Icon } from '@iconify/vue';
 
 const router = useRouter();
 const toast = useToast();
-const formRef = ref(null);
+const clientFormRef = ref(null);
 
 
 const handleSave = async () => {
-  if (!formRef.value || typeof formRef.value.getFormData !== 'function') {
+  if (!clientFormRef.value || typeof clientFormRef.value.getFormData !== 'function') {
     toast.error('폼 로딩에 실패했습니다.');
-    console.error('formRef 또는 getFormData 문제', formRef.value);
+    console.error('formRef 또는 getFormData 문제', clientFormRef.value);
     return;
   }
 
-  const formData = formRef.value.getFormData();
+  const formData = clientFormRef.value.getFormData();
 
   if (
     !formData.clientCompanyName ||
@@ -41,7 +41,7 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex justify-center">
     <!-- 좌측 의견 바가 없으므로 오른쪽 전체 영역만 사용 -->
     <div class="flex-1 flex flex-col gap-8">
       <!-- 상단: 고객사 등록 폼 -->
@@ -66,7 +66,11 @@ const handleSave = async () => {
         <div class="blue-line"></div>
 
         <!-- 고객사 등록 폼 본문 -->
-        <ClientCompanyForm ref="formRef" :isEditing="true" />
+        <ClientCompanyForm
+          :isEditing="true"
+          :initialData="{}"
+          ref="clientFormRef"
+        />
       </div>
     </div>
   </div>
