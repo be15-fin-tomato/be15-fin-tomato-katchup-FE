@@ -10,6 +10,7 @@ import PopularPosts from '@/features/dashboard/components/PopularPosts.vue'
 import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue'
 import DashboardCampaignList from '@/features/dashboard/components/DashboardCampaignList.vue'
 import { fetchInfluencerDetail, fetchYoutubeInfo } from '@/features/dashboard/api.js';
+import { formatNumber } from 'chart.js/helpers';
 
 const route = useRoute()
 const router = useRouter()
@@ -19,28 +20,6 @@ const dashboard = ref(null)
 const influencer = ref(null)
 const satisfaction = ref(82.5)
 const influencerId = route.query.id
-
-// 숫자를 만 단위로 포맷팅하는 함수
-const formatNumber = (num) => {
-  const parsedNum = parseFloat(num);
-  if (isNaN(parsedNum)) return '0';
-
-  if (parsedNum < 10000) {
-    // 10,000 미만일 때는 숫자 그대로 표시 (소수점 제거)
-    return Math.floor(parsedNum).toLocaleString();
-  } else {
-    // 10,000 이상일 때는 '만' 단위로 소수점 첫째 자리까지 표시
-    const inTenThousands = parsedNum / 10000;
-    const fixedNum = inTenThousands.toFixed(1);
-
-    // 소수점 첫째 자리가 0이면 .0을 제거
-    if (fixedNum.endsWith('.0')) {
-      return `${Math.floor(inTenThousands)}만`;
-    } else {
-      return `${fixedNum}만`;
-    }
-  }
-};
 
 onMounted(async () => {
   try {
@@ -52,7 +31,6 @@ onMounted(async () => {
     const youtubeRawData = youtubeRes?.data?.data?.[0];
     const influencerData = influencerRes
 
-    // YouTube 데이터가 없으면 경고 메시지를 띄우고 리스트 페이지로 이동
     if (!youtubeRawData) {
       toast.warning('YouTube 계정이 연결되어있지 않습니다.')
       router.replace('/influencer/list')
@@ -64,8 +42,8 @@ onMounted(async () => {
       avgViews: youtubeRawData.avgViews ?? 0,
       avgLikes: youtubeRawData.avgLikes ?? 0,
       avgComments: youtubeRawData.avgComments ?? 0,
-      dailyAvgViews: youtubeRawData.dailyAvgViews ?? 0, // 숫자 값으로 예상
-      monthlyAvgViews: youtubeRawData.monthlyAvgViews ?? 0, // 숫자 값으로 예상
+      dailyAvgViews: youtubeRawData.dailyAvgViews ?? 0,
+      monthlyAvgViews: youtubeRawData.monthlyAvgViews ?? 0,
       age1824: youtubeRawData.age1824 ?? 0,
       age2534: youtubeRawData.age2534 ?? 0,
       age3544: youtubeRawData.age3544 ?? 0,
@@ -75,17 +53,16 @@ onMounted(async () => {
       subscribedRatio: youtubeRawData.subscribedRatio ?? 0,
       notSubscribedRatio: youtubeRawData.notSubscribedRatio ?? 0,
 
-      // 백엔드 응답에 없는 데이터에 대한 기본값 설정 (⚠️ 이 필드들은 백엔드에서 제공되지 않으므로, 화면에 표시되지 않거나 차트가 빈 값으로 렌더링될 수 있습니다.)
-      shortsSummary: { // DashboardBase의 summaryData가 필요로 할 수 있으므로 임시로 구성
-        totalVideos: youtubeRawData.totalVideos ?? 0, // 총 비디오 수를 쇼츠 요약의 'count'로 사용
+      shortsSummary: {
+        totalVideos: youtubeRawData.totalVideos ?? 0,
         averageViewCount: youtubeRawData.avgViews ?? 0,
         commentCount: youtubeRawData.avgComments ?? 0,
         likeCount: youtubeRawData.avgLikes ?? 0
       },
-      popularVideos: [], // 백엔드에 없음
-      popularShorts: [], // 백엔드에 없음
-      subscribersTrend: [], // 백엔드에 없음
-      reach: 0, // 백엔드에 없음
+      popularVideos: [],
+      popularShorts: [],
+      subscribersTrend: [],
+      reach: 0,
     };
 
     influencer.value = influencerData;
