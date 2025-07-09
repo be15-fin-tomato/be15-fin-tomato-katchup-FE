@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   deleteClientCompany,
   getClientCompanyDetail, getClientCompanyUsers,
-  updateClientCompany
+  updateClientCompany, deleteClientManager
 } from '@/features/advertisement/api.js';
 
 import ClientCompanyForm from '@/features/advertisement/components/ClientCompanyForm.vue';
@@ -15,13 +15,54 @@ import { useToast } from 'vue-toastification';
 
 const route = useRoute();
 const router = useRouter();
-const id = Number(route.params.id);
+const id = Number(route.params.id); // 고객사 ID
 const toast = useToast();
 
 const isEditing = ref(false);
 const clientFormRef = ref();
 const clientData = ref(null);
 const users = ref([]);
+
+// 고객사 데이터를 다시 불러오는 함수
+const fetchClientCompanyData = async () => {
+  try {
+    const res = await getClientCompanyDetail(id);
+    clientData.value = res.data.data;
+    console.log('📦 고객사 데이터 다시 로드됨:', clientData.value);
+
+    // 사용자 데이터 다시 불러오기
+    const userRes = await getClientCompanyUsers(id);
+    users.value = userRes.data.data;
+
+    // 캠페인, 계약, 이력 등도 함께 업데이트
+    campaignList.value = res.data.campaignList ?? [];
+    contractList.value = res.data.contractList ?? [];
+    communicationHistories.value = res.data.communicationHistories ?? [];
+
+  } catch (e) {
+    console.error('데이터 다시 불러오기 실패', e);
+    toast.error('데이터를 다시 불러오는 데 실패했습니다.');
+  }
+};
+
+const handleDeleteEmployee = async (employeeIdToDelete) => {
+  const confirmDelete = confirm('정말 이 사원을 삭제하시겠습니까?');
+  if (!confirmDelete) return;
+
+  try {
+    await deleteClientManager(employeeIdToDelete);
+
+    toast.success('사원이 삭제되었습니다.');
+    await fetchClientCompanyData();
+    if (clientFormRef.value) {
+      clientFormRef.value.closeEmployeeForm();
+    }
+  } catch (err) {
+    console.error('사원 삭제 실패:', err);
+    toast.error('사원 삭제에 실패했습니다.');
+  }
+};
+
 
 const campaignList = ref([]); // 캠페인 목록
 const contractList = ref([]); // 계약 목록
@@ -54,21 +95,7 @@ const openPdfViewer = (file) => {
 };
 
 onMounted(async () => {
-  try {
-    const res = await getClientCompanyDetail(id);
-    clientData.value = res.data.data;
-    console.log(clientData.value)
-
-    const userRes = await getClientCompanyUsers(id);
-    users.value = userRes.data.data;
-
-    // 임시 더미 데이터 주입 (연동 예정) 응답구조 다시 확인
-    campaignList.value = res.data.campaignList ?? [];
-    contractList.value = res.data.contractList ?? [];
-    communicationHistories.value = res.data.communicationHistories ?? [];
-  } catch (e) {
-    console.error('상세 조회 실패', e);
-  }
+  await fetchClientCompanyData();
 });
 
 const save = async () => {
@@ -77,13 +104,17 @@ const save = async () => {
   try {
     await updateClientCompany(id, payload);
     isEditing.value = false;
+    await fetchClientCompanyData(); // 저장 후에도 데이터 갱신
+    toast.success('고객사 정보가 저장되었습니다.');
   } catch (e) {
     console.error('저장 실패', e);
+    toast.error('저장에 실패했습니다.');
   }
 };
 
 const cancel = () => {
   isEditing.value = false;
+  fetchClientCompanyData();
 };
 
 const handleDeleteCompany = async () => {
@@ -136,6 +167,7 @@ const handleDeleteCompany = async () => {
           :isEditing="isEditing"
           :initialData="clientData"
           :users="users"
+          @delete-employee="handleDeleteEmployee"
           ref="clientFormRef"
         />
       </div>
