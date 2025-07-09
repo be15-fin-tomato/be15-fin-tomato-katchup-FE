@@ -29,3 +29,8 @@ export const deleteClientCompany = async (clientCompanyId) => {
 export const getClientCompanyDetail = async (clientCompanyId) => {
   return await api.get(`/client-companies/${clientCompanyId}/detail`);
 };
+
+// 고객사를 담당하는 유저 조회
+export const getClientCompanyUsers = async (clientCompanyId) => {
+  return await api.get(`/client-companies/${clientCompanyId}/users`);
+};
