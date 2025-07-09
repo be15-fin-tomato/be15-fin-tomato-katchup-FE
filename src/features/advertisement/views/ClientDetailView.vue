@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  getClientCompanyDetail,
+  getClientCompanyDetail, getClientCompanyUsers,
   updateClientCompany
 } from '@/features/advertisement/api.js';
 
@@ -18,6 +18,7 @@ const id = Number(route.params.id);
 const isEditing = ref(false);
 const clientFormRef = ref();
 const clientData = ref(null);
+const users = ref([]);
 
 const campaignList = ref([]); // 캠페인 목록
 const contractList = ref([]); // 계약 목록
@@ -54,6 +55,9 @@ onMounted(async () => {
     const res = await getClientCompanyDetail(id);
     clientData.value = res.data.data;
     console.log(clientData.value)
+
+    const userRes = await getClientCompanyUsers(id);
+    users.value = userRes.data.data;
 
     // 임시 더미 데이터 주입 (연동 예정) 응답구조 다시 확인
     campaignList.value = res.data.campaignList ?? [];
@@ -106,9 +110,10 @@ const cancel = () => {
 
         <!-- 폼 컴포넌트 -->
         <ClientCompanyForm
-          v-if="clientData"
+          v-if="clientData && users.length > 0"
           :isEditing="isEditing"
           :initialData="clientData"
+          :users="users"
           ref="clientFormRef"
         />
       </div>
