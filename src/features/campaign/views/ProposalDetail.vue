@@ -25,7 +25,7 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input' },
+            { key: 'title', label: '제목', type: 'input', essential: true },
             { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
@@ -34,9 +34,10 @@ const groups = [
         fields: [
             {
                 key: 'clientCompany',
-                label: '광고업체',
+                label: '고객사',
                 type: 'search-company',
                 searchType: 'company',
+                essential: true,
             },
             { key: 'period', label: '제안 기간', type: 'date-range' },
         ],
@@ -49,6 +50,7 @@ const groups = [
                 label: '광고담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                essential: true,
             },
             { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
         ],
@@ -61,8 +63,15 @@ const groups = [
                 label: '해당 파이프라인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
+                essential: true,
             },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+            {
+                key: 'username',
+                label: '담당자',
+                type: 'search-user',
+                searchType: 'user',
+                essential: true,
+            },
         ],
     },
     {
@@ -73,12 +82,14 @@ const groups = [
                 label: '인플루언서',
                 type: 'search-influencer',
                 searchType: 'influencer',
+                essential: true,
             },
             {
                 key: 'status',
                 label: '진행단계',
                 type: 'select',
                 options: ['승인요청', '진행중', '보류', '완료'],
+                essential: true,
             },
         ],
     },
@@ -224,7 +235,11 @@ onMounted(async () => {
 
             <!-- 하단: 참조 리스트 -->
             <div class="container">
-                <DetailReferenceList :items="listUpReferences" @select="handleReferenceSelect" />
+                <DetailReferenceList
+                    :title="'제안 정보 자동 입력'"
+                    :items="listUpReferences"
+                    @select="handleReferenceSelect"
+                />
             </div>
             <div class="w-full mx-auto">
                 <div

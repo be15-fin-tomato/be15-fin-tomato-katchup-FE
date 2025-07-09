@@ -28,7 +28,11 @@
 
             <!-- 하단: 참조 리스트 -->
             <div class="container">
-                <DetailReferenceList :items="proposalReferences" @select="handleReferenceSelect" />
+                <DetailReferenceList
+                    :title="'견적 정보 자동 입력'"
+                    :items="proposalReferences"
+                    @select="handleReferenceSelect"
+                />
             </div>
         </div>
     </div>
@@ -59,7 +63,7 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'name', label: '제목', type: 'input' },
+            { key: 'name', label: '제목', type: 'input', essential: true },
             { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
@@ -68,9 +72,10 @@ const groups = [
         fields: [
             {
                 key: 'clientCompany',
-                label: '광고업체',
+                label: '고객사',
                 type: 'search-company',
                 searchType: 'company',
+                essential: true,
             },
             { key: 'period', label: '제안 기간', type: 'date-range' },
         ],
@@ -83,6 +88,7 @@ const groups = [
                 label: '광고담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                essential: true,
             },
             { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
@@ -95,8 +101,15 @@ const groups = [
                 label: '해당 파이프라인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
+                essential: true,
             },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+            {
+                key: 'username',
+                label: '담당자',
+                type: 'search-user',
+                searchType: 'user',
+                essential: true,
+            },
         ],
     },
     {
@@ -107,6 +120,7 @@ const groups = [
                 label: '인플루언서',
                 type: 'search-influencer',
                 searchType: 'influencer',
+                essential: true,
             },
             { key: 'price', label: '견적가', type: 'input', inputType: 'number' },
         ],
@@ -124,6 +138,7 @@ const groups = [
                     { value: 3, label: '보류/대기' },
                     { value: 4, label: '승인거절' },
                 ],
+                essential: true,
             },
             { key: 'supplyAmount', label: '공급가능수량', type: 'input', inputType: 'number' },
         ],
