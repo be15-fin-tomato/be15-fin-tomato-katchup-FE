@@ -7,6 +7,7 @@ const props = defineProps({
   initialData: { type: Object, default: () => ({}) },
   users: { type: Array, default: () => [] }
 });
+const emit = defineEmits(['delete-employee']);
 
 // 고객사 form
 const form = reactive({
@@ -59,7 +60,8 @@ watch(() => props.initialData, (data) => {
     console.log('📦 props.users:', props.users);
 
     form.name = data.clientCompanyName || '';
-    form.status = Object.entries(companyStatusMap).find(([, v]) => v === data.clientCompanyStatusId)?.[0] || '';    form.revenue = data.sales?.toString() || '';
+    form.status = Object.entries(companyStatusMap).find(([, v]) => v === data.clientCompanyStatusId)?.[0] || '';
+    form.revenue = data.sales?.toString() || '';
     form.employeeCount = data.numberOfEmployees?.toString() || '';
     form.businessNumber = data.businessId || '';
     form.note = data.notes || '';
@@ -110,7 +112,18 @@ const getFormData = () => ({
     }))
     : [],
 });
-defineExpose({ getFormData });
+
+const closeEmployeeForm = () => {
+    isAddingEmployee.value = false;
+    editIndex.value = -1;
+    // newEmployee 폼 초기화
+    Object.keys(newEmployee).forEach((key) => {
+        if (key !== 'client') newEmployee[key] = '';
+    });
+    newEmployee.status = '재직';
+};
+
+defineExpose({ getFormData, closeEmployeeForm });
 
 watch(() => form.name, (newVal) => {
   newEmployee.client = newVal;
@@ -169,19 +182,8 @@ const addEmployee = () => {
     employeeList.value[editIndex.value] = employeeData;
   }
 
-  // 초기화
-  Object.keys(newEmployee).forEach((key) => {
-    if (key !== 'client') newEmployee[key] = '';
-  });
-  newEmployee.status = '재직';
-  editIndex.value = -1;
-  isAddingEmployee.value = false;
-};
+    closeEmployeeForm();
 
-const deleteEmployee = (index) => {
-  employeeList.value.splice(index, 1);
-  editIndex.value = -1;
-  isAddingEmployee.value = false;
 };
 
 const editEmployee = (index) => {
@@ -206,10 +208,24 @@ const editEmployee = (index) => {
   isAddingEmployee.value = true;
 };
 
+const deleteEmployee = (index) => {
+    const employee = employeeList.value[index];
+    if (!employee) return;
+
+    if (!employee.clientManagerId) {
+        // 새로 추가된 사원이면 바로 제거
+        employeeList.value.splice(index, 1);
+        closeEmployeeForm(); // 삭제 후 폼 닫기 및 초기화
+    } else {
+        // 기존 DB에 있던 사원이면 부모에 삭제 요청 emit
+        emit('delete-employee', employee.clientManagerId);
+    }
+};
+
 watch(isAddingEmployee, (val) => {
-  if (val && editIndex.value === -1) {
-    newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
-  }
+    if (val && editIndex.value === -1) {
+        newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
+    }
 });
 </script>
 <template>
