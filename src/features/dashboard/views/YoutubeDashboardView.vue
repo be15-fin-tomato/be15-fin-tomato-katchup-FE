@@ -9,7 +9,7 @@ import DashboardHeader from '@/features/dashboard/components/DashboardHeader.vue
 import PopularPosts from '@/features/dashboard/components/PopularPosts.vue'
 import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue'
 import DashboardCampaignList from '@/features/dashboard/components/DashboardCampaignList.vue'
-import { fetchInfluencerDetail, fetchYoutubeInfo } from '@/features/dashboard/api.js';
+import { fetchInfluencerDetail, fetchYoutubeInfo, fetchSatisfaction } from '@/features/dashboard/api.js';
 import { formatNumber } from 'chart.js/helpers';
 
 const route = useRoute()
@@ -18,18 +18,20 @@ const toast = useToast()
 
 const dashboard = ref(null)
 const influencer = ref(null)
-const satisfaction = ref(82.5)
+const satisfaction = ref(0)
 const influencerId = route.query.id
 
 onMounted(async () => {
   try {
-    const [youtubeRes, influencerRes] = await Promise.all([
+    const [youtubeRes, influencerRes, satisfactionRes] = await Promise.all([
       fetchYoutubeInfo(influencerId),    // YouTube 대시보드 데이터
-      fetchInfluencerDetail(influencerId) // 인플루언서 프로필 정보
+      fetchInfluencerDetail(influencerId), // 인플루언서 프로필 정보
+      fetchSatisfaction(influencerId), // 인플루언서 평균 만족도
     ])
 
     const youtubeRawData = youtubeRes?.data?.data?.[0];
     const influencerData = influencerRes
+    const satisfactionData = satisfactionRes?.data?.data;
 
     if (!youtubeRawData) {
       toast.warning('YouTube 계정이 연결되어있지 않습니다.')
@@ -66,12 +68,16 @@ onMounted(async () => {
     };
 
     influencer.value = influencerData;
-    console.log("Processed Dashboard Data:", dashboard.value);
+    satisfaction.value = satisfactionData ?? 0;
 
+    console.log("Processed Dashboard Data:", dashboard.value);
+    console.log("Influencer Satisfaction:", satisfaction.value);
   } catch (err) {
     toast.error('데이터를 불러오지 못했습니다.');
     console.error('💥 YouTube Dashboard Error:', err);
-    dashboard.value = {}; // 오류 발생 시 빈 객체로 설정하여 템플릿 오류 방지
+    dashboard.value = {};
+    satisfaction.value = 0;
+
   }
 });
 

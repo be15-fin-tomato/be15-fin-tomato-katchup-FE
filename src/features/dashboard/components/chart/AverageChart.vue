@@ -69,7 +69,7 @@ const getMonthlyTooltip = () => {
             },
             dataLabels: {
               enabled: true,
-              formatter: val => formatNumber(val),
+              formatter: val =>  formatNumber(val),
               style: { fontSize: '20px', fontWeight: 'bold', colors: ['#5F38E9'] },
               offsetY: 140
             },

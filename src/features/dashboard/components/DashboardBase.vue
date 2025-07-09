@@ -15,7 +15,6 @@ const props = defineProps({
     data: Object,
     summaryData: Object,
     satisfaction: Number,
-    formatNumber: Function,
 });
 
 const emit = defineEmits(['switch']);
@@ -74,7 +73,7 @@ const satisfactionColorClass = computed(() => {
               :platform="platform"
               :daily="props.data?.dailyAvgViews ?? 0"
               :monthly="props.data?.monthlyAvgViews ?? 0"
-              :formatNumber="props.formatNumber" class="w-1/3"
+              class="w-1/3"
             />
             <AlgorithmChart :platform="platform" :data="props.data" class="w-1/3" />
             <div class="dashboard-section w-1/3">
@@ -94,7 +93,7 @@ const satisfactionColorClass = computed(() => {
                 </div>
                 <div class="flex flex-col justify-center items-center mt-10 gap-5">
                   <Icon :icon="satisfactionIcon" :class="`w-36 h-36 ${satisfactionColorClass}`" />
-                  <p class="text-5xl font-extrabold">{{ satisfaction }}</p>
+                  <p class="text-5xl font-extrabold">{{ props.satisfaction }}</p>
                 </div>
             </div>
         </div>
