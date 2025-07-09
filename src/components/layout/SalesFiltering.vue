@@ -1,5 +1,5 @@
 <template>
-    <form @submit.prevent="emitSearch" class="custom-sidebar flex flex-col gap-8">
+    <form @submit.prevent="emitSearch" class="custom-sidebar flex flex-col gap-4">
         <!-- 검색조건 -->
         <div>
             <div class="font-bold mb-3">검색조건</div>
@@ -39,17 +39,19 @@
 
         <!-- 필터/정렬 -->
         <div>
-            <div class="font-bold mb-3">필터/정렬</div>
+            <div class="font-bold mb-3">상태</div>
 
             <!-- 필터 -->
             <select v-model="localValue.filter" class="input-form-box mb-2 w-full">
-                <option value="">필터</option>
+                <option value="">전체</option>
                 <option v-for="option in filterOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
                 </option>
             </select>
-
+        </div>
+        <div>
             <!-- 정렬 -->
+            <div class="font-bold mb-3">정렬</div>
             <div class="flex gap-1 items-center">
                 <select v-model="localValue.sort" class="input-form-box flex-1">
                     <option value="date">등록일</option>
