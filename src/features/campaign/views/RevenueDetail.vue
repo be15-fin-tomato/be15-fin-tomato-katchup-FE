@@ -18,6 +18,7 @@ import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import FileUploadCard from '@/features/campaign/components/FileUploadCard.vue';
 import { structuredForm } from '@/features/campaign/utils/structedForm.js';
 import { useToast } from 'vue-toastification';
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -263,6 +264,16 @@ const handleReferenceSelect = async (item) => {
 // 저장 및 취소
 const save = async () => {
     try {
+        const requiredFields = [
+            { key: 'name', label: '제목' },
+            { key: 'clientCompany', label: '고객사' },
+            { key: 'clientManager', label: '광고담당자' },
+            { key: 'campaign', label: '캠페인' },
+            { key: 'username', label: '담당자' },
+            { key: 'influencer', label: '인플루언서' },
+            { key: 'status', label: '진행단계' },
+        ];
+        if (!validateRequiredFields(form, requiredFields, toast)) return;
         const requestForm = {
             pipelineId: route.params.revenueId,
             campaignId: form.campaign?.id ?? null,

@@ -62,6 +62,7 @@ import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import { structuredForm } from '../utils/structedForm';
 import { useToast } from 'vue-toastification';
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -247,6 +248,17 @@ const handleReferenceSelect = (item) => {
 // 저장 및 취소
 const save = async () => {
     try {
+        const requiredFields = [
+            { key: 'name', label: '제목' },
+            { key: 'clientCompany', label: '고객사' },
+            { key: 'clientManager', label: '광고담당자' },
+            { key: 'campaign', label: '해당 파이프라인' },
+            { key: 'username', label: '담당자' },
+            { key: 'influencer', label: '인플루언서' },
+            { key: 'status', label: '진행단계' },
+        ];
+
+        if (!validateRequiredFields(form, requiredFields, toast)) return;
         const requestForm = {
             pipelineId: route.params.quotationId,
             campaignId: form.campaign?.id ?? null,

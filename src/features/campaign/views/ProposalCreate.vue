@@ -7,8 +7,11 @@ import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import ProposalAccordionItem from '@/features/campaign/components/ProposalAccordionItem.vue';
 import { getInfluencerDetail, getListupReference } from '@/features/campaign/api.js';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
-const router = useRouter();
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
+import { useToast } from 'vue-toastification';
 
+const router = useRouter();
+const toast = useToast();
 const opinions = ref([]);
 const proposalForm = ref(null);
 const form = reactive({});
@@ -108,6 +111,16 @@ const toggle = (index) => {
 
 // 저장 및 취소
 const save = async () => {
+    const requiredFields = [
+        { key: 'name', label: '제목' },
+        { key: 'clientCompany', label: '고객사' },
+        { key: 'clientManager', label: '광고담당자' },
+        { key: 'campaign', label: '해당 파이프라인' },
+        { key: 'username', label: '담당자' },
+        { key: 'influencer', label: '인플루언서' },
+        { key: 'status', label: '진행단계' },
+    ];
+    if (!validateRequiredFields(form, requiredFields, toast)) return;
     const payload = {
         ...form,
         opinions: opinions.value,
