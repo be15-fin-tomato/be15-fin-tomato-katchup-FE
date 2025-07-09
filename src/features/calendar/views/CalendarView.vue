@@ -60,7 +60,7 @@ const fetchPipelineEvents = async () => {
             if (item.presentedAt) {
                 events.push({
                     id: `present-${item.pipelineId}`,
-                    title: `${item.name} (제안)`,
+                    title: `${item.name} 발표일`,
                     start: item.presentedAt,
                     allDay: true
                 });
