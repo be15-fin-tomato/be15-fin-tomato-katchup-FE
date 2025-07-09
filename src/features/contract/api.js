@@ -108,13 +108,15 @@ export const deleteContractDetail = async (detailId) => {
   }
 };
 
-export const sendContractEmail = async (requestData, file = null) => {
+export const sendContractEmail = async (requestData, files = null) => {
   try {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
 
-    if (file) {
-      formData.append('file', file);
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        formData.append('files', file);
+      });
     }
 
     const response = await api.post('/contracts/send', formData, {
