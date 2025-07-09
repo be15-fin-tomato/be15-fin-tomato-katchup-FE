@@ -24,6 +24,7 @@
         type="button"
         class="btn-open-popup"
         @click="openSearchPopup('email', 'manager')"
+        :disabled="isSending"
       >
         검색
       </button>
@@ -31,7 +32,12 @@
 
     <div class="mb-4 flex items-start gap-2">
       <label class="w-[75px] font-semibold">제목</label>
-      <input type="text" v-model="title" class="input-form-box flex-1 border-gray-dark" />
+      <input
+        type="text"
+        v-model="title"
+        class="input-form-box flex-1 border-gray-dark"
+        :disabled="isSending"
+      />
     </div>
 
     <div class="mb-4 flex items-start gap-2">
@@ -40,6 +46,7 @@
         <QuillEditor
           :content="editorContent"
           @update:content="editorContent = $event"
+          :readonly="isSending"
         />
 
         <div class="flex items-center gap-2 mt-4">
@@ -47,6 +54,7 @@
             @click="triggerFileInput"
             type="button"
             class="px-3 py-2 rounded-md bg-gray-100 text-gray-700 text-sm hover:bg-gray-200"
+            :disabled="isSending"
           >
             <Icon icon="codex:file" class="inline-block mr-1" /> 파일 첨부
           </button>
@@ -57,6 +65,7 @@
             @change="handleFilesChange"
             accept="*/*"
             multiple
+            :disabled="isSending"
           />
         </div>
 
@@ -69,14 +78,27 @@
               <span class="text-gray-700 truncate max-w-xs">
                 {{ file.name || file.originalName }}
               </span>
-              <button @click="removeAttachedFile(index)" class="text-xs text-red-500 ml-1 hover:underline">삭제</button>
+              <button
+                @click="removeAttachedFile(index)"
+                class="text-xs text-red-500 ml-1 hover:underline"
+                :disabled="isSending"
+              >삭제</button>
             </div>
           </div>
         </div>
         <span v-else class="text-gray-500 text-sm mt-2 block">첨부된 파일 없음</span>
 
         <div class="flex justify-end mt-4">
-          <button class="btn-create" @click="sendEmail">전송</button>
+          <button class="btn-create" @click="sendEmail" :disabled="isSending">
+            <span v-if="isSending" class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              전송 중...
+            </span>
+            <span v-else>전송</span>
+          </button>
         </div>
       </div>
     </div>
@@ -88,6 +110,9 @@ import { ref, watch } from 'vue';
 import QuillEditor from '@/components/common/QuillEditor.vue';
 import { Icon } from '@iconify/vue';
 import { sendContractEmail } from '@/features/contract/api.js';
+
+// useToast를 import 합니다.
+import { useToast } from "vue-toastification";
 
 const props = defineProps({
   name: String,
@@ -111,6 +136,10 @@ const form = ref({
 const attachedFiles = ref([]);
 const fileInput = ref(null);
 const loadingFile = ref(false);
+const isSending = ref(false); // 이메일 전송 중 상태
+
+// Toast 인스턴스를 가져옵니다.
+const toast = useToast();
 
 watch(() => props.name, (newName) => {
   name.value = newName || '';
@@ -125,9 +154,9 @@ watch(() => props.email, (newEmail) => {
   }
 }, { immediate: true });
 
-watch(() => props.title, (newTitle) => {
-  if (newTitle && newTitle.name) {
-    title.value = `[계약서] ${newTitle.name}`;
+watch(() => props.title, (newTitleProp) => {
+  if (newTitleProp && newTitleProp.name) {
+    title.value = `[계약서] ${newTitleProp.name}`;
   } else {
     title.value = '';
   }
@@ -158,7 +187,7 @@ watch(() => props.initialFile, async (newFile) => {
       attachedFiles.value = [downloadedFile];
     } catch (error) {
       console.error('템플릿 첨부 파일 로드 중 오류 발생:', error);
-      alert('템플릿 첨부 파일을 불러오는 데 실패했습니다. 파일을 다시 첨부하거나 직접 선택해주세요.');
+      toast.error('템플릿 첨부 파일을 불러오는 데 실패했습니다.'); // alert 대신 toast
       attachedFiles.value = [];
     } finally {
       loadingFile.value = false;
@@ -237,19 +266,24 @@ const sendEmail = async () => {
   console.log("첨부 파일들:", attachedFiles.value);
   console.log("-----------------------");
 
+  // 유효성 검사
   if (!form.value.email?.email.trim()) {
-    alert('수신자 이메일을 선택하거나 입력해주세요.');
+    toast.error('수신자 이메일을 선택하거나 입력해주세요.'); // alert 대신 toast
     return;
   }
   if (!title.value.trim()) {
-    alert('이메일 제목을 입력해주세요.');
+    toast.error('이메일 제목을 입력해주세요.'); // alert 대신 toast
+    return;
+  }
+  if (isQuillContentEffectivelyEmpty(editorContent.value)) {
+    toast.error('이메일 내용을 입력해주세요.'); // alert 대신 toast
     return;
   }
 
-  if (isQuillContentEffectivelyEmpty(editorContent.value)) {
-    alert('이메일 내용을 입력해주세요.');
-    return;
-  }
+  // 전송 중 상태 활성화
+  isSending.value = true;
+  // 전송 시작을 사용자에게 알림 (비침습적인 Toast 사용)
+  const sendingToastId = toast.info('메일을 전송 중입니다...', { timeout: false, closeButton: false }); // 무한 타임아웃, 닫기 버튼 없음
 
   const requestData = {
     content: editorContent.value,
@@ -259,8 +293,11 @@ const sendEmail = async () => {
 
   try {
     const response = await sendContractEmail(requestData, attachedFiles.value);
+    toast.dismiss(sendingToastId); // 전송 중 토스트 닫기
+
     if (response.success) {
-      alert('이메일이 성공적으로 전송되었습니다.');
+      toast.success('이메일이 성공적으로 전송되었습니다.'); // 성공 Toast
+      // 폼 초기화
       name.value = '';
       email.value = '';
       title.value = '';
@@ -271,14 +308,18 @@ const sendEmail = async () => {
         fileInput.value.value = '';
       }
     } else {
-      alert(`이메일 전송 실패: ${response.message || '알 수 없는 오류'}`);
+      toast.error(`이메일 전송 실패: ${response.message || '알 수 없는 오류'}`); // 실패 Toast
     }
   } catch (error) {
-    alert('이메일 전송 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    toast.dismiss(sendingToastId); // 전송 중 토스트 닫기
+    toast.error('이메일 전송 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.'); // 오류 Toast
     console.error('이메일 전송 API 호출 중 에러:', error);
+  } finally {
+    isSending.value = false;
   }
 };
 </script>
 
 <style scoped>
+
 </style>
