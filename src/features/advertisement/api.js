@@ -14,3 +14,18 @@ export const getClientCompanyList = async (page, size, filters = {}) => {
 export const createClientCompany = async (data) => {
   return await api.post('/client-companies', data);
 };
+
+// 고객사 수정 API
+export const updateClientCompany = async (clientCompanyId, data) => {
+  return await api.put(`/client-companies/${clientCompanyId}`, data);
+};
+
+// 고객사 삭제 API
+export const deleteClientCompany = async (clientCompanyId) => {
+  return await api.delete(`/client-companies/${clientCompanyId}`);
+};
+
+// 고객사 상세 조회 API
+export const getClientCompanyDetail = async (clientCompanyId) => {
+  return await api.get(`/client-companies/${clientCompanyId}/detail`);
+};
