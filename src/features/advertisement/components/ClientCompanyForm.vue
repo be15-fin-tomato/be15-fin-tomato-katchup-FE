@@ -180,6 +180,8 @@ const addEmployee = () => {
 
 const deleteEmployee = (index) => {
   employeeList.value.splice(index, 1);
+  editIndex.value = -1;
+  isAddingEmployee.value = false;
 };
 
 const editEmployee = (index) => {
@@ -304,20 +306,22 @@ watch(isAddingEmployee, (val) => {
               {{ employee.email }}
             </p>
           </div>
-          <div class="flex gap-2">
-            <button class="btn-icon">
-              <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-              MAIL
-            </button>
-            <button class="btn-icon" @click="editEmployee(index)" v-if="isEditing">
-              <Icon icon="lucide:edit" width="20" height="20" />
-              수정
-            </button>
-            <button class="btn-icon" @click="deleteEmployee(index)">
-              <Icon icon="gg:trash" width="20" height="20" />
-              삭제
-            </button>
-          </div>
+            <div class="flex gap-2">
+                <button class="btn-icon">
+                    <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                    MAIL
+                </button>
+                <template v-if="isEditing">
+                    <button class="btn-icon" @click="editEmployee(index)">
+                        <Icon icon="lucide:edit" width="20" height="20" />
+                        수정
+                    </button>
+                    <button class="btn-icon" @click="deleteEmployee(index)">
+                        <Icon icon="gg:trash" width="20" height="20" />
+                        삭제
+                    </button>
+                </template>
+            </div>
         </div>
       </div>
     </div>
@@ -370,6 +374,7 @@ watch(isAddingEmployee, (val) => {
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-4">
+        <button v-if="editIndex !== -1" class="btn-delete !px-5" @click="() => { deleteEmployee(editIndex); isAddingEmployee = false; }">삭제</button>
         <button class="btn-delete !px-5" @click="isAddingEmployee = false">취소</button>
         <button class="btn-create !px-5" @click="addEmployee">
           {{ editIndex === -1 ? '등록' : '수정 완료' }}
