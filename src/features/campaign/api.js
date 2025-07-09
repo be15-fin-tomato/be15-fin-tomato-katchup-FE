@@ -36,9 +36,17 @@ export const getProposalDetail = async (proposalId) => {
 };
 
 export const getListUpList = async (page, size, filters = {}) => {
-    return await api.get('/sales/listup', {
+    return await api.get('/campaign/listup', {
         params: { page, size, ...filters },
     });
+};
+
+export const getListupDetail = async (pipelineId) => {
+    return await api.get(`/campaign/listup/${pipelineId}`);
+};
+
+export const deleteListup = async (listupId) => {
+    return await api.delete(`/campaign/listup/${listupId}`);
 };
 
 /* 견적 목록*/
