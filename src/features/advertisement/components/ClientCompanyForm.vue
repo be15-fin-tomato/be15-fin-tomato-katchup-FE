@@ -4,7 +4,8 @@ import { Icon } from '@iconify/vue';
 
 const props = defineProps({
   isEditing: { type: Boolean, default: false },
-  initialData: { type: Object, default: () => ({}) }
+  initialData: { type: Object, default: () => ({}) },
+  users: { type: Array, default: () => [] }
 });
 
 // const emit = defineEmits(['save', 'cancel']);
@@ -56,6 +57,8 @@ const employeeStatusMap = {
 watch(() => props.initialData, (data) => {
   if (data) {
     console.log('📦 초기 데이터:', data);
+    console.log('📦 data.userIds:', data.userIds);
+    console.log('📦 props.users:', props.users);
 
     form.name = data.clientCompanyName || '';
     form.status = Object.entries(companyStatusMap).find(([, v]) => v === data.clientCompanyStatusId)?.[0] || '';    form.revenue = data.sales?.toString() || '';
@@ -64,7 +67,13 @@ watch(() => props.initialData, (data) => {
     form.note = data.notes || '';
     form.phone = data.telephone || '';
     form.fax = data.fax || '';
-    form.user = (data.userIds || []).map(id => ({ id, name: `ID ${id}` }));
+    form.user = (data.userIds || []).map((id) => {
+      const matched = props.users.find((u) => u.userId === id);
+      return {
+        id,
+        name: matched?.userName || `ID ${id}`,
+      };
+    });
     form.address1 = data.address || '';
     form.address2 = data.detailAddress || '';
     employeeList.value = (data.clientManagers || []).map((e) => ({
