@@ -24,14 +24,46 @@
 
                     <div class="border border-gray-light rounded-md p-6 mb-6 w-full">
                         <div class="flex items-center gap-4 mb-4">
-                            <label class="input-form-label text-black">캠페인명</label>
-                            <input v-model="filters.name" class="input-form-box flex-1" />
-
+                            <!-- 고객사 -->
                             <label class="input-form-label text-black">고객사</label>
-                            <input v-model="filters.company" class="input-form-box flex-1" />
+                            <div class="flex flex-1 gap-2">
+                                <input
+                                    :value="filters.clientCompany?.name ?? ''"
+                                    class="input-form-box flex-1"
+                                    readonly
+                                />
+                                <button
+                                    class="btn-open-popup"
+                                    @click="openSearchPopup(filters, 'clientCompany', 'company')"
+                                >
+                                    검색
+                                </button>
+                            </div>
+                            <!-- 캠페인명 -->
+                            <label class="input-form-label text-black">캠페인명</label>
+                            <div class="flex flex-1 gap-2">
+                                <input
+                                    :value="filters.campaign?.name ?? ''"
+                                    class="input-form-box flex-1"
+                                />
+                                <button
+                                    class="btn-open-popup"
+                                    :disabled="!filters.clientCompany"
+                                    @click="
+                                        openSearchPopup(
+                                            filters,
+                                            'campaign',
+                                            'pipeline',
+                                            'clientCompany',
+                                        )
+                                    "
+                                >
+                                    검색
+                                </button>
+                            </div>
 
                             <button
-                                @click="applyFilter"
+                                @click="fetchCampaigns"
                                 class="bg-[#A6C8FF] text-white text-sm h-[40px] px-6 rounded hover:brightness-95"
                             >
                                 찾기
@@ -42,11 +74,11 @@
                             <label class="input-form-label mb-2 block text-black">태그</label>
                             <div class="flex flex-wrap gap-2">
                                 <span
-                                    v-for="tag in TAGS"
-                                    :key="tag"
+                                    v-for="(tag, i) in TAGS"
+                                    :key="i + 1"
                                     :class="`${TAG_COLOR_MAP[tag]} px-2 py-1 rounded-full text-xs cursor-pointer`"
                                     @click="toggleTag(tag)"
-                                    :style="{ opacity: selectedTags.includes(tag) ? '1' : '0.5' }"
+                                    :style="{ opacity: selectedTags.includes(i + 1) ? '1' : '0.5' }"
                                 >
                                     #{{ tag }}
                                 </span>
@@ -58,19 +90,19 @@
                         <span
                             v-for="tag in selectedTags"
                             :key="tag"
-                            :class="`${TAG_COLOR_MAP[tag]} px-2 py-1 rounded-full text-xs flex items-center gap-1`"
+                            :class="`${TAG_COLOR_MAP[TAGS[tag - 1]]} px-2 py-1 rounded-full text-xs flex items-center gap-1`"
                         >
-                            #{{ tag }}
+                            #{{ TAGS[tag - 1] }}
                             <span
                                 class="cursor-pointer font-bold text-black"
-                                @click="toggleTag(tag)"
+                                @click="toggleTag(TAGS[tag - 1])"
                                 >×</span
                             >
                         </span>
                     </div>
 
                     <div
-                        class="border border-gray-light rounded-md bg-white p-4 overflow-y-auto max-h-[400px]"
+                        class="border border-gray-light rounded-md bg-white p-4 overflow-y-auto max-h-[300px]"
                     >
                         <table class="w-full text-sm text-center">
                             <thead class="text-xs text-gray-500 border-b border-gray-light">
@@ -85,34 +117,47 @@
                             </thead>
                             <tbody>
                                 <template
-                                    v-for="(item, index) in filteredCampaigns"
-                                    :key="item?.id ?? index"
+                                    v-for="(item, index) in campaignList"
+                                    :key="item.campaignId"
                                 >
                                     <tr v-if="item" class="h-[64px]">
                                         <td>{{ index + 1 }}</td>
                                         <td>
                                             <span
-                                                class="text-white text-xs px-2 py-1 rounded bg-gray-600"
-                                                >{{ item.status1 }}</span
-                                            >
-                                            <span
                                                 class="text-white text-xs px-2 py-1 rounded ml-1"
-                                                :class="
-                                                    item.status2 === '제안'
-                                                        ? 'bg-pink-300'
-                                                        : 'bg-orange-300'
-                                                "
+                                                :class="{
+                                                    'bg-red-300': item.campaignStatusId === 1,
+                                                    'bg-pink-300': item.campaignStatusId === 2,
+                                                    'bg-orange-300': item.campaignStatusId === 3,
+                                                    'bg-blue-300': item.campaignStatusId === 4,
+                                                    'bg-green-400': item.campaignStatusId === 5,
+                                                }"
                                             >
-                                                {{ item.status2 }}
+                                                {{
+                                                    campaignStatus[item.campaignStatusId] ??
+                                                    '알수없음'
+                                                }}
                                             </span>
+                                            <!--                                                                                        <span-->
+                                            <!--                                                                                            class="text-white text-xs px-2 py-1 rounded ml-1"-->
+                                            <!--                                                                                            :class="-->
+                                            <!--                                                                                                item.campaignStatusId === 2-->
+                                            <!--                                                                                                    ? 'bg-pink-300'-->
+                                            <!--                                                                                                    : 'bg-orange-300'-->
+                                            <!--                                                                                            "-->
+                                            <!--                                                                                        >-->
+                                            <!--                                                                                            {{ item.campaignStatusId === 2 ? '진행' : '종료' }}-->
+                                            <!--                                                                                        </span>-->
                                         </td>
-                                        <td class="font-semibold">{{ item.company }}</td>
-                                        <td>{{ item.title }}</td>
-                                        <td>{{ item.product }}</td>
+                                        <td class="font-semibold">{{ item.clientCompanyName }}</td>
+                                        <td>{{ item.campaignName }}</td>
+                                        <td>{{ item.productName }}</td>
                                         <td>
                                             <button
                                                 class="bg-blue-100 text-blue-600 text-xs px-3 py-1 rounded hover:bg-blue-200"
-                                                @click="getRecommendationsByCampaignId(item.id)"
+                                                @click="
+                                                    getRecommendationsByCampaignId(item.campaignId)
+                                                "
                                             >
                                                 AI 추천 받기
                                             </button>
@@ -148,7 +193,7 @@
                             v-for="category in categories"
                             :key="category"
                             :class="[
-                                'text-sm h-[40px] px-6 rounded',
+                                'text-sm h-[40px] px-4 rounded',
                                 selectedCategory === category
                                     ? 'bg-[#A6C8E9] text-white'
                                     : 'text-black hover:text-blue-500',
@@ -220,7 +265,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import axios from 'axios';
 import { Icon } from '@iconify/vue';
 import AddedInfluencers from '../components/AddedInfluencers.vue';
@@ -228,11 +273,16 @@ import AIInfluencerCard from '../components/AIInfluencerCard.vue';
 import { TAG_COLOR_MAP, TAGS } from '@/constants/tags';
 import AddToListupModal from '@/features/ai/components/AddToListupModal.vue';
 import { useRoute } from 'vue-router';
-import { fetchListupDetail } from '@/features/ai/api.js';
+import { fetchCampaignList, fetchListupDetail } from '@/features/ai/api.js';
 
 const route = useRoute();
 
-const filters = ref({ name: '', company: '' });
+const filters = reactive({
+    clientCompany: null,
+    campaign: null,
+    name: '',
+    company: '',
+});
 const selectedTags = ref([]);
 const campaignList = ref([]);
 const recommendedInfluencers = ref([]);
@@ -291,16 +341,17 @@ const handleAddToListup = (payload) => {
 };
 
 const toggleTag = (tag) => {
-    if (selectedTags.value.includes(tag)) {
-        selectedTags.value = selectedTags.value.filter((t) => t !== tag);
+    const index = TAGS.indexOf(tag) + 1;
+    if (selectedTags.value.includes(index)) {
+        selectedTags.value = selectedTags.value.filter((i) => i !== index);
     } else {
-        selectedTags.value.push(tag);
+        selectedTags.value.push(index);
     }
 };
 
 const applyFilter = () => {
-    console.log('검색 이름:', filters.value.name);
-    console.log('검색 고객사:', filters.value.company);
+    console.log('검색 이름:', filters.name);
+    console.log('검색 고객사:', filters.company);
     console.log('선택된 태그:', selectedTags.value);
 };
 
@@ -313,20 +364,19 @@ const fetchAllInfluencers = async () => {
     }
 };
 
-const filteredCampaigns = computed(() => {
-    return (campaignList.value || []).filter((item) => {
-        if (!item || typeof item !== 'object') return false;
-        const title = item.title ?? '';
-        const company = item.company ?? '';
-        const tags = Array.isArray(item.tags) ? item.tags : [];
-        const matchName = filters.value.name === '' || title.includes(filters.value.name);
-        const matchCompany =
-            filters.value.company === '' || company.includes(filters.value.company);
-        const matchTags =
-            selectedTags.value.length === 0 || selectedTags.value.some((tag) => tags.includes(tag));
-        return matchName && matchCompany && matchTags;
-    });
-});
+// const filteredCampaigns = computed(() => {
+//     return (campaignList.value || []).filter((item) => {
+//         if (!item || typeof item !== 'object') return false;
+//         const campaignId = item.campaignId;
+//         const campaignName = item.campaignName ?? '';
+//         const clientCompanyId = item.clientCompanyId ?? '';
+//         const clientCompanyName = item.clientCompanyName ?? '';
+//         const tags = Array.isArray(item.categoryList) ? item.categoryList : [];
+//         const matchTags =
+//             selectedTags.value.length === 0 || selectedTags.value.some((tag) => tags.includes(tag));
+//         return matchName && matchCompany && matchTags;
+//     });
+// });
 
 const filteredAiInfluencers = computed(() => {
     return recommendedInfluencers.value.filter((influencer) => {
@@ -355,15 +405,22 @@ const filteredAllInfluencers = computed(() => {
     });
 });
 
+const campaignStatus = {
+    1: '취소',
+    2: '진행중',
+    3: '보류',
+    4: '게시대기',
+    5: '완료',
+};
+
 const fetchCampaigns = async () => {
-    const res = await axios.get('/api/v1/ai/campaigns');
-    campaignList.value = res.data.data;
-    if (campaignList.value.length > 0) {
-        const recRes = await axios.get(
-            `/api/v1/ai/campaigns/${campaignList.value[0].id}/recommendations`,
-        );
-        recommendedInfluencers.value = recRes.data.data;
-    }
+    const res = await fetchCampaignList({
+        clientCompanyId: filters.clientCompany?.id ?? null,
+        campaignName: filters.campaign?.name ?? null,
+        tags: selectedTags.value.length > 0 ? selectedTags.value : undefined,
+    });
+
+    campaignList.value = res.data.data.campaignList;
 };
 
 const addInfluencer = (influencer, campaignName) => {
@@ -402,7 +459,7 @@ onMounted(async () => {
                 title: data.title ?? '',
             };
 
-            filters.value.name = data.campaignName ?? '';
+            filters.name = data.campaignName ?? '';
             searchQuery.value = data.searchQuery ?? '';
             selectedCategory.value = data.category ?? '전체';
             selectedTags.value = Array.isArray(data.tags) ? [...data.tags] : [];
