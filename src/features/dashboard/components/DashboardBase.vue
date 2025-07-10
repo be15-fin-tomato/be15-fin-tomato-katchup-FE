@@ -98,41 +98,44 @@ const satisfactionColorClass = computed(() => {
             </div>
         </div>
 
-<!--        <div class="flex gap-8">-->
-<!--            <AgeChart-->
-<!--                :platform="platform"-->
-<!--                :data="{-->
-<!--                    age1824: props.data?.age1824 ?? 0,-->
-<!--                    age2534: props.data?.age2534 ?? 0,-->
-<!--                    age3544: props.data?.age3544 ?? 0,-->
-<!--                    age4554: props.data?.age4554 ?? 0-->
-<!--                }"-->
-<!--                class="w-[70%]"-->
-<!--            />-->
-<!--            <GenderChart-->
-<!--                :platform="platform"-->
-<!--                :data="{-->
-<!--                    male: props.data?.genderMale ?? 0,-->
-<!--                    female: props.data?.genderFemale ?? 0-->
-<!--                }"-->
-<!--            class="w-[30%]"-->
-<!--          />-->
-<!--        </div>-->
+        <div class="flex gap-8">
+          <AgeChart
+            :platform="platform"
+            :data="{
+                    age1317: props.data?.age1317 ?? 0,
+                    age1824: props.data?.age1824 ?? 0,
+                    age2534: props.data?.age2534 ?? 0,
+                    age3544: props.data?.age3544 ?? 0,
+                    age4554: props.data?.age4554 ?? 0,
+                    age5564: props.data?.age5564 ?? 0,
+                    age65plus: props.data?.age65plus ?? 0,
+                }"
+            class="w-2/3"
+          />
+          <GenderChart
+            :platform="platform"
+            :data="{
+                    male: props.data?.genderMale ?? 0,
+                    female: props.data?.genderFemale ?? 0
+                }"
+            class="w-1/3"
+          />
+        </div>
 
-<!--        <div class="flex gap-8">-->
-<!--            <FollowerChart-->
-<!--                :platform="platform"-->
-<!--                :data="platform === 'instagram' ? (props.data?.followersTrend ?? []) : (props.data?.subscribersTrend ?? [])"-->
-<!--                class="w-[70%]"-->
-<!--            />-->
-<!--            <ReachChart-->
-<!--              platform="platform"-->
-<!--              :reach="props.data?.reach ?? 0"-->
-<!--              :followerRate="props.data?.subscribedRatio ?? 0"-->
-<!--              :nonFollowerRate="props.data?.notSubscribedRatio ?? 0"-->
-<!--              class="w-[30%]"-->
-<!--            />-->
+        <div class="flex gap-8">
+            <FollowerChart
+                :platform="platform"
+                :data="platform === 'instagram' ? (props.data?.followersTrend ?? []) : (props.data)"
+                class="w-[70%]"
+            />
+            <ReachChart
+              platform="platform"
+              :reach="props.data?.reach ?? 0"
+              :followerRate="props.data?.subscribedRatio ?? 0"
+              :nonFollowerRate="props.data?.notSubscribedRatio ?? 0"
+              class="w-[30%]"
+            />
 
-<!--        </div>-->
+        </div>
     </div>
 </template>
