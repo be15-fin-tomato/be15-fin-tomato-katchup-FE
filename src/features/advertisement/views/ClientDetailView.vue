@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   deleteClientCompany,
   getClientCompanyDetail, getClientCompanyUsers,
-  updateClientCompany, deleteClientManager
+  updateClientCompany, deleteClientManager, getCampaignsByClientCompany
 } from '@/features/advertisement/api.js';
 
 import ClientCompanyForm from '@/features/advertisement/components/ClientCompanyForm.vue';
@@ -23,6 +23,10 @@ const clientFormRef = ref();
 const clientData = ref(null);
 const users = ref([]);
 
+const campaignList = ref([]); // 캠페인 목록
+const contractList = ref([]); // 계약 목록
+const communicationHistories = ref([]); // 커뮤니케이션 이력
+
 // 고객사 데이터를 다시 불러오는 함수
 const fetchClientCompanyData = async () => {
   try {
@@ -35,7 +39,10 @@ const fetchClientCompanyData = async () => {
     users.value = userRes.data.data;
 
     // 캠페인, 계약, 이력 등도 함께 업데이트
-    campaignList.value = res.data.campaignList ?? [];
+    const campaignRes = await getCampaignsByClientCompany(id);  // 고객사 ID로 캠페인 목록 불러오기
+    campaignList.value = campaignRes.data.data ?? [];
+    console.log('✅ campaignList 데이터:', campaignList.value);
+
     contractList.value = res.data.contractList ?? [];
     communicationHistories.value = res.data.communicationHistories ?? [];
 
@@ -62,11 +69,6 @@ const handleDeleteEmployee = async (employeeIdToDelete) => {
     toast.error('사원 삭제에 실패했습니다.');
   }
 };
-
-
-const campaignList = ref([]); // 캠페인 목록
-const contractList = ref([]); // 계약 목록
-const communicationHistories = ref([]); // 커뮤니케이션 이력
 
 const selectedCampaignId = ref(null);
 const selectedMsg = ref(null);
