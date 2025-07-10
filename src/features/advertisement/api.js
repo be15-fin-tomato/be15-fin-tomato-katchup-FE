@@ -39,3 +39,8 @@ export const getClientCompanyUsers = async (clientCompanyId) => {
 export const deleteClientManager = async (clientManagerId) => {
   return await api.delete(`/client-managers/${clientManagerId}`);
 };
+
+// 고객사 ID 기준 캠페인 목록 조회 API
+export const getCampaignsByClientCompany = async (clientCompanyId) => {
+  return await api.get(`/campaign/by-client-company/${clientCompanyId}`);
+};

@@ -22,7 +22,7 @@ const router = useRouter();
 // 필터 목록
 const filters = [
   { label: '전체', value: 'all', color: 'bg-gray-400' },
-  { label: '기획 인지', value: 'chance', color: 'bg-pipeline-chance' },
+  { label: '기회인지', value: 'chance', color: 'bg-pipeline-chance' },
   { label: '리스트업', value: 'listup', color: 'bg-pipeline-list-up' },
   { label: '제안', value: 'proposal', color: 'bg-pipeline-proposal' },
   { label: '견적', value: 'quotation', color: 'bg-pipeline-quotation' },
@@ -32,7 +32,7 @@ const filters = [
 
 // stepType 한글 → 영문 필터 값
 const stepTypeToValue = {
-  '기획 인지': 'chance',
+  '기회인지': 'chance',
   '리스트업': 'listup',
   '제안': 'proposal',
   '견적': 'quotation',
@@ -40,7 +40,6 @@ const stepTypeToValue = {
   '계약': 'contract',
 };
 
-// 생성 경로 매핑 (기획 인지 제외)
 const createUrlMap = {
   listup: '/influencer/recommendation',
   proposal: '/sales/proposal/create',
@@ -96,36 +95,39 @@ const filteredList = computed(() => {
 const goToCreate = () => {
   const url = createUrlMap[createStep.value];
   if (url) router.push(url);
-  else toast.error('이동할 곳이 없습니다.');
+  else toast.error('이동 중 에러 발생');
 };
 
-// 상세 이동
 const goToDetail = async (item) => {
   const step = item.stepType;
   const id = item.pipelineId;
 
+  if (step === '기회인지') return;
+
+  if (step === '리스트업') {
+    await router.push('/influencer/recommendation');
+    return;
+  }
+
   const stepPathMap = {
-    '리스트업': 'listup',
     '제안': 'proposal',
     '견적': 'quotation',
     '계약': 'contract',
     '매출': 'revenue',
   };
 
-  if (step === '기획 인지') return;
-
   const path = stepPathMap[step];
   if (path && id) {
     await router.push(`/sales/${path}/${id}`);
   } else {
-    alert('잘못된 항목입니다.');
+    toast.error('잘못된 항목입니다.');
   }
 };
 
 // 아이콘 매핑
 const getStepIcon = (step) => {
   const map = {
-    '기획 인지': 'bxs:contact',
+    '기회인지': 'bxs:contact',
     '리스트업': 'material-symbols:list-alt-check-rounded',
     '제안': 'material-symbols:mic',
     '견적': 'material-symbols:calculate-outline-rounded',
@@ -138,7 +140,7 @@ const getStepIcon = (step) => {
 // 색상 매핑
 const getStepColor = (step) => {
   const map = {
-    '기획 인지': 'bg-pipeline-chance',
+    '기회인지': 'bg-pipeline-chance',
     '리스트업': 'bg-pipeline-list-up',
     '제안': 'bg-pipeline-proposal',
     '견적': 'bg-pipeline-quotation',

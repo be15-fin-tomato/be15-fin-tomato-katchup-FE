@@ -49,6 +49,7 @@ const groups = [
                 type: 'search-manager',
                 searchType: 'manager',
                 essential: true,
+                extends: 'clientCompany',
             },
             { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
         ],
@@ -58,10 +59,11 @@ const groups = [
         fields: [
             {
                 key: 'pipeline',
-                label: '해당 파이프라인',
+                label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
                 essential: true,
+                extends: 'clientCompany',
             },
             {
                 key: 'username',

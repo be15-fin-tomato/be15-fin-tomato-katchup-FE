@@ -1,17 +1,17 @@
 <template>
   <div class="w-full min-h-screen bg-background flex font-sans">
-    <CommonFiltering
-      @update:filters="newFilters => filters = { ...filters, ...newFilters }"
+    <InfluencerManagementFilter
+      @apply-filters="handleApplyFilters"
     />
 
-    <div class="container">
-      <div class="page-header">
-        <div class="page-title">
+    <div class="container flex-grow p-8">
+      <div class="flex justify-between items-center mb-6 px-2">
+        <div class="text-3xl font-bold text-gray-800">
           인플루언서 관리
-          <span class="cnt-search"> (검색결과: {{ totalCount }}건) </span>
+          <span class="text-xl text-gray-600 font-medium"> (검색결과: {{ totalCount }}건) </span>
         </div>
         <div class="flex gap-2 items-center">
-          <button class="btn-create" @click="openModal">등록</button>
+          <button class="bg-btn-gray text-white py-2 px-4 rounded-md font-semibold hover:dark:bg-gray-600 transition-colors shadow-md" @click="openModal">등록</button>
           <button
             @click="isYoutubeConnectIdModalOpen = true"
             class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <div class="blue-line"></div>
+      <div class="h-0.5 bg-blue-500 mb-8"></div>
 
       <div class="px-10">
         <div v-if="isLoading" class="text-center py-10 text-gray-500">
@@ -91,24 +91,19 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import InfluencerFormModal from '../components/InfluencerFormModal.vue';
-import CommonFiltering from '@/components/layout/CommonFiltering.vue';
+import InfluencerManagementFilter from '@/components/common/InfluencerManagementFilter.vue';
 import { getInfluencers, registerInfluencer, updateInfluencer, deleteInfluencerApi } from '@/features/user/api.js';
 import InfluencerManagementCard from '@/components/common/InfluencerManagementCard.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
 import YoutubeConnectIdModal from '@/features/influencer/components/YoutubeConnectModal.vue';
 import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
-
-// Icon 컴포넌트 임포트
 import { Icon } from '@iconify/vue';
 
-// ==========================================================
-// 변수 선언: isLoading을 포함하여 관련된 변수들을 상단에 배치
-// ==========================================================
 const influencers = ref([]);
 const isModalOpen = ref(false);
 const selectedInfluencer = ref(null);
 
-const isLoading = ref(true); // 로딩 상태를 가장 명확한 위치로 이동
+const isLoading = ref(true);
 
 const currentPageZeroBased = ref(0);
 const pageSize = 6;
@@ -126,18 +121,11 @@ const currentInfluencerIdForYoutube = ref(null);
 const isInstagramConnectModalOpen = ref(false);
 const currentInfluencerIdForInstagram = ref(null);
 
-// ==========================================================
-// 유틸리티 함수
-// ==========================================================
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ==========================================================
-// 데이터 페칭 함수
-// ==========================================================
 const fetchInfluencers = async () => {
-  // 함수 호출 시점에도 isLoading을 true로 설정하여 확실히 로딩 상태 시작
   isLoading.value = true;
 
   try {
@@ -147,10 +135,9 @@ const fetchInfluencers = async () => {
       size: pageSize,
     };
 
-    // API 호출과 최소 로딩 시간을 동시에 시작
     const [apiResponse] = await Promise.all([
       getInfluencers(params),
-      delay(300) // 최소 300ms 로딩 보장 (조절 가능)
+      delay(300)
     ]);
 
     const apiData = apiResponse.data;
@@ -197,14 +184,15 @@ const fetchInfluencers = async () => {
     console.error('인플루언서 목록을 가져오는 데 실패했습니다:', error);
     alert('인플루언서 목록을 불러오는 중 오류가 발생했습니다.');
   } finally {
-    // API 호출 완료 또는 실패 후 로딩 상태 비활성화
     isLoading.value = false;
   }
 };
 
-// ==========================================================
-// 라이프사이클 훅 및 Watcher
-// ==========================================================
+const handleApplyFilters = (newFilters) => {
+  currentPageZeroBased.value = 0;
+  filters.value = { ...newFilters };
+};
+
 onMounted(() => {
   fetchInfluencers();
 });
@@ -213,9 +201,6 @@ watch([currentPageZeroBased, filters], () => {
   fetchInfluencers();
 }, { deep: true });
 
-// ==========================================================
-// 모달 관련 함수
-// ==========================================================
 const openModal = () => {
   selectedInfluencer.value = null;
   isModalOpen.value = true;
@@ -229,12 +214,9 @@ const openModalWithData = (influencerCardData) => {
 const closeModal = () => {
   isModalOpen.value = false;
   selectedInfluencer.value = null;
-  fetchInfluencers(); // 모달 닫으면 목록 새로고침
+  fetchInfluencers();
 };
 
-// ==========================================================
-// CRUD 관련 함수
-// ==========================================================
 const deleteInfluencer = async (id) => {
   if (confirm('정말로 이 인플루언서를 삭제하시겠습니까?')) {
     try {
@@ -271,18 +253,12 @@ const saveInfluencer = async (formDataFromModal) => {
   }
 };
 
-// ==========================================================
-// 페이지네이션 관련 함수
-// ==========================================================
 const currentPageOneBased = computed(() => currentPageZeroBased.value + 1);
 
 const updateCurrentPageFromPagingBar = (val) => {
   currentPageZeroBased.value = val - 1;
 };
 
-// ==========================================================
-// 연동 모달 관련 함수
-// ==========================================================
 const handleInfluencerIdConfirmed = (id) => {
   currentInfluencerIdForYoutube.value = id;
   isYoutubeConnectIdModalOpen.value = false;
@@ -300,3 +276,6 @@ const handleInstagramIdConfirmed = (id) => {
   alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
 };
 </script>
+
+<style scoped>
+</style>
