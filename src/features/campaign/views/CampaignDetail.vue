@@ -62,7 +62,7 @@ const fetchCampaignDetail = async () => {
 
   // 파이프라인 단계 구성
   const stepMap = {
-    1: '기획 인지',
+    1: '기회인지',
     2: '리스트업',
     3: '제안',
     4: '견적',
