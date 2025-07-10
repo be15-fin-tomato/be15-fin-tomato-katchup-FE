@@ -41,7 +41,7 @@
 
         <!-- 계약금 -->
         <div class="flex flex-col">
-            <label class="font-semibold text-md mb-2">계약금</label>
+            <label class="font-semibold text-md mb-2">예상매출</label>
             <div class="grid grid-cols-2 gap-2">
                 <button
                     v-for="(range, index) in budgetOptions"
@@ -115,19 +115,21 @@ const startDate = ref('');
 const endDate = ref('');
 
 const stepOptions = [
-    { label: '기회', value: 'chance' },
-    { label: '리스트업', value: 'listup' },
-    { label: '제안', value: 'proposal' },
-    { label: '견적', value: 'quotation' },
-    { label: '협상', value: 'negotiation' },
-    { label: '계약', value: 'contract' },
-    { label: '사후관리', value: 'followup' },
+    { id:1, label: '기회인지', value: 'chance' },
+    { id:2, label: '리스트업', value: 'listup' },
+    { id:3, label: '제안', value: 'proposal' },
+    { id:4, label: '견적', value: 'quotation' },
+    { id:5, label: '협상', value: 'negotiation' },
+    { id:6, label: '계약', value: 'contract' },
+    { id:8, label: '사후관리', value: 'followup' },
 ];
 
 const statusOptions = [
-    { label: '대기', value: 'waiting' },
-    { label: '진행중', value: 'inProgress' },
-    { label: '완료', value: 'done' },
+    { id: 1, label: '취소', value: 'cancelled' },
+    { id: 2, label: '진행중', value: 'in_progress' },
+    { id: 3, label: '보류', value: 'on_hold' },
+    { id: 4, label: '게시대기', value: 'pending_publish' },
+    { id: 5, label: '완료', value: 'completed' },
 ];
 
 const budgetOptions = [

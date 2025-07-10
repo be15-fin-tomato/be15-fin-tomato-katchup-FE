@@ -270,11 +270,10 @@ const save = async () => {
         // 4. API 호출
         await updateContractDetail(formData);
         toast.success('견적이 수정되었습니다.');
-        await fetchContractDetail(); // 다시 조회
     } catch (e) {
         toast.error(e?.response?.data?.message);
     }
-
+    await fetchContractDetail(); // 다시 조회
     isEditing.value = false;
 };
 

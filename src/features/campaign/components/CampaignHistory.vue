@@ -40,7 +40,6 @@ const stepTypeToValue = {
   '계약': 'contract',
 };
 
-// 생성 경로 매핑 (기회인지 제외)
 const createUrlMap = {
   listup: '/influencer/recommendation',
   proposal: '/sales/proposal/create',
@@ -96,29 +95,32 @@ const filteredList = computed(() => {
 const goToCreate = () => {
   const url = createUrlMap[createStep.value];
   if (url) router.push(url);
-  else toast.error('이동할 곳이 없습니다.');
+  else toast.error('이동 중 에러 발생');
 };
 
-// 상세 이동
 const goToDetail = async (item) => {
   const step = item.stepType;
   const id = item.pipelineId;
 
+  if (step === '기회인지') return;
+
+  if (step === '리스트업') {
+    await router.push('/influencer/recommendation');
+    return;
+  }
+
   const stepPathMap = {
-    '리스트업': 'listup',
     '제안': 'proposal',
     '견적': 'quotation',
     '계약': 'contract',
     '매출': 'revenue',
   };
 
-  if (step === '기회인지') return;
-
   const path = stepPathMap[step];
   if (path && id) {
     await router.push(`/sales/${path}/${id}`);
   } else {
-    alert('잘못된 항목입니다.');
+    toast.error('잘못된 항목입니다.');
   }
 };
 
