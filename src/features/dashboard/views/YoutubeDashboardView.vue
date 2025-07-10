@@ -10,7 +10,7 @@ import PopularPosts from '@/features/dashboard/components/PopularPosts.vue'
 import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue'
 import DashboardCampaignList from '@/features/dashboard/components/DashboardCampaignList.vue'
 import { fetchInfluencerDetail, fetchYoutubeInfo, fetchSatisfaction } from '@/features/dashboard/api.js';
-import { formatNumber } from 'chart.js/helpers';
+import { formatNumber } from '@/utils/fomatters.js';
 
 const route = useRoute()
 const router = useRouter()
@@ -46,10 +46,13 @@ onMounted(async () => {
       avgComments: youtubeRawData.avgComments ?? 0,
       dailyAvgViews: youtubeRawData.dailyAvgViews ?? 0,
       monthlyAvgViews: youtubeRawData.monthlyAvgViews ?? 0,
+      age1317: youtubeRawData.age1317 ?? 0,
       age1824: youtubeRawData.age1824 ?? 0,
       age2534: youtubeRawData.age2534 ?? 0,
       age3544: youtubeRawData.age3544 ?? 0,
       age4554: youtubeRawData.age4554 ?? 0,
+      age5564: youtubeRawData.age5564 ?? 0,
+      age65plus: youtubeRawData.age65plus ?? 0,
       genderMale: youtubeRawData.genderMale ?? 0,
       genderFemale: youtubeRawData.genderFemale ?? 0,
       subscribedRatio: youtubeRawData.subscribedRatio ?? 0,
@@ -72,6 +75,7 @@ onMounted(async () => {
 
     console.log("Processed Dashboard Data:", dashboard.value);
     console.log("Influencer Satisfaction:", satisfaction.value);
+
   } catch (err) {
     toast.error('데이터를 불러오지 못했습니다.');
     console.error('💥 YouTube Dashboard Error:', err);
