@@ -4,14 +4,14 @@
       @apply-filters="handleApplyFilters"
     />
 
-    <div class="container">
-      <div class="page-header">
-        <div class="page-title">
+    <div class="container flex-grow p-8">
+      <div class="flex justify-between items-center mb-6 px-2">
+        <div class="text-3xl font-bold text-gray-800">
           인플루언서 관리
-          <span class="cnt-search"> (검색결과: {{ totalCount }}건) </span>
+          <span class="text-xl text-gray-600 font-medium"> (검색결과: {{ totalCount }}건) </span>
         </div>
         <div class="flex gap-2 items-center">
-          <button class="btn-create" @click="openModal">등록</button>
+          <button class="bg-btn-gray text-white py-2 px-4 rounded-md font-semibold hover:dark:bg-gray-600 transition-colors shadow-md" @click="openModal">등록</button>
           <button
             @click="isYoutubeConnectIdModalOpen = true"
             class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <div class="blue-line"></div>
+      <div class="h-0.5 bg-blue-500 mb-8"></div>
 
       <div class="px-10">
         <div v-if="isLoading" class="text-center py-10 text-gray-500">
@@ -130,7 +130,6 @@ const fetchInfluencers = async () => {
 
   try {
     const params = {
-      // filters.value에 이미 influencerName, minSubscriber, maxSubscriber, minFollower, maxFollower, minPrice, maxPrice, sortBy, sortOrder가 포함되어 있습니다.
       ...filters.value,
       page: currentPageZeroBased.value,
       size: pageSize,
@@ -152,7 +151,6 @@ const fetchInfluencers = async () => {
         if (subscriberCount === undefined || subscriberCount === null) {
           return '0명';
         }
-        // 구독자 수 단위를 '만명'으로 표시 (10000 이상일 경우)
         if (subscriberCount < 10000) {
           return `${subscriberCount.toLocaleString()}명`;
         } else {
@@ -167,7 +165,6 @@ const fetchInfluencers = async () => {
         if (followerCount === undefined || followerCount === null || followerCount === 0) {
           return null;
         }
-        // 팔로워 수 단위를 '만명'으로 표시 (10000 이상일 경우)
         if (followerCount < 10000) {
           return `${followerCount.toLocaleString()}명`;
         } else {
