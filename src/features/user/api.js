@@ -1,5 +1,5 @@
-import axios from 'axios';
 import api from '@/plugin/axios.js';
+import qs from 'qs';
 
 export const connectYoutube = async () => {
     return await api.get('/oauth2/authorize/youtube');
@@ -141,9 +141,11 @@ export const fetchSatisfactionAverage = () => {
   return api.get('/satisfaction/average');
 };
 
-/* 인플루언서 목록 조회 */
 export const getInfluencers = async (params) => {
-  const response = await api.get('/influencer', { params });
+  const response = await api.get('/influencer', {
+    params,
+    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
+  });
   return response.data;
 };
 
