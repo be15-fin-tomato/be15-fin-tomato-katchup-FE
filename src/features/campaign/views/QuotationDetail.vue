@@ -282,11 +282,10 @@ const save = async () => {
 
         await updateQuotationDetail(requestForm);
         toast.success('견적이 수정되었습니다.');
-        await fetchQuotationDetail();
     } catch (e) {
         toast.error(e.response.data.message);
     }
-
+    await fetchQuotationDetail();
     isEditing.value = false;
 };
 
