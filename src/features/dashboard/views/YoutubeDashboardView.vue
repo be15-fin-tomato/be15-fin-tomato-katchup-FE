@@ -7,9 +7,13 @@ import { useToast } from 'vue-toastification'
 import DashboardBase from '@/features/dashboard/components/DashboardBase.vue'
 import DashboardHeader from '@/features/dashboard/components/DashboardHeader.vue'
 import PopularPosts from '@/features/dashboard/components/PopularPosts.vue'
-import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue'
 import DashboardCampaignList from '@/features/dashboard/components/DashboardCampaignList.vue'
-import { fetchInfluencerDetail, fetchYoutubeInfo, fetchSatisfaction } from '@/features/dashboard/api.js';
+import {
+  fetchInfluencerDetail,
+  fetchYoutubeInfo,
+  fetchSatisfaction,
+  fetchTopVideos
+} from '@/features/dashboard/api.js';
 import { formatNumber } from '@/utils/fomatters.js';
 
 const route = useRoute()
@@ -19,19 +23,22 @@ const toast = useToast()
 const dashboard = ref(null)
 const influencer = ref(null)
 const satisfaction = ref(0)
+const topVideos = ref([])
 const influencerId = route.query.id
 
 onMounted(async () => {
   try {
-    const [youtubeRes, influencerRes, satisfactionRes] = await Promise.all([
+    const [youtubeRes, influencerRes, satisfactionRes, topVideoRes] = await Promise.all([
       fetchYoutubeInfo(influencerId),    // YouTube 대시보드 데이터
       fetchInfluencerDetail(influencerId), // 인플루언서 프로필 정보
       fetchSatisfaction(influencerId), // 인플루언서 평균 만족도
+      fetchTopVideos(influencerId), // 인플루언서 인기 동영상
     ])
 
     const youtubeRawData = youtubeRes?.data?.data?.[0];
     const influencerData = influencerRes
     const satisfactionData = satisfactionRes?.data?.data;
+    const topVideoListData = topVideoRes.data?.data || [];
 
     if (!youtubeRawData) {
       toast.warning('YouTube 계정이 연결되어있지 않습니다.')
@@ -75,16 +82,14 @@ onMounted(async () => {
 
     influencer.value = influencerData;
     satisfaction.value = satisfactionData ?? 0;
-
-    console.log("Processed Dashboard Data:", dashboard.value);
-    console.log("Influencer Satisfaction:", satisfaction.value);
+    topVideos.value = topVideoListData;
 
   } catch (err) {
     toast.error('데이터를 불러오지 못했습니다.');
     console.error('💥 YouTube Dashboard Error:', err);
     dashboard.value = null;
     satisfaction.value = 0;
-
+    topVideos.value = [];
   }
 });
 
@@ -136,9 +141,8 @@ const goToList = () => {
         @switch="goToPlatform"
       />
 
-<!--      <PopularPosts :platform="'youtube'" :items="dashboard.popularVideos" />-->
-<!--      <PopularShortForms :platform="'youtube'" :items="dashboard.popularShorts" />-->
-<!--      <DashboardCampaignList />-->
+      <PopularPosts :platform="'youtube'" :items="topVideos" />
+      <DashboardCampaignList :influencer-id="influencerId" />
     </div>
 
     <div v-else class="flex justify-center items-center w-full h-full">Loading...</div>
