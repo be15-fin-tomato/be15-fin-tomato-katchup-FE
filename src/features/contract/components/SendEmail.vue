@@ -34,8 +34,7 @@
       <label class="w-[75px] font-semibold">제목</label>
       <input
         type="text"
-        v-model="title"
-        class="input-form-box flex-1 border-gray-dark"
+        v-model="emailTitle" class="input-form-box flex-1 border-gray-dark"
         :disabled="isSending"
       />
     </div>
@@ -110,20 +109,18 @@ import { ref, watch } from 'vue';
 import QuillEditor from '@/components/common/QuillEditor.vue';
 import { Icon } from '@iconify/vue';
 import { sendContractEmail } from '@/features/contract/api.js';
-
-// useToast를 import 합니다.
 import { useToast } from "vue-toastification";
 
 const props = defineProps({
   name: String,
   email: String,
-  title: Object,
+  title: Object, // selectedSmall 객체를 받는 prop
   initialContent: String,
-  initialFile: Object,
+  initialFile: Object, // file 객체를 받는 prop (fileId, originalName, program 등 포함)
 });
 
 const editorContent = ref('');
-const title = ref('');
+const emailTitle = ref(''); // 이메일 제목 필드 (v-model="emailTitle"에 바인딩)
 
 const name = ref('');
 const email = ref('');
@@ -133,12 +130,11 @@ const form = ref({
   email: null,
 });
 
-const attachedFiles = ref([]);
+const attachedFiles = ref([]); // 로컬 파일 (File 객체) 또는 S3 파일 메타데이터 (Object)
 const fileInput = ref(null);
 const loadingFile = ref(false);
-const isSending = ref(false); // 이메일 전송 중 상태
+const isSending = ref(false);
 
-// Toast 인스턴스를 가져옵니다.
 const toast = useToast();
 
 watch(() => props.name, (newName) => {
@@ -156,9 +152,9 @@ watch(() => props.email, (newEmail) => {
 
 watch(() => props.title, (newTitleProp) => {
   if (newTitleProp && newTitleProp.name) {
-    title.value = `[계약서] ${newTitleProp.name}`;
+    emailTitle.value = `[계약서] ${newTitleProp.name}`;
   } else {
-    title.value = '';
+    emailTitle.value = '';
   }
 }, { immediate: true });
 
@@ -167,35 +163,33 @@ watch(() => props.initialContent, (newContent) => {
 }, { immediate: true });
 
 watch(() => props.initialFile, async (newFile) => {
-  if (newFile && (newFile.fileUrl || newFile.filePath)) {
+  if (newFile && newFile.fileId) {
     loadingFile.value = true;
     try {
-      const fileDownloadUrl = newFile.fileUrl || newFile.filePath;
-      if (!fileDownloadUrl) {
-        throw new Error('첨부 파일 다운로드 URL이 없습니다.');
+      const isS3FileAlreadyAttached = attachedFiles.value.some(
+        (f) => f.fileId === newFile.fileId && f.isS3File
+      );
+
+      if (!isS3FileAlreadyAttached) {
+        attachedFiles.value.push({
+          name: newFile.originalName,
+          originalName: newFile.originalName,
+          fileId: newFile.fileId,
+          program: newFile.program,
+          isS3File: true
+        });
       }
-
-      const response = await fetch(fileDownloadUrl);
-      if (!response.ok) {
-        throw new Error(`파일 다운로드 실패: ${response.status} ${response.statusText}`);
-      }
-      const blob = await response.blob();
-
-      const mimeType = newFile.mimeType || response.headers.get('Content-Type') || 'application/octet-stream';
-      const downloadedFile = new File([blob], newFile.originalName, { type: mimeType });
-
-      attachedFiles.value = [downloadedFile];
     } catch (error) {
-      console.error('템플릿 첨부 파일 로드 중 오류 발생:', error);
-      toast.error('템플릿 첨부 파일을 불러오는 데 실패했습니다.'); // alert 대신 toast
-      attachedFiles.value = [];
+      console.error('템플릿 첨부 파일 처리 중 오류 발생:', error);
+      toast.error('템플릿 첨부 파일을 불러오는 데 실패했습니다.');
     } finally {
       loadingFile.value = false;
     }
   } else {
-    attachedFiles.value = [];
+    attachedFiles.value = attachedFiles.value.filter(file => !file.isS3File);
   }
 }, { immediate: true });
+
 
 const openSearchPopup = (key, type) => {
   currentFieldKey.value = key;
@@ -261,46 +255,54 @@ watch(editorContent, (newValue) => {
 const sendEmail = async () => {
   console.log("--- 전송 버튼 클릭됨 ---");
   console.log("수신자 이메일:", form.value.email?.email);
-  console.log("제목:", title.value);
+  console.log("제목:", emailTitle.value); // 변경된 emailTitle 사용
   console.log("Quill Editor 내용 (HTML):", editorContent.value);
   console.log("첨부 파일들:", attachedFiles.value);
   console.log("-----------------------");
 
-  // 유효성 검사
   if (!form.value.email?.email.trim()) {
-    toast.error('수신자 이메일을 선택하거나 입력해주세요.'); // alert 대신 toast
+    toast.error('수신자 이메일을 선택하거나 입력해주세요.');
     return;
   }
-  if (!title.value.trim()) {
-    toast.error('이메일 제목을 입력해주세요.'); // alert 대신 toast
+  if (!emailTitle.value.trim()) { // 변경된 emailTitle 사용
+    toast.error('이메일 제목을 입력해주세요.');
     return;
   }
   if (isQuillContentEffectivelyEmpty(editorContent.value)) {
-    toast.error('이메일 내용을 입력해주세요.'); // alert 대신 toast
+    toast.error('이메일 내용을 입력해주세요.');
     return;
   }
 
-  // 전송 중 상태 활성화
   isSending.value = true;
-  // 전송 시작을 사용자에게 알림 (비침습적인 Toast 사용)
-  const sendingToastId = toast.info('메일을 전송 중입니다...', { timeout: false, closeButton: false }); // 무한 타임아웃, 닫기 버튼 없음
+  const sendingToastId = toast.info('메일을 전송 중입니다...', { timeout: false, closeButton: false });
+
+  let fileIdToSend = null;
+  const localFilesToUpload = [];
+
+  attachedFiles.value.forEach(file => {
+    if (file.isS3File && file.fileId) {
+      fileIdToSend = file.fileId;
+    } else {
+      localFilesToUpload.push(file);
+    }
+  });
 
   const requestData = {
     content: editorContent.value,
-    title: title.value,
+    title: emailTitle.value, // 변경된 emailTitle 사용
     targetEmail: form.value.email.email,
+    fileId: fileIdToSend,
   };
 
   try {
-    const response = await sendContractEmail(requestData, attachedFiles.value);
-    toast.dismiss(sendingToastId); // 전송 중 토스트 닫기
+    const response = await sendContractEmail(requestData, localFilesToUpload);
+    toast.dismiss(sendingToastId);
 
     if (response.success) {
-      toast.success('이메일이 성공적으로 전송되었습니다.'); // 성공 Toast
-      // 폼 초기화
+      toast.success('이메일이 성공적으로 전송되었습니다.');
       name.value = '';
       email.value = '';
-      title.value = '';
+      emailTitle.value = ''; // 변경된 emailTitle 초기화
       editorContent.value = '';
       form.value.email = null;
       attachedFiles.value = [];
@@ -308,11 +310,11 @@ const sendEmail = async () => {
         fileInput.value.value = '';
       }
     } else {
-      toast.error(`이메일 전송 실패: ${response.message || '알 수 없는 오류'}`); // 실패 Toast
+      toast.error(`이메일 전송 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    toast.dismiss(sendingToastId); // 전송 중 토스트 닫기
-    toast.error('이메일 전송 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.'); // 오류 Toast
+    toast.dismiss(sendingToastId);
+    toast.error('이메일 전송 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
     console.error('이메일 전송 API 호출 중 에러:', error);
   } finally {
     isSending.value = false;
