@@ -251,6 +251,35 @@ const editingCampaign = ref({
 });
 const editingListup = ref(null);
 
+const openSearchPopup = (targetObj, key, type, extendKey = null) => {
+    if (extendKey && !targetObj[extendKey]) {
+        alert('먼저 관련 값을 선택해주세요.');
+        return;
+    }
+
+    const currentValue = targetObj[key];
+    const selected = currentValue?.id ?? '';
+
+    const clientCompanyId = targetObj.clientCompany?.id ?? '';
+
+    const queryParams = new URLSearchParams({
+        type,
+        selected,
+        ...(type === 'manager' || type === 'pipeline' ? { clientCompanyId } : {}),
+    });
+
+    const popup = window.open(
+        `/search-popup?${queryParams.toString()}`,
+        'SearchPopup',
+        'width=500,height=600',
+    );
+
+    window.handleUserSelect = (selectedItem) => {
+        targetObj[key] = selectedItem;
+        popup.close();
+    };
+};
+
 const filteredInfluencers = computed(() => {
     return filteredAllInfluencers.value;
 });

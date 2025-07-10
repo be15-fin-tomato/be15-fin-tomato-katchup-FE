@@ -90,6 +90,7 @@ const groups = [
                 type: 'search-manager',
                 searchType: 'manager',
                 essential: true,
+                extends: 'clientCompany',
             },
             { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
@@ -103,6 +104,7 @@ const groups = [
                 type: 'search-pipeline',
                 searchType: 'pipeline',
                 essential: true,
+                extends: 'clientCompany',
             },
             {
                 key: 'username',
