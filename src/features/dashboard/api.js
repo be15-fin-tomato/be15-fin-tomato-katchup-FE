@@ -1,9 +1,10 @@
 import api from '@/plugin/axios.js';
 
-export const getCampaignResultList = async (page, size, filters = {}) => {
-    return await api.get('/campaign/dashboard', {
-        params: { page, size, ...filters },
-    });
+export const getCampaignResultList = async (params = {}) => {
+  const response = await api.get('/campaign/resultlist', {
+    params: params,
+  });
+  return response.data.data;
 };
 
 // 인플루언서 개별 조회

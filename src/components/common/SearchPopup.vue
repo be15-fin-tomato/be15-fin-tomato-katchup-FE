@@ -21,10 +21,12 @@ const placeholder = route.query.placeholder ?? '검색어를 입력하세요';
 const searchKeyword = ref('');
 const selectedItems = ref([]);
 const allItems = ref([]);
+const isLoading = ref(false);
 
 const fetchData = async () => {
     let res = null;
     searchKeyword.value = (searchKeyword.value || '').trim();
+    isLoading.value = true;
 
     try {
         if (type === 'user' || type === 'one-user') {
@@ -53,6 +55,8 @@ const fetchData = async () => {
         // allItems.value = res.data.data;
     } catch (e) {
         console.error('검색 데이터 조회 실패:', e);
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -114,7 +118,14 @@ const closePopup = () => window.close();
         </div>
 
         <div class="pt-2">
-            <div v-if="allItems.length" class="flex flex-col gap-2 max-h-[300px] overflow-y-auto">
+            <div v-if="isLoading" class="text-gray-400 text-sm py-8 text-center">
+                불러오는 중...
+            </div>
+
+            <div
+                v-else-if="allItems.length"
+                class="flex flex-col gap-2 max-h-[300px] overflow-y-auto"
+            >
                 <div
                     v-for="item in allItems"
                     :key="item[valueKey]"

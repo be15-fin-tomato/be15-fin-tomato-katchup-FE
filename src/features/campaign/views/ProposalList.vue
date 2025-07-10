@@ -32,7 +32,7 @@ const fetchProposalList = async () => {
         const res = await getProposalList(page.value, size.value, cleanedFilters);
         console.log(res.data.data.response);
         proposalList.value = [...res.data.data.response];
-        total.value = res.data.total;
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
         console.error(e);
     }

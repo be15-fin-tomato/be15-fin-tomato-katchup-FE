@@ -7,8 +7,11 @@ import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import ProposalAccordionItem from '@/features/campaign/components/ProposalAccordionItem.vue';
 import { getInfluencerDetail, getListupReference } from '@/features/campaign/api.js';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
-const router = useRouter();
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
+import { useToast } from 'vue-toastification';
 
+const router = useRouter();
+const toast = useToast();
 const opinions = ref([]);
 const proposalForm = ref(null);
 const form = reactive({});
@@ -20,7 +23,7 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input' },
+            { key: 'title', label: '제목', type: 'input', essential: true },
             { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
@@ -29,9 +32,10 @@ const groups = [
         fields: [
             {
                 key: 'clientCompany',
-                label: '광고업체',
+                label: '고객사',
                 type: 'search-company',
                 searchType: 'company',
+                essential: true,
             },
             { key: 'period', label: '제안 기간', type: 'date-range' },
         ],
@@ -44,6 +48,7 @@ const groups = [
                 label: '광고담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                essential: true,
             },
             { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
         ],
@@ -56,8 +61,15 @@ const groups = [
                 label: '해당 파이프라인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
+                essential: true,
             },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+            {
+                key: 'username',
+                label: '담당자',
+                type: 'search-user',
+                searchType: 'user',
+                essential: true,
+            },
         ],
     },
     {
@@ -68,12 +80,14 @@ const groups = [
                 label: '인플루언서',
                 type: 'search-influencer',
                 searchType: 'influencer',
+                essential: true,
             },
             {
                 key: 'status',
                 label: '진행단계',
                 type: 'select',
                 options: ['승인요청', '진행중', '보류', '완료'],
+                essential: true,
             },
         ],
     },
@@ -97,6 +111,16 @@ const toggle = (index) => {
 
 // 저장 및 취소
 const save = async () => {
+    const requiredFields = [
+        { key: 'name', label: '제목' },
+        { key: 'clientCompany', label: '고객사' },
+        { key: 'clientManager', label: '광고담당자' },
+        { key: 'campaign', label: '해당 파이프라인' },
+        { key: 'username', label: '담당자' },
+        { key: 'influencer', label: '인플루언서' },
+        { key: 'status', label: '진행단계' },
+    ];
+    if (!validateRequiredFields(form, requiredFields, toast)) return;
     const payload = {
         ...form,
         opinions: opinions.value,
@@ -227,7 +251,11 @@ onMounted(async () => {
             </div>
 
             <div class="container">
-                <DetailReferenceList :items="listUpReferences" @select="handleReferenceSelect" />
+                <DetailReferenceList
+                    :title="'제안 정보 자동 입력'"
+                    :items="listUpReferences"
+                    @select="handleReferenceSelect"
+                />
             </div>
             <div class="w-full mx-auto">
                 <div

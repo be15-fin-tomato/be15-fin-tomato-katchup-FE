@@ -2,9 +2,6 @@
     <div class="flex items-center justify-between mt-1 mb-5">
         <div class="flex justify-between items-center w-full">
             <div class="text-md font-bold">{{ title }} ({{ items.length }})</div>
-            <button class="btn-create" @click="handleCreate">
-                {{ createButtonText }}
-            </button>
         </div>
     </div>
 
@@ -29,14 +26,12 @@
 </template>
 
 <script setup>
-const { title, createButtonText, items } = defineProps({
+const { title, items } = defineProps({
     title: { type: String, default: '참고 리스트' },
-    createButtonText: { type: String, default: '추가' },
     items: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['create', 'select']);
 
-const handleCreate = () => emit('create');
 const handleSelect = (item) => emit('select', item);
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div
     class="fixed bottom-24 right-6 w-[420px] max-h-[600px]
-       bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col font-[Pretendard] overflow-hidden">
+       bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col font-[Pretendard]">
 
     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
       <h2 class="text-lg font-bold text-[--color-click]">채팅 리스트</h2>
@@ -24,15 +24,21 @@
       <li
         v-for="room in filteredRooms"
         :key="room.id"
-        class="flex justify-between items-center px-5 py-4 hover:bg-gray-50 transition relative"
+        class="flex justify-between items-center px-5 py-4 hover:bg-gray-50 transition relative cursor-pointer"
+        @click="handleOpenRoom(room.id)"
       >
-        <div class="flex items-center gap-3 cursor-pointer" @click="handleOpenRoom(room.id)">
+        <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-sm">
             {{ room.name?.charAt(0) || '?' }}
           </div>
           <div class="flex flex-col">
-            <div class="flex items-center gap-2 font-semibold text-[--color-click] text-sm">
-              {{ room.name }}
+            <div
+              :data-room-id="room.id"
+              class="flex items-center gap-2 font-semibold text-[--color-click] text-sm"
+              @mouseenter="handleMouseEnter($event, room.id, room.name)"
+              @mouseleave="handleMouseLeave"
+            >
+              <span class="truncate max-w-[150px] inline-block">{{ room.name }}</span>
               <span class="text-gray-400 text-xs flex items-center gap-1">👥 {{ room.members ?? '-' }}</span>
             </div>
             <p class="text-xs text-gray-500 truncate max-w-[240px]">
@@ -124,10 +130,20 @@
       </div>
     </div>
   </div>
+
+  <teleport to="body">
+    <div
+      v-if="showTooltip && tooltipContent"
+      :style="tooltipStyle"
+      class="fixed px-4 py-2 bg-gray-100 text-gray-800 text-sm rounded-lg shadow-md z-[1000] whitespace-nowrap pointer-events-none border border-gray-200"
+    >
+      {{ tooltipContent }}
+    </div>
+  </teleport>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { exitChatRoom, fetchChatRoomDetail, createChatRoom, searchUser } from '@/features/chat/api'
 import { useAuthStore } from '@/stores/auth'
 
@@ -151,6 +167,10 @@ const allSearchUsers = ref([]);
 
 const authStore = useAuthStore();
 const currentUserId = computed(() => authStore.userId);
+
+const showTooltip = ref(false);
+const tooltipContent = ref('');
+const tooltipStyle = ref({});
 
 watch(memberSearch, async (newKeyword) => {
   try {
@@ -282,7 +302,36 @@ const handleOpenRoom = async (chatId) => {
   }
 }
 
+const handleMouseEnter = (event, roomId, content) => {
+  const targetElement = event.currentTarget;
+  const rect = targetElement.getBoundingClientRect();
+
+  tooltipContent.value = content;
+  showTooltip.value = true;
+
+  nextTick(() => {
+    const tooltipElement = document.querySelector('.fixed.px-4.py-2.bg-gray-100'); // 변경된 클래스 이름으로 선택
+    if (tooltipElement) {
+      const tooltipWidth = tooltipElement.offsetWidth;
+      const tooltipHeight = tooltipElement.offsetHeight;
+
+      // 툴팁 위치 계산 (화면 상단으로 배치)
+      tooltipStyle.value = {
+        left: `${rect.left + rect.width / 2 - tooltipWidth / 2}px`, // 요소 중앙에 툴팁 중앙 맞추기
+        top: `${rect.top - tooltipHeight - 8}px`, // 요소 위쪽으로 툴팁 배치 (8px는 마진)
+      };
+    }
+  });
+};
+
+const handleMouseLeave = () => {
+  showTooltip.value = false;
+  tooltipContent.value = '';
+  tooltipStyle.value = {};
+};
+
 </script>
 
 <style scoped>
+
 </style>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -7,6 +7,15 @@ import koLocale from '@fullcalendar/core/locales/ko'
 import { Icon } from '@iconify/vue'
 import ScheduleModal from '../components/ScheduleModal.vue'
 import { useToast } from 'vue-toastification';
+
+import {
+    getScheduleList,
+    getScheduleDetail,
+    postSchedule,
+    updateSchedule,
+    deleteSchedule,
+    getPipelineSchedule
+} from '@/features/calendar/api.js';
 
 function formatDateToLocalYYYYMMDD(date) {
   const year = date.getFullYear()
@@ -17,39 +26,133 @@ function formatDateToLocalYYYYMMDD(date) {
 
 const toast = useToast();
 const todayDate = new Date()
+const calendarRef = ref(null)
 const selectedDate = ref(formatDateToLocalYYYYMMDD(todayDate))
 const selectedEvent = ref(null)
 const isModalOpen = ref(false)
+const events = ref([])
+const dailySchedule = ref([])
+const pipelineEvents = ref([])
+const pipelineDailySchedule = computed(() =>
+  pipelineEvents.value.filter(event =>
+    event.start === selectedDate.value
+  )
+)
 
-const events = ref([
-  {
-    title: '워크샵',
-    start: '2025-06-04T09:00:00',
-    end: '2025-06-04T18:00:00',
-    backgroundColor: '#f87171'
-  },
-  {
-    title: '휴가',
-    start: '2025-06-04T09:00:00',
-    end: '2025-06-04T18:00:00',
-    backgroundColor: '#f97316'
+const fetchPipelineEvents = async () => {
+    try {
+        const res = await getPipelineSchedule();
+        const rawList = res.data.data.pipelineScheduleList || [];
+
+        const uniquePipelines = rawList
+            .filter(p => p.isDeleted === "N")
+            .reduce((acc, cur) => {
+                if (!acc.some(item => item.pipelineId === cur.pipelineId)) {
+                    acc.push(cur);
+                }
+                return acc;
+            }, []);
+
+        pipelineEvents.value = uniquePipelines.flatMap(item => {
+            const events = [];
+
+            // 제안 일정 (제안일)
+            if (item.presentedAt) {
+                events.push({
+                    id: `present-${item.pipelineId}`,
+                    title: `${item.name} 발표일`,
+                    start: item.presentedAt,
+                    allDay: true
+                });
+            }
+            return events;
+        });
+    } catch (err) {
+        toast.error("파이프라인 일정을 불러오는 데 실패했습니다.");
+        console.error("fetchPipelineEvents error:", err);
+    }
+}
+
+const fetchEvents = async () => {
+  try {
+    const res = await getScheduleList();
+    const scheduleList = res.data.data.scheduleListsAll || [];
+
+    events.value = scheduleList.map(item => {
+      const start = `${item.scheduleDate}T${item.startTime}`;
+      const end = `${item.scheduleDate}T${item.endTime}`;
+
+      return {
+        id: item.scheduleId,
+        title: item.content,
+        start,
+        end,
+        backgroundColor: item.hexCode,
+        extendedProps: {
+          content: item.content,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          hexCode: item.hexCode,
+          scheduleDate: item.scheduleDate
+        }
+      };
+    });
+
+      await fetchPipelineEvents();
+      events.value = [...events.value, ...pipelineEvents.value];
+  } catch (err) {
+    toast.error('일정 데이터를 불러오지 못했습니다.');
+    console.error('fetchEvents error:', err);
   }
-])
+};
 
-const calendarRef = ref(null)
+async function fetchScheduleDetail(date) {
+  try {
+    const res = await getScheduleDetail(date)
+    dailySchedule.value = res.data.data.scheduleList || []
+  } catch (error) {
+    toast.error('해당 날짜의 일정을 불러오는데 실패했습니다.')
+    console.error(error)
+  }
+}
 
-const calendarOptions = {
+watch(selectedDate, async (newDate) => {
+  if (newDate) {
+    await fetchEvents();
+    await fetchScheduleDetail(newDate);
+  }
+}, { immediate: true });
+
+onMounted(async () => {
+  await fetchEvents();
+  await fetchScheduleDetail(selectedDate.value);
+})
+
+const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, interactionPlugin],
   locale: koLocale,
   initialView: 'dayGridMonth',
   selectable: true,
-
+  events: events.value,
+  eventTimeFormat: {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  },
   dateClick(info) {
     selectedDate.value = formatDateToLocalYYYYMMDD(info.date)
   },
 
   eventClick(info) {
     selectedDate.value = formatDateToLocalYYYYMMDD(info.event.start)
+    selectedEvent.value = {
+      id: info.event.id,
+      content: info.event.extendedProps.content,
+      start: info.event.extendedProps.startTime,
+      end: info.event.extendedProps.endTime,
+      hexCode: info.event.extendedProps.hexCode,
+      scheduleDate: formatDateToLocalYYYYMMDD(info.event.start),
+    }
   },
 
   viewDidMount(arg) {
@@ -68,19 +171,12 @@ const calendarOptions = {
     if (day === 0) arg.el.style.color = '#ef4444'
     if (day === 6) arg.el.style.color = '#5F38E9'
     if (isSelected) {
-        arg.el.style.backgroundColor = '#FFE0E0'
-        arg.el.style.color = '#111827'
-        arg.el.style.fontWeight = '700'
+      arg.el.style.backgroundColor = '#FFE0E0'
+      arg.el.style.color = '#111827'
+      arg.el.style.fontWeight = '700'
     }
-
-  },
-
-  events: events.value
-}
-
-const filteredEvents = computed(() =>
-  events.value.filter(event => event.start.startsWith(selectedDate.value))
-)
+  }
+}))
 
 function openAddModal() {
   selectedEvent.value = null
@@ -88,7 +184,7 @@ function openAddModal() {
 }
 
 function openEditModal(event) {
-  selectedEvent.value = event
+    selectedEvent.value = { ...event, id: event.scheduleId }
   isModalOpen.value = true
 }
 
@@ -96,35 +192,38 @@ function closeModal() {
   isModalOpen.value = false
 }
 
-function handleSave(newEvent) {
-  if (selectedEvent.value) {
-    const index = events.value.findIndex(e =>
-      e.title === selectedEvent.value.title &&
-      e.start === selectedEvent.value.start &&
-      e.end === selectedEvent.value.end
-    )
-    if (index !== -1) {
-      events.value[index] = newEvent
+async function handleSave(newEvent) {
+  try {
+    if (newEvent.scheduleId) {
+      await updateSchedule(newEvent.scheduleId, newEvent);
+      toast.success('수정되었습니다.');
+    } else {
+      await postSchedule(newEvent);
+      toast.success('등록되었습니다.');
     }
-  } else {
-    events.value.push(newEvent)
+    isModalOpen.value = false;
+    await fetchEvents();
+    await fetchScheduleDetail(selectedDate.value);
+  } catch (err) {
+    toast.error('저장에 실패했습니다.');
+    console.error(err);
   }
 }
 
-function deleteEvent(eventToDelete) {
-  const confirmed = window.confirm('정말 삭제하시겠습니까?')
-  if (!confirmed) return
+async function deleteEvent(eventToDelete) {
+  const confirmed = window.confirm('정말 삭제하시겠습니까?');
+  if (!confirmed) return;
 
-  events.value = events.value.filter(event =>
-    !(
-      event.title === eventToDelete.title &&
-      event.start === eventToDelete.start &&
-      event.end === eventToDelete.end
-    )
-  )
-  toast.success("삭제되었습니다.")
+  try {
+    await deleteSchedule(eventToDelete.scheduleId);
+    toast.success("삭제되었습니다.");
+    await fetchEvents();
+      await fetchScheduleDetail(selectedDate.value);
+  } catch (err) {
+    toast.error('삭제에 실패했습니다.');
+    console.error(err);
+  }
 }
-
 </script>
 
 <template>
@@ -135,7 +234,6 @@ function deleteEvent(eventToDelete) {
         <FullCalendar
           ref="calendarRef"
           :options="calendarOptions"
-          :key="selectedDate"
         />
       </div>
 
@@ -143,9 +241,9 @@ function deleteEvent(eventToDelete) {
       <div class="w-1/3 bg-white rounded-xl shadow-md p-5 min-h-[400px]">
         <div class="font-bold text-lg mb-4">{{ selectedDate }}</div>
 
-        <div v-if="filteredEvents.length > 0">
+        <div v-if="dailySchedule.length > 0">
           <div
-            v-for="(event, index) in filteredEvents"
+            v-for="(event, index) in dailySchedule"
             :key="index"
             class="flex bg-gray-light rounded-md p-3 mb-3 min-h-[72px]"
           >
@@ -153,26 +251,26 @@ function deleteEvent(eventToDelete) {
             <div class="flex items-stretch">
               <div
                 class="w-1.5 rounded-sm"
-                :style="{ backgroundColor: event.backgroundColor, width: '4px', height: '100%' }"
+                :style="{ backgroundColor: event.hexCode, width: '4px', height: '100%' }"
               ></div>
             </div>
 
             <!-- 시간 + 제목 -->
             <div class="flex-1 pl-3 flex flex-col justify-center">
-              <span class="text-sm text-black-500">{{ event.start.slice(11, 16) }}</span>
+              <span class="text-sm text-black-500">{{ event.startTime.slice(0,5) }}</span>
               <br />
-              <span class="text-sm text-black-500">{{ event.end.slice(11, 16) }}</span>
+              <span class="text-sm text-black-500">{{ event.endTime.slice(0,5) }}</span>
             </div>
             <div class="flex-20 pl-5 flex flex-col justify-center">
               <span
-                  class="text-md text-black-500 truncate max-w-[120px]"
-                  :title="event.title"
+                class = "text-md text-black-500 truncate max-w-[120px]"
+                :title = "event.content"
               >
-              {{ event.title }}
+              {{ event.content }}
               </span>
             </div>
 
-            <!-- 수정,삭제 아이콘 -->
+            <!-- 수정, 삭제 아이콘 -->
             <div class="flex gap-2 ml-2">
               <button class="text-lg cursor-pointer" @click="openEditModal(event)">
                 <Icon icon="ei:pencil" class="w-6 h-6" />
@@ -183,15 +281,38 @@ function deleteEvent(eventToDelete) {
             </div>
           </div>
         </div>
-        <div v-else class="text-sm text-gray-400">일정이 없습니다.</div>
+        <div v-else class="text-sm text-gray-400 mt-5 mb-5">
+          등록된 개인 일정이 없습니다.
+        </div>
+
+        <div v-if="pipelineDailySchedule.length > 0">
+          <div
+            v-for="(event, index) in pipelineDailySchedule"
+            :key="'pipeline-' + index"
+            class="flex bg-gray-100 rounded-md p-3 mb-3 min-h-[72px] border border-blue-300"
+          >
+            <div class="flex items-stretch">
+              <div
+                class="w-1.5 rounded-sm bg-blue-500"
+                style="width: 4px; height: 100%;"
+              ></div>
+            </div>
+
+            <div class="flex-1 pl-3 flex flex-col justify-center">
+      <span class="text-md text-black-700 whitespace-normal break-words">
+        {{ event.title }}
+      </span>
+            </div>
+          </div>
+        </div>
 
         <!-- 추가 버튼 -->
         <div class="flex justify-center mt-6">
           <button
-              class="cursor-pointer"
-              @click="openAddModal"
+            class="cursor-pointer"
+            @click="openAddModal"
           >
-              <Icon icon="ei:plus" width="50" height="50" />
+            <Icon icon="ei:plus" width="50" height="50" />
           </button>
         </div>
       </div>
@@ -205,6 +326,5 @@ function deleteEvent(eventToDelete) {
       @close="closeModal"
       @save="handleSave"
     />
-
   </div>
 </template>

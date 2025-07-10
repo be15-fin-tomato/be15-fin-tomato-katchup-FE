@@ -16,12 +16,18 @@ export const createCampaign = async (campaignInfo) => {
     return await api.post('/campaign', campaignInfo);
 };
 
+/* 캠페인 상세 조회 */
 export const getCampaignDetail = async (campaignId) => {
     return await api.get(`/campaign/${campaignId}`);
 };
 
-export const getCampaignHistory = async (campaignId) => {
-    return await api.get(`/campaign/history/${campaignId}`);
+/* 캠페인 수정 */
+export const updateCampaign = (data) => {
+  return api.put('/campaign/chance/update', data);
+};
+/* 캠페인 삭제 */
+export const deleteCampaign = (campaignId) => {
+  return api.delete(`/campaign/${campaignId}`);
 };
 
 export const getProposalList = async (page, size, filters = {}) => {
@@ -36,9 +42,17 @@ export const getProposalDetail = async (proposalId) => {
 };
 
 export const getListUpList = async (page, size, filters = {}) => {
-    return await api.get('/sales/listup', {
+    return await api.get('/campaign/listup', {
         params: { page, size, ...filters },
     });
+};
+
+export const getListupDetail = async (pipelineId) => {
+    return await api.get(`/campaign/listup/${pipelineId}`);
+};
+
+export const deleteListup = async (listupId) => {
+    return await api.delete(`/campaign/listup/${listupId}`);
 };
 
 /* 견적 목록*/

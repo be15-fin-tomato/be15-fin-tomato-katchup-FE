@@ -97,6 +97,26 @@ watch(
     },
     { immediate: true },
 );
+
+watch(
+    () => props.groups,
+    (groups) => {
+        for (const group of groups) {
+            for (const field of group.fields) {
+                if (
+                    field.type === 'select' &&
+                    (form[field.key] === undefined || form[field.key] === '')
+                ) {
+                    const firstOption = field.options?.[0];
+                    if (firstOption) {
+                        form[field.key] = firstOption.value;
+                    }
+                }
+            }
+        }
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -108,7 +128,10 @@ watch(
                         class="flex-1"
                         :style="{ flexBasis: (field.width ?? 100 / group.fields.length) + '%' }"
                     >
-                        <label class="input-form-label">{{ field.label }}</label>
+                        <label class="input-form-label"
+                            >{{ field.label
+                            }}<span v-if="field.essential" class="text-red-500 ml-1">*</span></label
+                        >
 
                         <!-- 날짜 범위 -->
                         <div v-if="field.type === 'date-range'" class="flex items-center gap-2">
@@ -173,6 +196,7 @@ watch(
                                 v-if="isEditing"
                                 class="btn-open-popup"
                                 @click="openSearchPopup(field.key, field.searchType)"
+                                :disabled="field.extends && !form[field.extends]"
                             >
                                 검색
                             </button>

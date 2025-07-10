@@ -21,10 +21,10 @@ watch(
         const rev = Number(revenue || 0);
         const mar = Number(margin || 0);
         expectedProfitAmount.value = Math.round((rev * mar) / 100);
-        console.log('💸 예상 이익 금액:', expectedProfitAmount.value);
     },
-    { immediate: true }, // 초기값 계산까지 포함
+    { immediate: true },
 );
+
 const formatNumber = (value) => {
     if (value === null || value === undefined || isNaN(value)) return '';
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -35,38 +35,46 @@ const parseNumberInput = (e, key) => {
     form[key] = raw ? parseInt(raw, 10) : 0;
 };
 
-function openPostcodeSearch() {
-    new daum.Postcode({
-        oncomplete: function (data) {
-            const selectedAddress = data.roadAddress || data.jibunAddress;
-            form.value.address = selectedAddress;
-            nextTick(() => {
-                const detailInput = document.getElementById('detailAddress');
-                detailInput?.focus();
-            });
-        },
-    }).open({
-        left: window.screen.width / 2 - popupWidth / 2,
-        top: window.screen.height / 2 - popupHeight / 2,
-    });
-}
-
 const openSearchPopup = (key, type) => {
     currentFieldKey.value = key;
     const currentValue = form[key];
-    const selected = currentValue?.id ?? '';
+    const selected = Array.isArray(currentValue)
+        ? currentValue.map((u) => u.id).join(',')
+        : (currentValue?.id ?? '');
+
+    const clientCompanyId = form.clientCompany?.id ?? '';
+
+    const queryParams = new URLSearchParams({
+        type,
+        selected,
+        ...((type === 'manager' || type === 'pipeline') && clientCompanyId
+            ? { clientCompanyId }
+            : {}),
+    });
 
     const popup = window.open(
-        `/search-popup?type=${type}&selected=${encodeURIComponent(selected)}`,
+        `/search-popup?${queryParams.toString()}`,
         'SearchPopup',
         'width=500,height=600',
     );
 
-    window.handleUserSelect = (selectedItem) => {
-        form[currentFieldKey.value] = selectedItem;
+    window.handleUserSelect = (selectedItems) => {
+        // key마다 단일/다중 여부 구분
+        if (['clientCompany', 'clientManager'].includes(currentFieldKey.value)) {
+            form[currentFieldKey.value] = selectedItems;
+        } else {
+            form[currentFieldKey.value] = Array.isArray(selectedItems)
+                ? selectedItems
+                : [selectedItems];
+        }
         popup.close();
     };
 };
+
+function formatToDate(value) {
+    if (!value) return '';
+    return value.replace(/\./g, '-');
+}
 
 const dropdownStates = reactive({
     category: false,
@@ -85,7 +93,6 @@ const categories = [
     { id: 10, name: '가족/키즈' },
 ];
 
-// FormGroups
 const groups = [
     {
         type: 'horizontal',
@@ -95,7 +102,13 @@ const groups = [
                 key: 'status',
                 label: '진행 상태',
                 type: 'select',
-                options: ['진행중', '보류', '완료', '취소'],
+                options: [
+                    { label: '취소', value: 1 },
+                    { label: '진행중', value: 2 },
+                    { label: '보류', value: 3 },
+                    { label: '게시대기', value: 4 },
+                    { label: '완료', value: 5 },
+                ],
                 width: 'w-40',
             },
         ],
@@ -119,6 +132,7 @@ const groups = [
                 label: '광고 담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                extends: 'clientCompany',
             },
         ],
     },
@@ -146,11 +160,11 @@ const groups = [
                 type: 'input',
                 inputType: 'number',
             },
-            { key: 'startDate', label: '시작일', type: 'input', inputType: 'date' },
-            { key: 'endDate', label: '종료일', type: 'input', inputType: 'date' },
+            { key: 'startedAt', label: '시작일', type: 'input', inputType: 'date' },
+            { key: 'endedAt', label: '종료일', type: 'input', inputType: 'date' },
             { key: 'address', label: '주소 검색', type: 'address-search' },
-            { key: 'addressDetail', label: '상세 주소', type: 'input', inputType: 'text' },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+            { key: 'detailAddress', label: '상세 주소', type: 'input', inputType: 'text' },
+            { key: 'userList', label: '담당자', type: 'search-user', searchType: 'user' },
             { key: 'awarenessPath', label: '인지 경로', type: 'input', inputType: 'text' },
             { key: 'notes', label: '비고', type: 'textarea' },
         ],
@@ -181,8 +195,12 @@ const groups = [
                             :disabled="!isEditing"
                             class="input-form-box"
                         >
-                            <option v-for="option in field.options" :key="option" :value="option">
-                                {{ option }}
+                            <option
+                                v-for="option in field.options"
+                                :key="option.value ?? option"
+                                :value="option.value ?? option"
+                            >
+                                {{ option.label ?? option }}
                             </option>
                         </select>
 
@@ -210,14 +228,6 @@ const groups = [
                                     readonly
                                     class="input-form-box flex-1 bg-gray-100"
                                 />
-                                <button
-                                    type="button"
-                                    class="btn-open-popup"
-                                    @click="openPostcodeSearch"
-                                    v-if="isEditing"
-                                >
-                                    검색
-                                </button>
                             </div>
                         </div>
 
@@ -252,6 +262,7 @@ const groups = [
                                 </ul>
                             </div>
                         </div>
+
                         <div v-else-if="field.type?.startsWith('search-')" class="flex gap-2">
                             <input
                                 type="text"
@@ -268,10 +279,12 @@ const groups = [
                                 v-if="isEditing"
                                 class="btn-open-popup"
                                 @click="openSearchPopup(field.key, field.searchType)"
+                                :disabled="field.extends && !form[field.extends]"
                             >
                                 검색
                             </button>
                         </div>
+
                         <textarea
                             v-else-if="field.type === 'textarea'"
                             v-model="form[field.key]"
@@ -289,21 +302,11 @@ const groups = [
                             class="input-form-box"
                         />
 
-                        <select
-                            v-else-if="field.type === 'select'"
-                            v-model="form[field.key]"
-                            :disabled="!isEditing"
-                            class="input-form-box"
-                        >
-                            <option v-for="option in field.options" :key="option" :value="option">
-                                {{ option }}
-                            </option>
-                        </select>
-
                         <input
                             v-else-if="field.inputType === 'date'"
                             type="date"
-                            v-model="form[field.key]"
+                            :value="formatToDate(form[field.key])"
+                            @input="form[field.key] = $event.target.value"
                             :disabled="!isEditing"
                             class="input-form-box"
                         />
