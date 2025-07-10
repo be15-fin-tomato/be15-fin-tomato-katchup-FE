@@ -46,6 +46,7 @@ onMounted(async () => {
       avgComments: youtubeRawData.avgComments ?? 0,
       dailyAvgViews: youtubeRawData.dailyAvgViews ?? 0,
       monthlyAvgViews: youtubeRawData.monthlyAvgViews ?? 0,
+
       age1317: youtubeRawData.age1317 ?? 0,
       age1824: youtubeRawData.age1824 ?? 0,
       age2534: youtubeRawData.age2534 ?? 0,
@@ -53,8 +54,14 @@ onMounted(async () => {
       age4554: youtubeRawData.age4554 ?? 0,
       age5564: youtubeRawData.age5564 ?? 0,
       age65plus: youtubeRawData.age65plus ?? 0,
+
       genderMale: youtubeRawData.genderMale ?? 0,
       genderFemale: youtubeRawData.genderFemale ?? 0,
+
+      subscriberChangeDaily: youtubeRawData.subscriberChangeDaily ?? 0,
+      subscriberChangeWeekly: youtubeRawData.subscriberChangeWeekly ?? 0,
+      subscriberChangeMonthly: youtubeRawData.subscriberChangeMonthly ?? 0,
+
       subscribedRatio: youtubeRawData.subscribedRatio ?? 0,
       notSubscribedRatio: youtubeRawData.notSubscribedRatio ?? 0,
 
@@ -64,10 +71,6 @@ onMounted(async () => {
         commentCount: youtubeRawData.avgComments ?? 0,
         likeCount: youtubeRawData.avgLikes ?? 0
       },
-      popularVideos: [],
-      popularShorts: [],
-      subscribersTrend: [],
-      reach: 0,
     };
 
     influencer.value = influencerData;
@@ -79,7 +82,7 @@ onMounted(async () => {
   } catch (err) {
     toast.error('데이터를 불러오지 못했습니다.');
     console.error('💥 YouTube Dashboard Error:', err);
-    dashboard.value = {};
+    dashboard.value = null;
     satisfaction.value = 0;
 
   }
@@ -100,11 +103,6 @@ const summaryData = computed(() => {
     likes: `${likes}개`
   };
 });
-
-const formatSubscribers = (num) => {
-  const parsedNum = parseInt(num);
-  return parsedNum >= 10000 ? `${Math.floor(parsedNum / 10000)}만명` : `${parsedNum}명`;
-};
 
 const goToPlatform = (platform) => {
   router.push(`/influencer/dashboard/${platform}?id=${influencerId}`);
