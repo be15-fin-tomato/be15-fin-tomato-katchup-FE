@@ -81,12 +81,14 @@
 import { onMounted, ref } from 'vue';
 import { createListup } from '@/features/campaign/api.js';
 import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 const emit = defineEmits(['close']);
-const selectedCampaign = ref('');
-const listupTitle = ref('');
+const selectedCampaign = ref(null);
+const listupTitle = ref(null);
 const currentFieldKey = ref('');
 const router = useRouter();
+const toast = useToast();
 
 const popover = ref({
     visible: false,
@@ -151,6 +153,20 @@ const openSearchPopup = (key, type) => {
 
 const handleSubmit = async () => {
     try {
+        if (selectedCampaign.value === null) {
+            toast.error('캠페인이 선택되지 않았습니다.');
+            return;
+        }
+        if (listupTitle.value === null || listupTitle.value === '') {
+            toast.error('제목이 입력되지 않았습니다.');
+            return;
+        }
+
+        if (!Array.isArray(props.selectedInfluencers) || !props.selectedInfluencers.length > 0) {
+            toast.error('인플루언서가 선택되지 않았습니다.');
+            return;
+        }
+
         const payload = {
             campaignId: selectedCampaign.value.id,
             name: listupTitle.value,
@@ -159,12 +175,12 @@ const handleSubmit = async () => {
 
         console.log('제출:', payload);
         await createListup(payload);
-        await router.push('sales/listup');
+        toast.success('리스트업이 생성되었습니다.');
+        await router.push('/sales/listup');
 
         emit('close');
-    } catch (error) {
-        console.error('제출 실패:', error);
-        alert('추가에 실패했습니다.');
+    } catch (e) {
+        toast.error('리스트 생성에 실패하였습니다.');
     }
 };
 onMounted(() => {
