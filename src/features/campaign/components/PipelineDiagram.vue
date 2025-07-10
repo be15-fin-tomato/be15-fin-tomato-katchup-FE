@@ -8,7 +8,7 @@ const props = defineProps({
 
 // 1~7단계 정의
 const stepOrder = [
-  { id: 1, key: 'chance', label: '기획 인지', colorVar: 'bg-pipeline-chance' },
+  { id: 1, key: 'chance', label: '기회인지', colorVar: 'bg-pipeline-chance' },
   { id: 2, key: 'listUp', label: '리스트업', colorVar: 'bg-pipeline-list-up' },
   { id: 3, key: 'proposal', label: '제안', colorVar: 'bg-pipeline-proposal' },
   { id: 4, key: 'quotation', label: '견적', colorVar: 'bg-pipeline-quotation' },
