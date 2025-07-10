@@ -45,7 +45,7 @@ const formatCount = (value) => {
   const num = Number(value)
 
   if (num < 10000) {
-    return num.toLocaleString() // 1,000처럼 쉼표 찍기
+    return num.toLocaleString()
   }
 
   return (num / 10000).toFixed(1).replace(/\.0$/, '') + '만' // 소수점 첫째자리, .0 제거
@@ -64,7 +64,7 @@ function goToDashboard(target)  {
 </script>
 
 <template>
-    <div class="border-[1px] rounded-lg p-5 shadow-sm mb-5">
+    <div class="border-[1px] rounded-lg px-5 py-4 shadow-sm mb-5">
         <div class="grid w-full grid-cols-11 items-center">
 
             <!-- 유튜브 프로필 (썸네일, 채널명) -->
