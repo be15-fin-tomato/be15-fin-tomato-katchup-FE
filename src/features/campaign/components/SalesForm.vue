@@ -196,6 +196,7 @@ watch(
                                 v-if="isEditing"
                                 class="btn-open-popup"
                                 @click="openSearchPopup(field.key, field.searchType)"
+                                :disabled="field.extends && !form[field.extends]"
                             >
                                 검색
                             </button>
