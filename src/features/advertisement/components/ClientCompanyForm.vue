@@ -179,7 +179,8 @@ const addEmployee = () => {
   if (editIndex.value === -1) {
     employeeList.value.push(employeeData);
   } else {
-    employeeList.value[editIndex.value] = employeeData;
+    employeeData.clientManagerId = employeeList.value[editIndex.value].clientManagerId;
+    employeeList.value.splice(editIndex.value, 1, employeeData);
   }
 
     closeEmployeeForm();
