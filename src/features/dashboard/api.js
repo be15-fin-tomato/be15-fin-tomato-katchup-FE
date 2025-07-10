@@ -25,5 +25,15 @@ export const fetchSatisfaction = async (influencerId) => {
   return await api.get(`/satisfaction/average/${influencerId}`);
 }
 
+// 인플루언서 인기 동영상 조회
+export const fetchTopVideos = async (influencerId) => {
+  return await api.get(`/oauth2/youtube/top-videos`, {
+    params: { influencerId },
+  });
+}
 
+// 인플루언서 진행 완료 캠페인 조회
+export const fetchCampaignListByInfluencer = async (influencerId) => {
+  return await api.get(`/dashboard/campaign/${influencerId}`);
+}
 
