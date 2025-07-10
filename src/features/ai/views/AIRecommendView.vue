@@ -138,16 +138,6 @@
                                                     '알수없음'
                                                 }}
                                             </span>
-                                            <!--                                                                                        <span-->
-                                            <!--                                                                                            class="text-white text-xs px-2 py-1 rounded ml-1"-->
-                                            <!--                                                                                            :class="-->
-                                            <!--                                                                                                item.campaignStatusId === 2-->
-                                            <!--                                                                                                    ? 'bg-pink-300'-->
-                                            <!--                                                                                                    : 'bg-orange-300'-->
-                                            <!--                                                                                            "-->
-                                            <!--                                                                                        >-->
-                                            <!--                                                                                            {{ item.campaignStatusId === 2 ? '진행' : '종료' }}-->
-                                            <!--                                                                                        </span>-->
                                         </td>
                                         <td class="font-semibold">{{ item.clientCompanyName }}</td>
                                         <td>{{ item.campaignName }}</td>
@@ -184,25 +174,13 @@
                     />
                 </div>
 
-                <div class="container overflow-y-auto max-h-[600px]">
+                <div class="container">
                     <h2 class="text-lg font-bold text-black mb-2">인플루언서 검색</h2>
                     <div class="blue-line mb-4"></div>
-
-                    <div class="grid grid-cols-7 gap-2 mb-4">
-                        <button
-                            v-for="category in categories"
-                            :key="category"
-                            :class="[
-                                'text-sm h-[40px] px-4 rounded',
-                                selectedCategory === category
-                                    ? 'bg-[#A6C8E9] text-white'
-                                    : 'text-black hover:text-blue-500',
-                            ]"
-                            @click="selectedCategory = category"
-                        >
-                            {{ category }}
-                        </button>
-                    </div>
+                    <InfluencerCategory
+                        :categories="categoryList"
+                        @update:selected="selectedCategory = $event"
+                    />
 
                     <div class="flex gap-2 mb-6 items-center">
                         <input
@@ -214,48 +192,60 @@
                             찾기
                         </button>
                     </div>
-
-                    <div
-                        v-for="influencer in filteredInfluencers"
-                        :key="influencer.id"
-                        class="flex justify-between items-center mb-4 p-4 bg-white border rounded"
-                    >
-                        <div class="flex items-center gap-4">
-                            <img
-                                :src="influencer.imageUrl"
-                                alt="profile"
-                                class="w-12 h-12 rounded-full"
-                            />
-                            <div>
-                                <div class="font-semibold text-black">{{ influencer.name }}</div>
-                                <div class="text-xs text-gray-500">{{ influencer.username }}</div>
-                                <div class="flex flex-wrap gap-2 mt-1">
-                                    <span
-                                        v-for="tag in influencer.tags"
-                                        :key="tag"
-                                        :class="`${TAG_COLOR_MAP[tag]} px-2 py-1 rounded-full text-xs`"
-                                    >
-                                        #{{ tag }}
+                    <div class="overflow-y-auto max-h-[400px]">
+                        <div
+                            v-for="influencer in influencerList"
+                            :key="influencer.influencerId"
+                            class="flex justify-between items-center mb-4 p-4 bg-white border rounded"
+                            @click="addInfluencer(influencer)"
+                        >
+                            <div class="flex items-center gap-4">
+                                <img
+                                    :src="influencer.youtube?.thumbnailUrl"
+                                    alt="profile"
+                                    class="w-12 h-12 rounded-full"
+                                />
+                                <div>
+                                    <div class="font-semibold text-black">
+                                        {{ influencer.youtube?.name || '해당 없음' }}
+                                        <span class="text-xs text-gray-500"
+                                            >({{ influencer.name }})</span
+                                        >
+                                    </div>
+                                    <div class="font-semibold text-gray-500">
+                                        @{{ influencer.instagram?.name || '해당 없음' }}
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-1">
+                                        <span
+                                            v-for="tag in influencer.tags ?? []"
+                                            :key="tag.categoryId"
+                                            :class="`${tagStyle(tag.categoryName)} px-2 py-1 rounded-full text-xs`"
+                                        >
+                                            #{{ tag.categoryName }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 items-center">
+                                <div class="flex items-center gap-1 text-sm">
+                                    <Icon icon="logos:youtube-icon" width="18" height="18" />
+                                    <span>
+                                        {{
+                                            formatCount(influencer.youtube?.subscriber) ||
+                                            '해당 없음'
+                                        }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1 text-sm">
+                                    <Icon icon="skill-icons:instagram" width="18" height="18" />
+                                    <span>
+                                        {{
+                                            formatCount(influencer.instagram?.follower) ||
+                                            '해당 없음'
+                                        }}
                                     </span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex gap-4 items-center">
-                            <div class="flex items-center gap-1 text-sm">
-                                <Icon icon="logos:youtube-icon" width="18" height="18" />
-                                <span>{{ influencer.followers }}</span>
-                            </div>
-                            <div class="flex items-center gap-1 text-sm">
-                                <Icon icon="skill-icons:instagram" width="18" height="18" />
-                                <span>{{ influencer.views }}</span>
-                            </div>
-                            <Icon
-                                icon="icons8:plus"
-                                width="24"
-                                height="24"
-                                class="cursor-pointer"
-                                @click="addInfluencer(influencer)"
-                            />
                         </div>
                     </div>
                 </div>
@@ -274,6 +264,8 @@ import { TAG_COLOR_MAP, TAGS } from '@/constants/tags';
 import AddToListupModal from '@/features/ai/components/AddToListupModal.vue';
 import { useRoute } from 'vue-router';
 import { fetchCampaignList, fetchListupDetail } from '@/features/ai/api.js';
+import InfluencerCategory from '@/features/influencer/components/InfluencerCategory.vue';
+import { fetchCategoryList, fetchInfluencerList } from '@/features/influencer/api.js';
 
 const route = useRoute();
 
@@ -290,10 +282,30 @@ const addedInfluencers = ref([]);
 const showModal = ref(false);
 const searchQuery = ref('');
 const selectedCategory = ref('전체');
-const allInfluencers = ref([]);
+const influencerList = ref([]);
 const showRecommendation = ref(false);
-const categories = ['전체', '엔터테인먼트', '지식/정보', '푸드', '뷰티/패션', '키즈', '게임'];
+
+const categoryMap = {
+    전체: 'ALL',
+    엔터테인먼트: 'Entertainment',
+    일상: 'LifeStyle',
+    푸드: 'Food',
+    게임: 'Gaming',
+    '뷰티/패션': 'Fashion & Beauty',
+    여행: 'Travel',
+    동물: 'Pet',
+    교육: 'Education',
+    기술: 'Technology',
+    '건강/운동': 'Health & Fitness',
+    키즈: 'Family & Kids',
+};
+const categoryList = ref([]);
 const id = route.params.id;
+
+const reverseCategoryMap = Object.fromEntries(
+    Object.entries(categoryMap).map(([ko, en]) => [en, ko]),
+);
+
 const editingCampaign = ref({
     id: null,
     name: '',
@@ -330,13 +342,10 @@ const openSearchPopup = (targetObj, key, type, extendKey = null) => {
     };
 };
 
-const filteredInfluencers = computed(() => {
-    return filteredAllInfluencers.value;
-});
-
 const handleAddToListup = (payload) => {
     console.log('캠페인:', payload.campaignName);
     console.log('상품:', payload.productName);
+    console.log(payload);
     // TODO: 실제 리스트업 처리 로직
 };
 
@@ -349,34 +358,21 @@ const toggleTag = (tag) => {
     }
 };
 
-const applyFilter = () => {
-    console.log('검색 이름:', filters.name);
-    console.log('검색 고객사:', filters.company);
-    console.log('선택된 태그:', selectedTags.value);
+const tagStyle = (tag) => {
+    return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black';
 };
 
-const fetchAllInfluencers = async () => {
-    try {
-        const res = await axios.get('/api/v1/influencers');
-        allInfluencers.value = res.data.data;
-    } catch (e) {
-        console.error('전체 인플루언서 불러오기 실패', e);
+const formatCount = (value) => {
+    if (!value || isNaN(value)) return '해당 없음';
+
+    const num = Number(value);
+
+    if (num < 10000) {
+        return num.toLocaleString(); // 1,000처럼 쉼표 찍기
     }
-};
 
-// const filteredCampaigns = computed(() => {
-//     return (campaignList.value || []).filter((item) => {
-//         if (!item || typeof item !== 'object') return false;
-//         const campaignId = item.campaignId;
-//         const campaignName = item.campaignName ?? '';
-//         const clientCompanyId = item.clientCompanyId ?? '';
-//         const clientCompanyName = item.clientCompanyName ?? '';
-//         const tags = Array.isArray(item.categoryList) ? item.categoryList : [];
-//         const matchTags =
-//             selectedTags.value.length === 0 || selectedTags.value.some((tag) => tags.includes(tag));
-//         return matchName && matchCompany && matchTags;
-//     });
-// });
+    return (num / 10000).toFixed(1).replace(/\.0$/, '') + '만'; // 소수점 첫째자리, .0 제거
+};
 
 const filteredAiInfluencers = computed(() => {
     return recommendedInfluencers.value.filter((influencer) => {
@@ -391,19 +387,24 @@ const filteredAiInfluencers = computed(() => {
     });
 });
 
-const filteredAllInfluencers = computed(() => {
-    return allInfluencers.value.filter((influencer) => {
-        const hasCategory = Array.isArray(influencer.categories);
-        const matchCategory =
-            selectedCategory.value === '전체' ||
-            (hasCategory && influencer.categories.includes(selectedCategory.value));
-        const matchSearch =
-            searchQuery.value === '' ||
-            influencer.name?.includes(searchQuery.value) ||
-            influencer.username?.includes(searchQuery.value);
-        return matchCategory && matchSearch;
-    });
-});
+async function loadInfluencers() {
+    const params = {
+        page: 0,
+        size: 50,
+    };
+
+    const res = await fetchInfluencerList(params);
+    const rawList = res.data.data.data;
+
+    if (selectedCategory.value === '전체') {
+        influencerList.value = rawList;
+    } else {
+        const selectedEngCategory = categoryMap[selectedCategory.value];
+        influencerList.value = rawList.filter((influencer) =>
+            influencer.tags?.some((tag) => tag.categoryName === selectedEngCategory),
+        );
+    }
+}
 
 const campaignStatus = {
     1: '취소',
@@ -424,16 +425,24 @@ const fetchCampaigns = async () => {
 };
 
 const addInfluencer = (influencer, campaignName) => {
-    const exists = addedInfluencers.value.find((i) => i.id === influencer.id);
-    if (!exists) {
+    const index = addedInfluencers.value.findIndex(
+        (i) => i.influencerId === influencer.influencerId,
+    );
+
+    if (index === -1) {
+        // 존재하지 않으면 추가
         addedInfluencers.value.push({
             ...influencer,
             campaignName,
         });
+    } else {
+        // 존재하면 삭제
+        addedInfluencers.value.splice(index, 1);
     }
 };
-const removeInfluencer = (id) => {
-    addedInfluencers.value = addedInfluencers.value.filter((i) => i.id !== id);
+
+const removeInfluencer = (influencerId) => {
+    addedInfluencers.value = addedInfluencers.value.filter((i) => i.influencerId !== influencerId);
 };
 
 const getRecommendationsByCampaignId = async (campaignId) => {
@@ -447,6 +456,14 @@ const getRecommendationsByCampaignId = async (campaignId) => {
 };
 
 onMounted(async () => {
+    const categoryRes = await fetchCategoryList();
+    const rawCategories = categoryRes.data.data;
+    categoryList.value = [
+        '전체',
+        ...rawCategories.map((cat) => reverseCategoryMap[cat.categoryName] || cat.categoryName),
+    ];
+    await loadInfluencers();
+
     if (id) {
         try {
             const data = await fetchListupDetail(id);
@@ -472,7 +489,6 @@ onMounted(async () => {
     }
 
     await fetchCampaigns();
-    await fetchAllInfluencers();
 });
 </script>
 

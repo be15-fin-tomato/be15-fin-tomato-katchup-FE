@@ -23,11 +23,11 @@ export const getCampaignDetail = async (campaignId) => {
 
 /* 캠페인 수정 */
 export const updateCampaign = (data) => {
-  return api.put('/campaign/chance/update', data);
+    return api.put('/campaign/chance/update', data);
 };
 /* 캠페인 삭제 */
 export const deleteCampaign = (campaignId) => {
-  return api.delete(`/campaign/${campaignId}`);
+    return api.delete(`/campaign/${campaignId}`);
 };
 
 export const getProposalList = async (page, size, filters = {}) => {
@@ -45,6 +45,10 @@ export const getListUpList = async (page, size, filters = {}) => {
     return await api.get('/campaign/listup', {
         params: { page, size, ...filters },
     });
+};
+
+export const createListup = async (payload) => {
+    return await api.post(`/campaign/listup`, payload);
 };
 
 export const getListupDetail = async (pipelineId) => {
