@@ -8,15 +8,15 @@
                 <label class="block text-sm font-medium mb-1">캠페인 명</label>
                 <div class="flex gap-2">
                     <input
-                        v-model="campaignName"
+                        :value="selectedCampaign?.name ?? ''"
                         type="text"
                         class="input-form-box flex-1"
-                        disabled
+                        readonly
                     />
                     <button
                         type="button"
                         class="px-3 py-1 bg-blue-500 text-white rounded"
-                        @click="openSearchPopup('campaignName', 'pipeline')"
+                        @click="openSearchPopup('selectedCampaign', 'pipeline')"
                     >
                         검색
                     </button>
@@ -38,13 +38,13 @@
                 >
                     <div
                         v-for="influencer in selectedInfluencers"
-                        :key="influencer.id"
+                        :key="influencer.influencerId"
                         class="w-10 h-10 relative"
                         @mouseenter="showPopover(influencer, $event)"
                         @mouseleave="hidePopover"
                     >
                         <img
-                            :src="influencer.imageUrl"
+                            :src="influencer.youtube?.thumbnailUrl"
                             alt="프로필"
                             class="w-10 h-10 rounded-full object-cover"
                         />
@@ -59,7 +59,8 @@
             <div class="flex justify-end gap-2">
                 <button class="btn-delete" @click="$emit('close')">취소</button>
                 <button class="btn-create" @click="handleSubmit">
-                    {{ isEditing ? '저장하기' : '추가하기' }}
+                    <!--                    {{ isEditing ? '저장하기' : '추가하기' }}-->
+                    저장하기
                 </button>
             </div>
             <teleport to="body">
@@ -78,11 +79,15 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import { createListup } from '@/features/campaign/api.js';
+import { useRouter } from 'vue-router';
 
 const emit = defineEmits(['close']);
-const campaignName = ref('');
+const selectedCampaign = ref('');
 const listupTitle = ref('');
 const currentFieldKey = ref('');
+const router = useRouter();
+
 const popover = ref({
     visible: false,
     data: null,
@@ -128,7 +133,7 @@ const props = defineProps({
 });
 const openSearchPopup = (key, type) => {
     currentFieldKey.value = key;
-    const currentValue = campaignName.value;
+    const currentValue = selectedCampaign.value;
 
     const popup = window.open(
         `/search-popup?type=${type}&selected=${encodeURIComponent(currentValue)}`,
@@ -137,8 +142,8 @@ const openSearchPopup = (key, type) => {
     );
 
     window.handleUserSelect = (selectedItem) => {
-        if (key === 'campaignName') {
-            campaignName.value = selectedItem.name;
+        if (key === 'selectedCampaign') {
+            selectedCampaign.value = selectedItem;
         }
         popup.close();
     };
@@ -147,13 +152,15 @@ const openSearchPopup = (key, type) => {
 const handleSubmit = async () => {
     try {
         const payload = {
-            campaignId: props.campaign.id, // ID 포함
-            campaignName: campaignName.value,
-            title: listupTitle.value,
-            influencers: props.selectedInfluencers.map((v) => v.id),
+            campaignId: selectedCampaign.value.id,
+            name: listupTitle.value,
+            influencerId: props.selectedInfluencers.map((v) => v.influencerId),
         };
 
         console.log('제출:', payload);
+        await createListup(payload);
+        await router.push('sales/listup');
+
         emit('close');
     } catch (error) {
         console.error('제출 실패:', error);
@@ -162,7 +169,7 @@ const handleSubmit = async () => {
 };
 onMounted(() => {
     if (props.isEditing) {
-        campaignName.value = props.campaign?.name || '';
+        selectedCampaign.value = props.campaign?.name || '';
         listupTitle.value = props.campaign?.title || '';
     }
 });
