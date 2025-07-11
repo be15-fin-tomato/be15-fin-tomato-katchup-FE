@@ -74,7 +74,7 @@ const fetchCampaignDetail = async () => {
       pipelineStepId: stepId,
       stepType: stepMap[stepId],
       done: matched?.presentedAt != null,
-      startedAt: matched?.startedAt || null,
+      createdAt: matched?.createdAt || null,
     };
   });
 

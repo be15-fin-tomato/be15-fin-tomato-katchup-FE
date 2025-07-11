@@ -40,14 +40,14 @@ const page = ref(1);
 const size = ref(10);
 const total = ref(0);
 const filterConditions = ref({
-    steps: [],
-    statuses: [],
-    clientCompany: '',
-    internalManager: '',
-    minBudget: null,
-    maxBudget: null,
-    startDate: null,
-    endDate: null,
+  stepType: '',
+  campaignStatus: '',
+  clientCompany: '',
+  internalManager: '',
+  minBudget: null,
+  maxBudget: null,
+  startDate: null,
+  endDate: null,
 });
 
 const totalPages = computed(() => Math.ceil(total.value / size.value));
