@@ -191,6 +191,8 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white">
 <img src="https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white"/>
 <img src="https://img.shields.io/badge/Argo-EF7B4D?style=for-the-badge&logo=argo&logoColor=white"/>
+<img src="https://img.shields.io/badge/S3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white"/>
+<img src="https://img.shields.io/badge/CloudFront-FF9933?style=for-the-badge&logo=amazonaws&logoColor=white"/>
 </div>
 
 <h3>Tools & Communication</h3>
