@@ -42,13 +42,15 @@
       <label class="font-semibold text-md mb-2">예상매출</label>
       <div class="grid grid-cols-2 gap-2">
         <button
-          v-for="(range, index) in budgetOptions"
-          :key="index"
+          v-for="range in budgetOptions"
+          :key="range.value"
           :class="[
             'px-3 py-2 rounded border text-sm',
-            selectedBudgetRange === index ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border-gray-300',
+            selectedBudgetRange === range.value
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 border-gray-300'
           ]"
-          @click="selectBudgetRange(index)"
+          @click="selectBudgetRange(range.value)"
         >
           {{ range.label }}
         </button>
@@ -56,7 +58,7 @@
     </div>
 
     <!-- 기간 + 고객사 + 담당자 -->
-    <div class="flex flex-col col-span-2">
+    <div class="flex flex-col col-span-3">
       <label class="font-semibold text-md mb-2">기간</label>
       <div class="flex items-center gap-2 mb-4">
         <input v-model="startDate" type="date" class="input-form-box min-h-[40px] w-full" />
@@ -64,7 +66,7 @@
         <input v-model="endDate" type="date" class="input-form-box min-h-[40px] w-full" />
       </div>
 
-      <div class="grid grid-cols-[2fr_2fr_auto] gap-4">
+      <div class="grid grid-cols-[4fr_4fr_auto] gap-4 mb-4">
         <div class="flex flex-col">
           <label class="font-semibold text-md mb-2">고객사</label>
           <input
@@ -74,7 +76,6 @@
             placeholder="고객사 이름"
           />
         </div>
-
         <div class="flex flex-col">
           <label class="font-semibold text-md mb-2">담당자</label>
           <input
@@ -84,22 +85,46 @@
             placeholder="담당자 이름"
           />
         </div>
+      </div>
+    </div>
 
-        <div class="flex flex-col h-full">
-          <label class="font-semibold text-md mb-2 invisible">검색</label>
-          <button @click="onSearch" class="btn-open-popup h-full">검색</button>
+    <!-- 상품명 + 캠페인명 세로 정렬 -->
+    <div class="flex flex-col col-span-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="flex flex-col w-full">
+          <label class="font-semibold text-md mb-2">캠페인명</label>
+          <input
+            v-model="campaignName"
+            type="text"
+            class="input-form-box min-h-[40px] w-full"
+            placeholder="캠페인명"
+          />
         </div>
+        <div class="flex flex-col w-full">
+          <label class="font-semibold text-md mb-2">상품명</label>
+          <input
+            v-model="productName"
+            type="text"
+            class="input-form-box min-h-[40px] w-full"
+            placeholder="상품명"
+          />
+        </div>
+      </div>
+
+      <!-- 검색 버튼 -->
+      <div class="flex justify-end">
+        <button @click="onSearch" class="btn-open-popup px-6 py-2">검색</button>
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue';
 
 const emit = defineEmits(['filter']);
 
-// ✅ 단일 선택으로 변경
 const selectedStep = ref('');
 const selectedStatus = ref('');
 const clientCompany = ref('');
@@ -107,8 +132,9 @@ const internalManager = ref('');
 const selectedBudgetRange = ref(null);
 const startDate = ref('');
 const endDate = ref('');
+const campaignName = ref('');
+const productName = ref('');
 
-// 체크박스 클릭 시 단일 선택되도록 처리
 const handleStepChange = (value) => {
   selectedStep.value = selectedStep.value === value ? '' : value;
 };
@@ -124,7 +150,6 @@ const stepOptions = [
   { id: 4, label: '견적', value: '견적' },
   { id: 5, label: '협상', value: '협상' },
   { id: 6, label: '계약', value: '계약' },
-  { id: 7, label: '매출', value: '매출' },
   { id: 8, label: '사후관리', value: '사후관리' },
 ];
 
@@ -136,35 +161,33 @@ const statusOptions = [
   { id: 5, label: '완료', value: 5 },
 ];
 
+
+// ✅ 1. 백엔드 `choose-when` 구문과 일치하는 `value`를 추가
 const budgetOptions = [
-  { label: '1천만 이하', min: 0, max: 10000000 },
-  { label: '1천만~3천만', min: 10000000, max: 30000000 },
-  { label: '3천만~5천만', min: 30000000, max: 50000000 },
-  { label: '5천만~7천만', min: 50000000, max: 70000000 },
-  { label: '7천만~1억', min: 70000000, max: 100000000 },
-  { label: '1억 이상', min: 100000000, max: Number.MAX_SAFE_INTEGER },
+  { label: '1백만 이하', value: 1000000 },
+  { label: '1백만~3백만', value: 3000000 },
+  { label: '3백만~5백만', value: 5000000 },
+  { label: '5백만~7백만', value: 7000000 },
+  { label: '7백만~1천만', value: 10000000 },
+  { label: '1천만 이상', value: 10000001 },
 ];
 
-const selectBudgetRange = (index) => {
-  selectedBudgetRange.value = index;
+const selectBudgetRange = (value) => {
+  selectedBudgetRange.value = selectedBudgetRange.value === value ? null : value;
 };
 
-const getBudgetMin = () =>
-  selectedBudgetRange.value !== null ? budgetOptions[selectedBudgetRange.value].min : null;
-
-const getBudgetMax = () =>
-  selectedBudgetRange.value !== null ? budgetOptions[selectedBudgetRange.value].max : null;
 
 const onSearch = () => {
   emit('filter', {
     stepType: selectedStep.value,
     campaignStatus: selectedStatus.value,
-    clientCompany: clientCompany.value,
-    internalManager: internalManager.value,
-    minBudget: getBudgetMin(),
-    maxBudget: getBudgetMax(),
-    startDate: startDate.value,
-    endDate: endDate.value,
+    clientCompanyName: clientCompany.value,
+    clientManagerName: internalManager.value,
+    expectedRevenueRange: selectedBudgetRange.value,
+    startedDate: startDate.value,
+    endedDate: endDate.value,
+    campaignName: campaignName.value,
+    productName: productName.value
   });
 };
 </script>

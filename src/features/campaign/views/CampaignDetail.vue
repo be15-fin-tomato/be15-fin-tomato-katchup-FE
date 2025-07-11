@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getCampaignDetail, updateCampaign, deleteCampaign } from '@/features/campaign/api.js';
 import { useToast } from 'vue-toastification';
@@ -15,11 +15,20 @@ const route = useRoute();
 const router = useRouter();
 const campaignDetail = ref(null);
 const campaignHistory = ref([]);
-const form = reactive({});
+const form = ref({});
 const isEditing = ref(false);
 
+watch(
+  () => form.value.clientCompany?.id,
+  (newId, oldId) => {
+    if (isEditing.value && newId !== oldId) {
+      form.value.clientManager = null;
+    }
+  }
+);
+
 function initializeForm(detail) {
-  Object.assign(form, {
+  Object.assign(form.value, {
     title: detail.campaignName,
     status: detail.campaignStatusId,
     clientCompany: {
@@ -37,6 +46,7 @@ function initializeForm(detail) {
     pipelineId: detail.pipelineId,
     createdAt: detail.createdAt,
     category: detail.categoryList?.[0] || null,
+    categoryList: detail.categoryList || [],
     userList: detail.userList || [],
     awarenessPath: detail.awarenessPath,
     productName: detail.productName,
@@ -87,9 +97,17 @@ onMounted(() => {
 });
 
 const save = async () => {
-  if (!campaignFormRef.value) return;
+  console.log('[save] 저장 시도');
+  if (!campaignFormRef.value) {
+    console.error('폼이 없습니다.');
+    return;
+  }
+
   const validatedForm = campaignFormRef.value.submit();
+  console.log('[save] submit 반환값:', validatedForm); // null이면 유효성 실패
+
   if (!validatedForm) {
+    console.warn('[save] 유효성 검사 실패');
     return;
   }
 
@@ -109,7 +127,7 @@ const save = async () => {
       expectedProfitMargin: validatedForm.expectedProfitMargin,
       notes: validatedForm.notes,
       userList: validatedForm.userList.map(u => u.id),
-      categoryList: validatedForm.category ? [validatedForm.category] : [],
+      categoryList: validatedForm.categoryList ?? [],
     };
 
     await updateCampaign(payload);
@@ -132,9 +150,10 @@ const remove = async () => {
   }
 };
 
-const cancel = () => {
+const cancel = async () => {
   initializeForm(campaignDetail.value);
   isEditing.value = false;
+  await fetchCampaignDetail();
 };
 
 </script>
@@ -171,11 +190,7 @@ const cancel = () => {
 
     <div class="flex">
       <div class="w-1/2">
-        <CampaignForm
-          ref="campaignFormRef"
-          v-model="form"
-          :isEditing="isEditing"
-        />
+        <CampaignForm ref="campaignFormRef" v-model="form" :isEditing="isEditing" />
       </div>
 
       <div class="w-1/2 bg-gray-50 p-4 rounded shadow">

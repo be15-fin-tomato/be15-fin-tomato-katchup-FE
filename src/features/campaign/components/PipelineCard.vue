@@ -65,58 +65,6 @@ const { campaigns } = defineProps({
 
 const router = useRouter();
 
-// const getLastPipelineIndex = (pipeLine) => {
-//     const keys = Object.keys(pipeLine || {});
-//     const lastKey = pipelineSteps.findLast((step) => keys.includes(step.key));
-//     return pipelineSteps.findIndex((step) => step.key === lastKey?.key);
-// };
-//
-// const getSuccessRate = (pipeLine) => {
-//     const filledCount = getLastPipelineIndex(pipeLine) + 1;
-//     const totalSteps = pipelineSteps.length;
-//     return Math.round((filledCount / totalSteps) * 100);
-// };
-
-const pipelineSteps = [
-    { key: 'chance', label: '기회인지', colorVar: 'bg-pipeline-chance' },
-    { key: 'listUp', label: '리스트업', colorVar: 'bg-pipeline-list-up' },
-    { key: 'proposal', label: '제안', colorVar: 'bg-pipeline-proposal' },
-    { key: 'quotation', label: '견적', colorVar: 'bg-pipeline-quotation' },
-    { key: 'negotiation', label: '협상', colorVar: 'bg-pipeline-negotiation' },
-    { key: 'contract', label: '계약', colorVar: 'bg-pipeline-contract' },
-    { key: 'aftercare', label: '사후관리', colorVar: 'bg-pipeline-aftercare' },
-];
-
-const getLastPipelineIndex = (pipelineData) => {
-  if (!pipelineData || pipelineData.length === 0) {
-    return -1;
-  }
-
-  let lastActiveIndex = -1;
-  // pipelineSteps 정의 순서에 따라 진행 단계를 확인합니다.
-  for (let i = 0; i < pipelineSteps.length; i++) {
-    const currentStepLabel = pipelineSteps[i].label;
-    const matchingBackendStep = pipelineData.find(
-      s => s.stepType === currentStepLabel && s.startedAt !== null
-    );
-    if (matchingBackendStep) {
-      lastActiveIndex = i; // 해당 단계가 완료되었다면 인덱스 업데이트
-    }
-  }
-  return lastActiveIndex;
-};
-
-// 성공률을 계산합니다.
-const getSuccessRate = (pipelineData) => {
-  const filledCount = getLastPipelineIndex(pipelineData) + 1; // 완료된 단계 수
-  const totalSteps = pipelineSteps.length; // 전체 단계 수
-
-  if (totalSteps === 0) return 0; // 0으로 나누는 것 방지
-
-  return Math.round((filledCount / totalSteps) * 100);
-};
-
-
 const gotoDetail = async (campaignId) => {
     await router.push(`/campaign/${campaignId}`);
 };

@@ -12,8 +12,9 @@ export const getCampaignList = async (page, size, filtering) => {
     });
 };
 
+/* 캠페인 등록 */
 export const createCampaign = async (campaignInfo) => {
-    return await api.post('/campaign', campaignInfo);
+    return api.post('/campaign/chance', campaignInfo);
 };
 
 /* 캠페인 상세 조회 */
