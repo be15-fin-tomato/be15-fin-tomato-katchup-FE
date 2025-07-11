@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   deleteClientCompany,
   getClientCompanyDetail, getClientCompanyUsers,
-  updateClientCompany, deleteClientManager, getCampaignsByClientCompany
+  updateClientCompany, deleteClientManager, getCampaignsByClientCompany, getClientCompanyContracts
 } from '@/features/advertisement/api.js';
 
 import ClientCompanyForm from '@/features/advertisement/components/ClientCompanyForm.vue';
@@ -41,9 +41,19 @@ const fetchClientCompanyData = async () => {
     // 캠페인, 계약, 이력 등도 함께 업데이트
     const campaignRes = await getCampaignsByClientCompany(id);  // 고객사 ID로 캠페인 목록 불러오기
     campaignList.value = campaignRes.data.data ?? [];
-    console.log('✅ campaignList 데이터:', campaignList.value);
 
-    contractList.value = res.data.contractList ?? [];
+    const contractRes = await getClientCompanyContracts(id);
+    contractList.value = (contractRes.data?.data?.clientCompanyContract || []).map(contract => ({
+      ...contract,
+      revenue: (contract.totalProfit !== null && typeof contract.totalProfit === 'number')
+        ? contract.totalProfit
+        : ' - ',
+      period: (contract.startedAt && contract.endedAt)
+        ? `${contract.startedAt} ~ ${contract.endedAt}`
+        : '기간 미정',
+      influencerName: contract.name || '알 수 없음'
+    }));
+
     communicationHistories.value = res.data.communicationHistories ?? [];
 
   } catch (e) {
@@ -216,7 +226,9 @@ const handleDeleteCompany = async () => {
           <td class="px-4 whitespace-nowrap">{{ c.campaignName }}</td>
           <td class="px-4 whitespace-nowrap">{{ c.productName }}</td>
           <td class="px-4 whitespace-nowrap">{{ c.influencerName }}</td>
-          <td class="px-4 whitespace-nowrap">{{ c.revenue.toLocaleString() }} ₩</td>
+          <td class="px-4 whitespace-nowrap">
+            {{ typeof c.revenue === 'number' ? `${c.revenue.toLocaleString()} ₩` : c.revenue }}
+          </td>
           <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
           <td class="px-4 whitespace-nowrap">
             <RouterLink
@@ -225,6 +237,11 @@ const handleDeleteCompany = async () => {
             >
               보러가기
             </RouterLink>
+          </td>
+        </tr>
+        <tr v-if="contractList.length === 0">
+          <td colspan="6" class="py-4 text-center text-gray-500">
+            조회된 계약 정보가 없습니다.
           </td>
         </tr>
         </tbody>
