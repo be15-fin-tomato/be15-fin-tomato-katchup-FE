@@ -217,17 +217,6 @@ const handleReferenceSelect = async (item) => {
         return;
     }
 
-    // 기존 값 초기화
-    // Object.keys(form).forEach((key) => {
-    //     if (Array.isArray(form[key])) {
-    //         form[key] = [];
-    //     } else if (typeof form[key] === 'object' && form[key] !== null) {
-    //         form[key] = {};
-    //     } else {
-    //         form[key] = '';
-    //     }
-    // });
-
     const res = await getContractDetail(item.pipelineId);
     const resForm = res.data.data.form;
 

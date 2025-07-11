@@ -39,16 +39,21 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
-import { createQuotation, getProposalReference } from '@/features/campaign/api.js';
+import {
+    createQuotation,
+    getProposalDetail,
+    getProposalReference,
+} from '@/features/campaign/api.js';
 import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '@/stores/auth.js';
 import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
+import { structuredForm } from '@/features/campaign/utils/structedForm.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -162,15 +167,27 @@ const groups = [
     },
 ];
 
-const fetchProposalReferences = async () => {
-    const res = await getProposalReference();
-    proposalReferences.value = res.data.data;
+const fetchProposalReferences = async (param) => {
+    const res = await getProposalReference(param);
+    proposalReferences.value = res.data.data.referenceList;
 };
 
 // 마운트 시 전부 패칭
-onMounted(async () => {
-    await Promise.all([fetchProposalReferences()]);
-});
+// onMounted(async () => {
+//     // await Promise.all([fetchProposalReferences()]);
+// });
+
+watch(
+    () => form.campaign?.id,
+    async (newVal) => {
+        if (newVal) {
+            const res = await fetchProposalReferences(newVal);
+            proposalReferences.value = res.data.data.referenceList;
+        } else {
+            proposalReferences.value = []; // campaignId 없으면 초기화
+        }
+    },
+);
 
 // 의견 등록
 const handleSubmit = (newComment) => {
@@ -187,27 +204,30 @@ const handleDelete = (id) => {
     opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
 };
 
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
         // 수정 모드 아닐 때는 무시
         alert('수정 모드가 아닙니다!');
         return;
     }
-    // 필요한 값만 form에 적용 (안전하게 매핑)
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = item.clientCompany;
-    form.clientManager = item.clientManager;
-    form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
-    form.username = item.username;
-    form.influencer = item.influencer;
-    form.price = item.price;
-    form.supplyAmount = item.supplyAmount;
-    form.extraProfit = item.extraProfit;
-    form.content = item.content;
-    form.notes = item.notes;
+
+    const res = await getProposalDetail(item.pipelineId);
+    const resForm = structuredForm(res.data.data.form);
+    // form.name = resForm.name;
+    form.requestAt = resForm.requestAt;
+    form.clientCompany = resForm.clientCompany;
+    form.clientManager = resForm.clientManager;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
+    form.presentAt = resForm.presentAt;
+    form.campaign = resForm.campaign;
+    form.username = resForm.username;
+    form.influencer = resForm.influencer;
+    form.price = resForm.price;
+    form.supplyAmount = resForm.supplyAmount;
+    form.extraProfit = resForm.extraProfit;
+    form.content = resForm.content;
+    form.notes = resForm.notes;
 };
 
 // 저장 및 취소
