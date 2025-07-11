@@ -1,14 +1,19 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import InfluencerCard from '@/components/common/InfluencerCard.vue'
-import CommonFiltering from '@/components/layout/CommonFiltering.vue';
 import InfluencerCategory from '@/features/influencer/components/InfluencerCategory.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
 import { fetchCategoryList, fetchInfluencerList } from '@/features/influencer/api.js';
+import InfluencerListFilter from '@/components/common/InfluencerListFilter.vue';
 
 const influencerList = ref([])
 const selectedCategory = ref('전체')
 const categoryList = ref([])
+
+const filters = ref({
+    category: 'ALL',  // 기본값 전체
+});
+
 
 const currentPageZeroBased = ref(0); // 0부터 시작하는 페이지 인덱스
 const pageSize = 6;
@@ -37,26 +42,26 @@ const currentPage = computed({
 })
 
 async function loadInfluencers() {
-  const params = {
-    page: currentPageZeroBased.value,
-    size: pageSize,
-  };
+    const params = {
+        page: currentPageZeroBased.value,
+        size: pageSize,
+        ...filters.value,  // 여기에 category, 기타 필터 조건 포함
+    };
 
-  const res = await fetchInfluencerList(params);
-  const rawList = res.data.data.data;
+    const res = await fetchInfluencerList(params);
+    influencerList.value = res.data.data.data;
 
-  if (selectedCategory.value === '전체') {
-    influencerList.value = rawList;
-  } else {
-    const selectedEngCategory = categoryMap[selectedCategory.value];
-    influencerList.value = rawList.filter(influencer =>
-      influencer.tags?.some(tag => tag.categoryName === selectedEngCategory)
-    );
-  }
-
-  totalCount.value = res.data.data.pagination.totalCount;
-  totalPages.value = res.data.data.pagination.totalPage;
+    totalCount.value = res.data.data.pagination.totalCount;
+    totalPages.value = res.data.data.pagination.totalPage;
 }
+
+
+function handleApplyFilters(newFilters) {
+    filters.value = { ...filters.value, ...newFilters };
+    currentPageZeroBased.value = 0;
+    loadInfluencers();
+}
+
 
 onMounted(async () => {
   const categoryRes = await fetchCategoryList();
@@ -66,20 +71,16 @@ onMounted(async () => {
   await loadInfluencers();
 })
 
-watch(selectedCategory, () => {
-  currentPageZeroBased.value = 0; // 카테고리 바꾸면 페이지 0으로
-  loadInfluencers();
-})
+watch([filters, currentPageZeroBased], () => {
+    loadInfluencers();
+}, { deep: true });
 
-watch(currentPageZeroBased, () => {
-  loadInfluencers();
-})
 </script>
 
 <template>
   <div class="w-full min-h-screen bg-background flex font-sans">
-    <CommonFiltering />
-    <div class="container">
+      <InfluencerListFilter @apply-filters="handleApplyFilters" />
+      <div class="container">
       <div class="page-header">
         <div class="page-title">
           인플루언서
@@ -88,12 +89,13 @@ watch(currentPageZeroBased, () => {
       </div>
       <div class="blue-line"></div>
 
-      <InfluencerCategory
-        :categories="categoryList"
-        @update:selected="selectedCategory = $event"
-      />
+          <InfluencerCategory
+              :categories="categoryList"
+              @update:selected="(cat) => handleApplyFilters({ category: categoryMap[cat] || 'ALL' })"
+          />
 
-      <div class="grid w-full grid-cols-11 items-center px-5 py-5 text-gray-medium">
+
+          <div class="grid w-full grid-cols-11 items-center px-5 py-5 text-gray-medium">
         <div class="flex items-center gap-12 col-span-3">
           <span>대표사진</span>
           <span>유튜브 채널명</span>
@@ -124,4 +126,3 @@ watch(currentPageZeroBased, () => {
     </div>
   </div>
 </template>
-

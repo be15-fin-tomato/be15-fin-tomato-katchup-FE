@@ -137,5 +137,3 @@ function goToDashboard(target)  {
         </div>
     </div>
 </template>
-
-

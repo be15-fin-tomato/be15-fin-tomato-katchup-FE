@@ -1,6 +1,5 @@
 <script setup>
 import { ref, defineEmits } from 'vue';
-import { Icon } from '@iconify/vue';
 import { TAGS } from '@/constants/tags'; // TAGS 상수 임포트 (경로 확인 필요)
 
 const emit = defineEmits(['apply-filters']);
