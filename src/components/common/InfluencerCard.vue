@@ -2,6 +2,8 @@
 import { TAG_COLOR_MAP } from '@/constants/tags.js'
 import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
+import defaultProfileImage from '@/assets/images/logofinal.png'; // '@'는 src 폴더의 별칭 (alias) 입니다.
 
 const props = defineProps({
   influencer: Object
@@ -45,7 +47,7 @@ const formatCount = (value) => {
   const num = Number(value)
 
   if (num < 10000) {
-    return num.toLocaleString() // 1,000처럼 쉼표 찍기
+    return num.toLocaleString()
   }
 
   return (num / 10000).toFixed(1).replace(/\.0$/, '') + '만' // 소수점 첫째자리, .0 제거
@@ -61,43 +63,78 @@ function goToDashboard(target)  {
       break;
   }
 }
+
+const profileImageUrl = computed(() => {
+  if (props.influencer?.youtube?.thumbnailUrl) {
+    return props.influencer.youtube.thumbnailUrl;
+  }
+  return defaultProfileImage;
+});
 </script>
 
 <template>
-    <div class="border-[1px] rounded-lg p-5 shadow-sm mb-5">
+    <div class="border-[1px] rounded-lg px-5 py-4 shadow-sm mb-5">
         <div class="grid w-full grid-cols-11 items-center">
 
             <!-- 유튜브 프로필 (썸네일, 채널명) -->
             <div class="flex items-center gap-7 col-span-3">
-                <img :src="influencer.youtube.thumbnailUrl" alt="프로필" class="w-[75px] rounded-full object-cover" />
-                <div class="max-w-[125px] font-bold text-sm truncate" :title="influencer.name">
-                    {{ influencer.youtube?.name || "해당 없음" }}
+              <img :src="profileImageUrl" alt="프로필" class="w-[75px] rounded-full object-cover" />
+                <div class="max-w-[125px] font-bold text-sm truncate" :title="influencer?.name">
+                    <template v-if="influencer?.youtube?.name">
+                        {{ influencer?.youtube?.name }}
+                    </template>
+                    <template v-else>
+                      <p class="text-gray-dark">이름 : {{ influencer?.name }}</p>
+                    </template>
                 </div>
             </div>
 
             <!-- 인스타 아이디 -->
             <div class="max-w-[130px] text-left text-sm font-semibold truncate col-span-2">
-                @{{ influencer.instagram?.name || "해당 없음" }}
+              <template v-if="influencer?.youtube?.name">
+                @{{ influencer?.instagram?.name }}
+              </template>
+              <template v-else>
+                <p class="text-gray-dark">이름 : {{ influencer?.name }}</p>
+              </template>
             </div>
 
             <!-- 유튜브 구독자 -->
-            <div class="flex flex-col items-center col-span-2">
-                <span class="text-sm font-semibold truncate mb-2">
-                    {{ formatCount(influencer.youtube?.subscriber) || "해당 없음" }}
+            <div class="flex flex-col items-center justify-center col-span-2">
+              <div
+                v-if="influencer?.youtube?.subscriber !== null && influencer?.youtube?.subscriber !== undefined"
+                class="flex flex-col items-center justify-center"
+              >
+                <span class=" text-sm font-semibold truncate mb-2">
+                  {{ formatCount(influencer?.youtube?.subscriber) }}
                 </span>
                 <button
                   @click="goToDashboard('youtube')"
                   class="flex items-center justify-center bg-white text-black border border-black rounded-lg text-xs font-bold p-1.5 whitespace-nowrap w-[130px]"
                 >
-                    <Icon icon="logos:youtube-icon" width="24" height="24" class="mr-2" />
-                    <span class="hidden md:inline">유튜브 대시보드</span>
+                  <Icon icon="logos:youtube-icon" width="24" height="24" class="mr-2" />
+                  <span class="hidden md:inline">유튜브 대시보드</span>
                 </button>
+              </div>
+            <div v-else class="text-sm text-gray-500 py-2">
+              <button
+                @click="goToDashboard('youtube')"
+                class="flex items-center justify-center bg-white text-black border border-black rounded-lg text-xs font-bold p-1.5 whitespace-nowrap w-[130px]"
+              >
+                <Icon icon="logos:youtube-icon" width="24" height="24" class="mr-2" />
+                <span class="hidden md:inline">유튜브 연동</span>
+              </button>
             </div>
+          </div>
 
             <!-- 인스타 팔로워 -->
             <div class="flex flex-col items-center col-span-2">
+              <div
+                v-if="influencer?.youtube?.subscriber !== null && influencer?.youtube?.subscriber !== undefined"
+                class="flex flex-col items-center justify-center"
+              >
                 <span class="text-sm font-semibold truncate mb-2">
-                    {{ formatCount(influencer.instagram?.follower) || "해당 없음" }}
+                    {{ formatCount(influencer?.instagram?.follower) || "해당 없음" }}
                 </span>
                 <button
                   @click="goToDashboard('instagram')"
@@ -106,19 +143,29 @@ function goToDashboard(target)  {
                     <Icon icon="skill-icons:instagram" width="24" height="24" class="mr-2" />
                     <span class="hidden md:inline">인스타 대시보드</span>
                 </button>
+              </div>
+              <div v-else class="text-sm text-gray-500 py-2">
+                <button
+                  @click="goToDashboard('youtube')"
+                  class="flex items-center justify-center bg-white text-black border border-black rounded-lg text-xs font-bold p-1.5 whitespace-nowrap w-[130px]"
+                >
+                  <Icon icon="skill-icons:instagram" width="24" height="24" class="mr-2" />
+                  <span class="hidden md:inline">유튜브 연동</span>
+                </button>
+              </div>
             </div>
 
             <!-- 성별 -->
             <div class="col-span-1 flex justify-center items-center">
-                <div :class="[genderColor(influencer.targetGender), 'px-2 rounded-2xl font-semibold text-sm text-center']">
-                    {{ genderLabel(influencer.targetGender) }}
+                <div :class="[genderColor(influencer?.targetGender), 'px-2 rounded-2xl font-semibold text-sm text-center']">
+                    {{ genderLabel(influencer?.targetGender) }}
                 </div>
             </div>
 
             <!-- 연령대 -->
             <div class="col-span-1 flex justify-center items-center">
                 <div class="bg-green-100 text-black px-2 rounded-xl font-semibold text-sm text-center">
-                    {{ influencer.ageRange }}
+                    {{ influencer?.ageRange }}
                 </div>
             </div>
 
