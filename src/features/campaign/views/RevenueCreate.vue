@@ -1,49 +1,32 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { onMounted, reactive, ref, watch } from 'vue';
-import { getContractReference } from '@/features/campaign/api.js';
+import { createRevenue, getContractDetail, getContractReference } from '@/features/campaign/api.js';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import FileUploadCard from '@/features/campaign/components/FileUploadCard.vue';
+import { useToast } from 'vue-toastification';
+import { useAuthStore } from '@/stores/auth.js';
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 
 const router = useRouter();
+const toast = useToast();
+const authStore = useAuthStore();
 
 const opinions = ref([]);
 const contractReferences = ref([]);
 const isEditing = ref(true);
 
-const form = reactive({
-    title: '',
-    requestDate: '',
-    clientCompany: {},
-    clientManager: {},
-    period: '',
-    announcementDate: '',
-    pipeline: '',
-    username: {},
-    influencer: [],
-    influencerContents: [],
-    status: '승인요청',
-    adPrice: '',
-    productPrice: '',
-    salesQuantity: '',
-    totalRevenue: 0,
-    content: '',
-    notes: '',
-    startDate: '',
-    endDate: '',
-    showInfluencerContentInput: false,
-    attachments: [],
-});
+const form = reactive({});
 
 const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input' },
-            { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
+            { key: 'name', label: '제목', type: 'input', essential: true },
+            { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
     {
@@ -51,9 +34,10 @@ const groups = [
         fields: [
             {
                 key: 'clientCompany',
-                label: '광고업체',
+                label: '고객사',
                 type: 'search-company',
                 searchType: 'company',
+                essential: true,
             },
             { key: 'period', label: '제안 기간', type: 'date-range' },
         ],
@@ -66,49 +50,33 @@ const groups = [
                 label: '광고담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                essential: true,
             },
-            { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
+            { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
     },
     {
         type: 'horizontal',
         fields: [
             {
-                key: 'pipeline',
-                label: '해당 파이프라인',
+                key: 'campaign',
+                label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
-            },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
-        ],
-    },
-    {
-        type: 'horizontal',
-        fields: [
-            {
-                key: 'influencer',
-                label: '인플루언서',
-                type: 'search-influencer',
-                searchType: 'influencer',
+                essential: true,
             },
             {
-                key: 'status',
-                label: '진행단계',
-                type: 'select',
-                options: ['승인요청', '진행중', '보류', '완료'],
+                key: 'username',
+                label: '담당자',
+                type: 'search-user',
+                searchType: 'user',
+                essential: true,
             },
         ],
     },
     {
         type: 'horizontal',
         fields: [
-            {
-                key: 'adPrice',
-                label: '광고 단가',
-                type: 'input',
-                inputType: 'number',
-                width: 50,
-            },
             {
                 key: 'productPrice',
                 label: '상품 가격',
@@ -123,19 +91,37 @@ const groups = [
                 inputType: 'number',
                 width: 24,
             },
-        ],
-    },
-    {
-        type: 'horizontal',
-        fields: [
-            { key: 'platform', label: '컨텐츠 목록', type: 'platform', width: 24 },
             {
                 key: 'totalRevenue',
                 label: '총 수익',
                 type: 'input',
                 inputType: 'number',
                 disabled: true,
-                width: 25,
+                width: 50,
+            },
+        ],
+    },
+    {
+        type: 'horizontal',
+        fields: [
+            {
+                key: 'influencer',
+                label: '인플루언서',
+                type: 'search-influencer',
+                searchType: 'influencer',
+                essential: true,
+            },
+            {
+                key: 'status',
+                label: '진행단계',
+                type: 'select',
+                options: [
+                    { value: 1, label: '승인요청' },
+                    { value: 2, label: '승인완료' },
+                    { value: 3, label: '보류/대기' },
+                    { value: 4, label: '승인거절' },
+                ],
+                essential: true,
             },
         ],
     },
@@ -148,76 +134,123 @@ const groups = [
     },
 ];
 
+const fetchContractReferences = async () => {
+    const res = await getContractReference();
+    contractReferences.value = res.data.data.referenceList;
+};
+
 // 저장
 const save = async () => {
-    const payload = {
-        ...form,
-        opinions: opinions.value,
-    };
-
     try {
-        // 예: postContract(payload); 와 같은 API 호출
-        console.log('전송 데이터:', payload);
-        // await postContract(payload);
-        await router.push('/sales/revenue'); // 저장 후 목록으로 이동
+        const requiredFields = [
+            { key: 'name', label: '제목' },
+            { key: 'clientCompany', label: '고객사' },
+            { key: 'clientManager', label: '광고담당자' },
+            { key: 'campaign', label: '캠페인' },
+            { key: 'username', label: '담당자' },
+            { key: 'influencer', label: '인플루언서' },
+            { key: 'status', label: '진행단계' },
+        ];
+        if (!validateRequiredFields(form, requiredFields, toast)) return;
+
+        const requestForm = {
+            campaignId: form.campaign?.id ?? null,
+            pipelineStatusId: form.status,
+            clientCompanyId: form.clientCompany?.id ?? null,
+            clientManagerId: form.clientManager?.id ?? null,
+            userId: form.username?.map((user) => user.id) ?? [],
+            name: form.name,
+            requestAt: form.requestAt,
+            startedAt: form.startedAt,
+            endedAt: form.endedAt,
+            presentedAt: form.presentAt,
+            campaignName: form.campaign?.name ?? '',
+            content: form.content,
+            notes: form.notes,
+            productPrice: form.productPrice ?? 0,
+            salesQuantity: form.salesQuantity ?? 0,
+            influencerList:
+                form.influencerContents?.map((i) => ({
+                    influencerId: i.influencerId,
+                    youtubeLink: i.platform === 'youtube' ? i.url : null,
+                    instagramLink: i.platform === 'instagram' ? i.url : null,
+                    adPrice: i.adPrice,
+                })) ?? [],
+        };
+
+        const formData = new FormData();
+        formData.append(
+            'request',
+            new Blob([JSON.stringify(requestForm)], { type: 'application/json' }),
+        );
+
+        for (const f of form.attachment || []) {
+            if (f.file) {
+                formData.append('files', f.file);
+            }
+        }
+
+        await createRevenue(formData);
+        toast.success('매출이 등록되었습니다.');
+        isEditing.value = false;
+        await router.replace('/sales/revenue');
     } catch (e) {
-        console.error('저장 실패:', e);
+        toast.error(e?.response?.data?.message);
     }
 };
 
-// 초기화
-const cancel = () => {
-    Object.keys(form).forEach((key) => {
-        form[key] = Array.isArray(form[key])
-            ? []
-            : typeof form[key] === 'object' && form[key] !== null
-              ? {}
-              : '';
-    });
-    form.status = '승인요청';
-    form.totalRevenue = 0;
-    form.attachments = [];
-    isEditing.value = true;
-};
-
+// 의견 등록
 const handleSubmit = (newComment) => {
     opinions.value.push({
         id: Date.now(),
-        author: '나',
+        userName: authStore.userName,
         content: newComment,
         createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
     });
 };
 
+// 의견 삭제
+const handleDelete = (id) => {
+    opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
+};
 // 참조 선택 시 폼 매핑
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
+        // 수정 모드 아닐 때는 무시
         alert('수정 모드가 아닙니다!');
         return;
     }
+    const res = await getContractDetail(item.pipelineId);
+    const resForm = res.data.data.form;
 
-    Object.keys(form).forEach((key) => {
-        form[key] = Array.isArray(form[key]) ? [] : typeof form[key] === 'object' ? {} : '';
-    });
+    // form 필드 매핑
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
+    form.requestAt = resForm.requestAt;
+    form.presentAt = resForm.presentAt;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
 
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = { ...(item.clientCompany ?? {}) };
-    form.clientManager = { ...(item.clientManager ?? {}) };
-    form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
-    form.username = { ...(item.username ?? {}) };
-    form.influencer = Array.isArray(item.influencer) ? [...item.influencer] : [item.influencer];
-    form.status = item.status;
-    form.adPrice = item.price;
-    form.productPrice = item.supplyAmount;
-    form.salesQuantity = item.extraProfit;
-    form.content = item.content;
-    form.notes = item.notes;
-    form.startDate = item.startDate;
-    form.endDate = item.endDate;
-    form.showInfluencerContentInput = true;
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
+    form.salesQuantity = resForm.availableQuantity;
+    form.productPrice = resForm.productPrice;
 };
 
 // 인플루언서 선택 시 자동 매핑
@@ -255,15 +288,17 @@ watch(
     },
 );
 
-// 계약 참조 불러오기
-const fetchContractReferences = async () => {
-    try {
-        const res = await getContractReference();
-        contractReferences.value = res.data.data;
-    } catch (e) {
-        console.error(e);
-    }
-};
+watch(
+    () => form.campaign?.id,
+    async (newVal) => {
+        if (newVal) {
+            const res = await getContractReference(newVal);
+            contractReferences.value = res.data.data.referenceList;
+        } else {
+            contractReferences.value = []; // campaignId 없으면 초기화
+        }
+    },
+);
 
 onMounted(() => {
     fetchContractReferences();
@@ -300,11 +335,15 @@ onMounted(() => {
 
             <!-- 하단: 참조 리스트 -->
             <div class="container">
-                <DetailReferenceList :items="contractReferences" @select="handleReferenceSelect" />
+                <DetailReferenceList
+                    :title="'매출 정보 자동 입력'"
+                    :items="contractReferences"
+                    @select="handleReferenceSelect"
+                />
             </div>
 
             <div class="container">
-                <FileUploadCard :isEditing="isEditing" v-model="form.attachments" />
+                <FileUploadCard :isEditing="isEditing" v-model="form.attachment" />
             </div>
         </div>
     </div>

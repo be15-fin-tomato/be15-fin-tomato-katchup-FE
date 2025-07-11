@@ -8,34 +8,50 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'save'])
-
 const toast = useToast();
-const title = ref('')
-const startTime = ref('09:00')
-const endTime = ref('18:00')
+const content = ref('')
+const startTime = ref('')
+const endTime = ref('')
 const backgroundColor = ref('#f87171')
 
 const isEditMode = computed(() => !!props.eventData)
 
 const colors = [
-  '#f87171', '#f97316', '#facc15', '#4ade80', '#22d3ee',
-  '#60a5fa', '#6366f1', '#a855f7', '#00FBFF'
+  '#FF8A8A', '#FFC15D', '#FFFF00', '#CEFFE2',
+  '#B1D1FF', '#000080', '#FFBAFF', '#BABABA',
+  '#C2FEFF'
 ]
+
+const colorIdMap = {
+  '#FF8A8A': 1,
+  '#FFC15D': 2,
+  '#FFFF00': 3,
+  '#CEFFE2': 4,
+  '#B1D1FF': 5,
+  '#000080': 6,
+  '#FFBAFF': 7,
+  '#BABABA': 8,
+  '#C2FEFF': 9
+}
+
+function getScheduleColorIdFromColorCode(hex) {
+  return colorIdMap[hex]
+}
 
 watch(
   () => props.eventData,
   async (event) => {
     if (event) {
-      title.value = event.title
-      startTime.value = event.start.slice(11, 16)
-      endTime.value = event.end.slice(11, 16)
+      content.value = event.content
+      startTime.value = event.startTime?.slice(0, 5) || ''
+      endTime.value = event.endTime?.slice(0, 5) || ''
       backgroundColor.value = ''
       await nextTick()
-      backgroundColor.value = event.backgroundColor || '#f87171'
+      backgroundColor.value = event.hexCode || '#f87171'
     } else {
-      title.value = ''
-      startTime.value = '09:00'
-      endTime.value = '18:00'
+      content.value = ''
+      startTime.value = ''
+      endTime.value = ''
       backgroundColor.value = '#f87171'
     }
   },
@@ -43,18 +59,29 @@ watch(
 )
 
 function submit() {
+  if (!content.value.trim()) {
+    alert('일정을 입력해주세요.')
+    return
+  }
+
   if (startTime.value >= endTime.value) {
     alert('시작 시간은 종료 시간보다 빠르거나 같을 수 없습니다.')
     return
   }
 
-  emit('save', {
-    title: title.value,
-    start: `${props.date}T${startTime.value}`,
-    end: `${props.date}T${endTime.value}`,
-    backgroundColor: backgroundColor.value
-  })
-  toast.success(`반영되었습니다.`)
+  const payload = {
+    content: content.value,
+    scheduleDate: props.date,
+    startTime: startTime.value + ':00',
+    endTime: endTime.value + ':00',
+    scheduleColorId: getScheduleColorIdFromColorCode(backgroundColor.value),
+    scheduleId: props.eventData?.id || null
+  }
+
+  if (isEditMode.value && props.eventData && props.eventData.id) {
+    payload.scheduleId = props.eventData.id
+  }
+  emit('save', payload)
   emit('close')
 }
 </script>
@@ -73,8 +100,8 @@ function submit() {
 
         <!-- 제목 -->
         <div class="flex items-center gap-2">
-          <label class="w-20 bg-btn-blue text-white text-sm font-semibold px-2 py-1 rounded text-center">제목</label>
-          <input type="text" v-model="title" placeholder="제목을 입력하세요" class="flex-1 border px-2 py-1 rounded" />
+          <label class="w-20 bg-btn-blue text-white text-sm font-semibold px-2 py-1 rounded text-center">일정</label>
+          <input type="text" v-model="content" placeholder="일정을 입력하세요" class="flex-1 border px-2 py-1 rounded" />
         </div>
 
         <!-- 시간 -->

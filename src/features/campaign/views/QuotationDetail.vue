@@ -35,7 +35,11 @@
 
             <!-- 하단: 참조 리스트 -->
             <div class="container">
-                <DetailReferenceList :items="proposalReferences" @select="handleReferenceSelect" />
+                <DetailReferenceList
+                    :title="'견적 정보 자동 입력'"
+                    :items="proposalReferences"
+                    @select="handleReferenceSelect"
+                />
             </div>
         </div>
     </div>
@@ -45,13 +49,24 @@
 import { onMounted, reactive, ref } from 'vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
-import { getOpinion, getProposalReference, getQuotationDetail } from '@/features/campaign/api.js';
+import {
+    deleteIdea,
+    deleteQuotationDetail,
+    getIdea,
+    getQuotationDetail,
+    postIdea,
+    updateQuotationDetail,
+} from '@/features/campaign/api.js';
 import { useRoute, useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
+import { structuredForm } from '../utils/structedForm';
+import { useToast } from 'vue-toastification';
+import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 const opinions = ref([]);
 const quotationForm = ref(null);
@@ -64,8 +79,8 @@ const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input' },
-            { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
+            { key: 'name', label: '제목', type: 'input', essential: true },
+            { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
     {
@@ -73,9 +88,10 @@ const groups = [
         fields: [
             {
                 key: 'clientCompany',
-                label: '광고업체',
+                label: '고객사',
                 type: 'search-company',
                 searchType: 'company',
+                essential: true,
             },
             { key: 'period', label: '제안 기간', type: 'date-range' },
         ],
@@ -88,20 +104,28 @@ const groups = [
                 label: '광고담당자',
                 type: 'search-manager',
                 searchType: 'manager',
+                essential: true,
             },
-            { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
+            { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
     },
     {
         type: 'horizontal',
         fields: [
             {
-                key: 'pipeline',
-                label: '해당 파이프라인',
+                key: 'campaign',
+                label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
+                essential: true,
             },
-            { key: 'username', label: '담당자', type: 'search-user', searchType: 'user' },
+            {
+                key: 'username',
+                label: '담당자',
+                type: 'search-user',
+                searchType: 'user',
+                essential: true,
+            },
         ],
     },
     {
@@ -112,6 +136,7 @@ const groups = [
                 label: '인플루언서',
                 type: 'search-influencer',
                 searchType: 'influencer',
+                essential: true,
             },
             { key: 'price', label: '견적가', type: 'input', inputType: 'number' },
         ],
@@ -123,7 +148,13 @@ const groups = [
                 key: 'status',
                 label: '진행단계',
                 type: 'select',
-                options: ['승인요청', '진행중', '보류', '완료'],
+                options: [
+                    { value: 1, label: '승인요청' },
+                    { value: 2, label: '승인완료' },
+                    { value: 3, label: '보류/대기' },
+                    { value: 4, label: '승인거절' },
+                ],
+                essential: true,
             },
             { key: 'supplyAmount', label: '공급가능수량', type: 'input', inputType: 'number' },
         ],
@@ -144,41 +175,51 @@ const groups = [
     },
 ];
 
-// API 데이터 로딩 함수
-const fetchOpinions = async () => {
-    const res = await getOpinion(route.params.quotationId, 'quotation');
-    opinions.value = res.data.data;
-};
-
 const fetchQuotationDetail = async () => {
     const res = await getQuotationDetail(route.params.quotationId);
-    quotationForm.value = res.data.data;
-    Object.assign(form, res.data.data);
-};
+    const rawForm = res.data.data.form;
 
-const fetchProposalReferences = async () => {
-    const res = await getProposalReference();
-    proposalReferences.value = res.data.data;
+    quotationForm.value = structuredForm(rawForm);
+    Object.assign(form, structuredForm(rawForm));
+
+    // 참고 리스트
+    proposalReferences.value = res.data.data.refrenceList ?? [];
+
+    opinions.value = res.data.data.ideaList ?? [];
 };
 
 // 마운트 시 전부 패칭
 onMounted(async () => {
-    await Promise.all([fetchQuotationDetail(), fetchOpinions(), fetchProposalReferences()]);
+    await Promise.all([fetchQuotationDetail()]);
 });
 
 // 의견 등록
-const handleSubmit = (newComment) => {
-    opinions.value.push({
-        id: Date.now(),
-        author: '나',
-        content: newComment,
-        createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    });
+const handleSubmit = async (newComment) => {
+    try {
+        await postIdea({ pipeline: route.params.quotationId, content: newComment });
+        await fetchOpinion();
+        toast.success('의견이 등록되었습니다.');
+    } catch (e) {
+        toast.error(e.data.message);
+    }
 };
 
 // 의견 삭제
-const handleDelete = (id) => {
-    opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteIdea(id);
+        await fetchOpinion();
+        toast.success('의견이 삭제되었습니다.');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
+};
+
+// 의견 호출
+const fetchOpinion = async () => {
+    const res = await getIdea(route.params.quotationId);
+
+    opinions.value = res.data.data.response;
 };
 
 const handleReferenceSelect = (item) => {
@@ -188,13 +229,13 @@ const handleReferenceSelect = (item) => {
         return;
     }
     // 필요한 값만 form에 적용 (안전하게 매핑)
-    form.title = item.title;
-    form.requestDate = item.requestDate;
-    form.clientCompany = item.clientCompany;
-    form.clientManager = item.clientManager;
+    form.name = item.name;
+    form.requestAt = item.requestAt;
+    form.clientCompanyName = item.clientCompanyName;
+    form.clientManagerName = item.clientManagerName;
     form.period = item.period;
-    form.announcementDate = item.announcementDate;
-    form.pipeline = item.pipeline;
+    form.presentAt = item.presentAt;
+    form.campaign = item.campaign;
     form.username = item.username;
     form.influencer = item.influencer;
     form.price = item.price;
@@ -205,13 +246,61 @@ const handleReferenceSelect = (item) => {
 };
 
 // 저장 및 취소
-const save = () => {
-    console.log('저장할 값:', form);
+const save = async () => {
+    try {
+        const requiredFields = [
+            { key: 'name', label: '제목' },
+            { key: 'clientCompany', label: '고객사' },
+            { key: 'clientManager', label: '광고담당자' },
+            { key: 'campaign', label: '해당 파이프라인' },
+            { key: 'username', label: '담당자' },
+            { key: 'influencer', label: '인플루언서' },
+            { key: 'status', label: '진행단계' },
+        ];
+
+        if (!validateRequiredFields(form, requiredFields, toast)) return;
+        const requestForm = {
+            pipelineId: route.params.quotationId,
+            campaignId: form.campaign?.id ?? null,
+            pipelineStatusId: form.status,
+            clientCompanyId: form.clientCompany?.id ?? null,
+            clientManagerId: form.clientManager?.id ?? null,
+            userId: form.username ? form.username.map((user) => user.id) : null,
+            name: form.name,
+            requestAt: form.requestAt,
+            startedAt: form.startedAt,
+            endedAt: form.endedAt,
+            presentedAt: form.presentAt,
+            campaignName: form.campaign?.name ?? '',
+            content: form.content,
+            notes: form.notes,
+            influencerId: form.influencer ? form.influencer.map((inf) => inf.id) : null,
+            expectedRevenue: form.price,
+            availableQuantity: form.supplyAmount,
+            expectedProfit: form.extraProfit,
+        };
+
+        await updateQuotationDetail(requestForm);
+        toast.success('견적이 수정되었습니다.');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
+    await fetchQuotationDetail();
     isEditing.value = false;
 };
 
 const cancel = () => {
     Object.assign(form, quotationForm.value);
     isEditing.value = false;
+};
+
+const remove = async () => {
+    try {
+        await deleteQuotationDetail(route.params.quotationId);
+        toast.success('견적이 삭제되었습니다.');
+        await router.replace('/sales/quotation');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 </script>

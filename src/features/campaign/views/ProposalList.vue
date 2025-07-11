@@ -30,8 +30,9 @@ const fetchProposalList = async () => {
     try {
         const cleanedFilters = cleanFilterObject(searchFilters.value);
         const res = await getProposalList(page.value, size.value, cleanedFilters);
-        proposalList.value = res.data.data;
-        total.value = res.data.total;
+        console.log(res.data.data.response);
+        proposalList.value = [...res.data.data.response];
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
         console.error(e);
     }
@@ -91,13 +92,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="proposal in proposalList"
-                    :key="proposal.id"
+                    :key="proposal.pipelineId"
                     :managementOption="proposal"
                     :openMenuId="menuOpenId"
                     :pageType="'proposal'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(proposal.id)"
+                    @click="goDetail(proposal.pipelineId)"
                 />
             </div>
 

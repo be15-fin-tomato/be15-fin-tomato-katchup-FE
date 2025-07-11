@@ -1,12 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getQuotationList } from '@/features/campaign/api.js';
+import { deleteQuotationDetail, getQuotationList } from '@/features/campaign/api.js';
 import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
 import Pagination from '@/components/common/PagingBar.vue';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 
 const quotationList = ref([]);
 const page = ref(1);
@@ -21,10 +23,10 @@ const categoryOptions = [
 ];
 
 const filterOptions = [
-    { value: 'approved', label: '승인완료' },
-    { value: 'request', label: '승인요청' },
-    { value: 'onhold', label: '보류/대기' },
-    { value: 'rejected', label: '거절됨' },
+    { value: 1, label: '승인요청' },
+    { value: 2, label: '승인완료' },
+    { value: 3, label: '보류/대기' },
+    { value: 4, label: '승인거절' },
 ];
 
 const searchFilters = ref({
@@ -39,11 +41,12 @@ const searchFilters = ref({
 // 목록 불러오기
 const fetchQuotationList = async () => {
     try {
+        // quotationList.value = [];
         const res = await getQuotationList(page.value, size.value, searchFilters.value);
-        quotationList.value = res.data.data;
-        total.value = res.data.total;
+        quotationList.value = [...res.data.data.response];
+        total.value = res.data.data.pagination.totalCount;
     } catch (e) {
-        console.error(e);
+        toast.error(e.response.data.message);
     }
 };
 
@@ -63,8 +66,14 @@ const goDetail = (id) => {
     router.push(`/sales/quotation/${id}`);
 };
 
-const handleDelete = (id) => {
-    quotationList.value = quotationList.value.filter((item) => item.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteQuotationDetail(id);
+        toast.success('견적이 삭제되었습니다.');
+        await fetchQuotationList();
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 const menuOpenId = ref(null);
@@ -101,13 +110,13 @@ const toggleMenu = (id) => {
             <div class="grid grid-cols-2 gap-6">
                 <SalesCards
                     v-for="quotation in quotationList"
-                    :key="quotation.id"
+                    :key="quotation.pipelineId"
                     :management-option="quotation"
                     :openMenuId="menuOpenId"
                     :pageType="'quotation'"
                     @menuToggle="toggleMenu"
                     @delete="handleDelete"
-                    @click="goDetail(quotation.id)"
+                    @click="goDetail(quotation.pipelineId)"
                 />
             </div>
 

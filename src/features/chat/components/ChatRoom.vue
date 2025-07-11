@@ -1,38 +1,37 @@
 <template>
-  <div
-    class="fixed bottom-10 right-10 w-[480px] h-[700px]
-           bg-white rounded-2xl shadow-xl border border-gray-200
-           flex flex-col z-50 font-[Pretendard]"
-  >
-    <!-- 헤더 -->
+  <div class="fixed bottom-10 right-10 w-[480px] h-[600px] bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col z-50 font-[Pretendard]">
     <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
-      <h2 class="text-lg font-semibold text-[--color-click]">
-        {{ room?.name }}
-      </h2>
+      <h2 class="text-lg font-semibold text-[--color-click]">{{ room.chatRoomName || '채팅방' }}</h2>
       <div class="flex items-center gap-3">
         <button @click="showInviteModal = true" class="text-[--color-request] text-xl hover:brightness-110">+</button>
-        <button @click="exitRoom" class="text-gray-400 hover:text-gray-600 transition">
+        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition">
           <Icon icon="si:close-duotone" class="w-5 h-5" />
         </button>
       </div>
     </div>
 
-    <!-- 메시지 리스트 -->
     <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4 bg-[#f8fafc]">
-      <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        :class="[ 'flex flex-col max-w-[80%]',
-                 msg.sender === 'ME' ? 'self-end items-end' : 'self-start items-start']"
-      >
-        <span class="text-xs text-gray-400 mb-1">{{ msg.sender }} · {{ msg.time }}</span>
-        <div class="px-4 py-2 rounded-xl text-sm bg-gray-100 text-gray-800">
-          {{ msg.text }}
+      <div v-for="(msg, index) in formattedMessages" :key="index">
+        <div v-if="shouldShowDateDivider(msg, index)" class="text-center text-xs text-gray-500 my-2">
+          {{ msg.formattedDate }}
+        </div>
+
+        <div
+          :class="['flex flex-col', msg.mine ? 'items-end ml-auto pr-2' : 'items-start']"
+        >
+          <span class="text-xs text-gray-400 mb-1">
+            {{ msg.mine ? 'ME' : msg.senderName }} ·
+            {{ msg.formattedTime }}
+          </span>
+          <div
+            :class="['px-4 py-2 rounded-xl text-sm whitespace-pre-wrap', msg.message === null ? 'hidden' : '', msg.mine ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800']"
+          >
+            {{ msg.message }}
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 입력창 -->
     <div class="border-t border-gray-100 px-4 py-3">
       <div v-if="attachedFile" class="flex flex-col gap-1 mb-2">
         <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-700">
@@ -67,95 +66,197 @@
       </div>
     </div>
 
-    <!-- 초대 모달 -->
-    <div
+    <InviteModal
       v-if="showInviteModal"
-      class="absolute top-24 right-10 w-[360px] bg-white/90 backdrop-blur-lg shadow-2xl rounded-xl p-5 z-50"
-    >
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">채팅방에 초대</h3>
-
-      <!-- 검색창 -->
-      <input
-        v-model="inviteSearch"
-        type="text"
-        placeholder="이름으로 검색"
-        class="w-full px-4 py-2 mb-4 rounded-lg border border-gray-200 bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[--color-request]"
-      />
-
-      <!-- 리스트 -->
-      <ul class="space-y-2 max-h-52 overflow-y-auto pr-1 custom-scroll">
-        <li
-          v-for="name in filteredInviteList"
-          :key="name"
-          class="flex items-center gap-3 text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition"
-        >
-          <input
-            type="checkbox"
-            v-model="selectedInvitees"
-            :value="name"
-            class="accent-[--color-request] w-4 h-4"
-          />
-          <span class="text-gray-700">{{ name }}</span>
-        </li>
-      </ul>
-
-      <!-- 버튼 -->
-      <div class="flex justify-between items-center mt-5">
-        <button
-          @click="showInviteModal = false"
-          class="text-sm text-gray-400 hover:text-gray-600"
-        >닫기</button>
-        <button
-          @click="inviteSelected"
-          class="bg-[--color-request] text-white text-sm px-4 py-2 rounded-lg hover:brightness-105 transition disabled:opacity-50"
-          :disabled="selectedInvitees.length === 0"
-        >초대하기</button>
-      </div>
-    </div>
+      :users="allUsers"
+      :room="room"
+      :excluded-ids="currentMemberIds"
+      @invite="handleInvite"
+      @close="showInviteModal = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
+import SockJS from 'sockjs-client'
+import { Client } from '@stomp/stompjs'
+import api from '@/plugin/axios.js'
+import { useAuthStore } from '@/stores/auth'
+import { fetchChatRoomDetail, inviteChatMembers, searchUser } from '@/features/chat/api'
+import InviteModal from '@/features/chat/components/InviteModal.vue'
 
-const props = defineProps({ room: Object })
+const props = defineProps({
+  room: { type: Object, required: true },
+})
+const room = props.room
 const emit = defineEmits(['close'])
 
-const newMessage = ref('')
+const authStore = useAuthStore()
+const currentUserId = computed(() => authStore.userId)
+const currentUserName = computed(() => authStore.user?.name || '알 수 없음')
+
 const messages = ref([])
-const fileInput = ref(null)
+const newMessage = ref('')
+const stompClient = ref(null)
+
 const attachedFile = ref(null)
 const uploadProgress = ref(0)
 const isUploading = ref(false)
+const fileInput = ref(null)
 
 const showInviteModal = ref(false)
-const inviteSearch = ref('')
-const selectedInvitees = ref([])
+const allUsers = ref([])
 
-const allUsers = ['박준서', '박장우', '오유경', '이승재', '윤채영', '조현승']
-const filteredInviteList = computed(() => {
-  const currentMembers = props.room?.membersList || []
-  return allUsers
-    .filter(name => !currentMembers.includes(name))
-    .filter(name => name.includes(inviteSearch.value))
-})
+const memberList = ref(props.room.participants || [])
+
+const currentMemberIds = computed(() => {
+  if (Array.isArray(memberList.value)) {
+    return memberList.value.map(p => p.userId || p.id);
+  }
+  return [];
+});
+
+const formatMessageTime = (isoString) => {
+  if (!isoString) return { formattedDate: '', formattedTime: '' };
+
+  const messageDate = new Date(isoString);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const yesterdayDay = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+
+  let datePrefix = '';
+  if (messageDay.getTime() === todayDay.getTime()) {
+    datePrefix = '오늘';
+  } else if (messageDay.getTime() === yesterdayDay.getTime()) {
+    datePrefix = '어제';
+  } else {
+    datePrefix = `${messageDate.getFullYear()}년 ${messageDate.getMonth() + 1}월 ${messageDate.getDate()}일`;
+  }
+
+  let hours = messageDate.getHours();
+  const minutes = messageDate.getMinutes();
+  const ampm = hours >= 12 ? '오후' : '오전';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+  return {
+    formattedDate: datePrefix,
+    formattedTime: `${ampm} ${hours}:${formattedMinutes}`
+  };
+};
+
+const formattedMessages = computed(() => {
+  return messages.value.map(msg => {
+    const { formattedDate, formattedTime } = formatMessageTime(msg.sentAt);
+    return {
+      ...msg,
+      formattedDate,
+      formattedTime,
+      mine: msg.senderId === currentUserId.value,
+    };
+  });
+});
+
+const shouldShowDateDivider = (currentMsg, index) => {
+  if (index === 0) {
+    return true;
+  }
+  const prevMsg = formattedMessages.value[index - 1];
+  return currentMsg.formattedDate !== prevMsg.formattedDate;
+};
+
 
 const fetchMessages = async () => {
-  const res = await axios.get(`/api/v1/chats/${props.room.id}/messages`)
-  messages.value = res.data.data
+  try {
+    const data = await fetchChatRoomDetail(props.room.chatId)
+    messages.value = (data.messages || []).map((m) => ({
+      ...m,
+      mine: m.senderId === currentUserId.value,
+    }))
+    await nextTick();
+    scrollToBottom();
+  } catch (err) {
+    console.error('채팅방 메시지 불러오기 실패:', err)
+  }
+}
+
+const connectWebSocket = () => {
+  const token = authStore.accessToken
+  if (!token) return console.error('토큰 없음: WebSocket 연결 실패')
+
+  const socket = new SockJS(`/api/v1/ws?token=${token}`)
+  const client = new Client({
+    webSocketFactory: () => socket,
+    connectHeaders: {
+      Authorization: `Bearer ${token}`,
+    },
+    onConnect: () => {
+      console.log('🟢 WebSocket 연결 성공')
+      client.subscribe(`/topic/room.${props.room.chatId}`, (msg) => {
+        const body = JSON.parse(msg.body)
+        messages.value.push({
+          ...body,
+          mine: body.senderId === currentUserId.value,
+        })
+        nextTick(() => {
+          scrollToBottom();
+        });
+      })
+    },
+    onStompError: (frame) => {
+      console.error('STOMP 오류 발생:', frame)
+    },
+  })
+
+  client.activate()
+  stompClient.value = client
 }
 
 const sendMessage = () => {
   if (!newMessage.value.trim() && !attachedFile.value) return
-  messages.value.push({
-    sender: 'ME',
-    text: newMessage.value || '(파일 전송됨)',
-    time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+  if (!stompClient.value?.connected) return
+
+  const messagePayload = {
+    chatId: props.room.chatId,
+    senderId: currentUserId.value,
+    senderName: currentUserName.value,
+    message: newMessage.value,
+  }
+
+  stompClient.value.publish({
+    destination: '/app/chat.sendMessage',
+    body: JSON.stringify(messagePayload),
   })
+
   newMessage.value = ''
   attachedFile.value = null
+
+  nextTick(() => {
+    scrollToBottom();
+  });
+}
+
+const handleInvite = async (invitedIds) => {
+  try {
+    await inviteChatMembers(props.room.chatId, invitedIds)
+    alert('초대 완료!')
+    showInviteModal.value = false
+
+    const newlyInvitedMembers = allUsers.value.filter(user => invitedIds.includes(user.id));
+    const updatedMembers = new Set([...memberList.value, ...newlyInvitedMembers]);
+    memberList.value = Array.from(updatedMembers);
+
+  } catch (e) {
+    console.error('초대 실패:', e)
+    alert('초대 중 오류가 발생했습니다.')
+  }
 }
 
 const triggerFileUpload = () => fileInput.value?.click()
@@ -172,33 +273,45 @@ const handleFileChange = async (e) => {
   formData.append('file', file)
 
   try {
-    await axios.post('/api/v1/upload', formData, {
+    await api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (e) => {
-        const percent = Math.round((e.loaded * 100) / e.total)
-        uploadProgress.value = percent
-      }
+        uploadProgress.value = Math.round((e.loaded * 100) / e.total)
+      },
     })
     isUploading.value = false
   } catch (err) {
-    console.error('파일 업로드 실패', err)
+    console.error('파일 업로드 실패:', err)
     isUploading.value = false
+    attachedFile.value = null
   }
 }
 
-const inviteSelected = () => {
-  if (selectedInvitees.value.length === 0) return
-  console.log('초대한 사람들:', selectedInvitees.value)
-  // TODO: 백엔드 초대 API 호출
-  showInviteModal.value = false
-  selectedInvitees.value = []
+const loadAllUsers = async () => {
+  try {
+    const res = await searchUser('')
+    allUsers.value = res.userList
+  } catch (err) {
+    console.error('사용자 목록 불러오기 실패:', err)
+  }
 }
 
-const exitRoom = () => {
-  emit('close', props.room.id)
-}
+const scrollToBottom = () => {
+  const messageList = document.querySelector('.flex-1.overflow-y-auto');
+  if (messageList) {
+    messageList.scrollTop = messageList.scrollHeight;
+  }
+};
 
-onMounted(fetchMessages)
+onMounted(() => {
+  fetchMessages()
+  connectWebSocket()
+  loadAllUsers()
+})
+
+onBeforeUnmount(() => {
+  stompClient.value?.deactivate()
+})
 </script>
 
 <style scoped>
