@@ -68,7 +68,7 @@ const router = useRouter();
 
 const campaignResultList = ref([]);
 const page = ref(1);
-const size = ref(10); // 프론트엔드에서 한 페이지당 보여줄 항목 수 (백엔드 기본값과 통일 권장)
+const size = ref(10); // 프론트엔드에서 한 페이지당 보여줄 항목 수
 const total = ref(0);
 const isLoading = ref(true);
 
@@ -96,12 +96,10 @@ const goDetail = (pipelineId) => {
 const handleDelete = (pipelineId) => {
   if (confirm('정말로 이 항목을 삭제하시겠습니까?')) {
     console.log('삭제 요청:', pipelineId);
-    // 실제 삭제 API 호출 로직이 여기에 들어가야 합니다.
-    // 여기서는 UI에서만 제거하는 예시입니다.
     campaignResultList.value = campaignResultList.value.filter(
       (item) => item.pipelineId !== pipelineId,
     );
-    total.value = campaignResultList.value.length; // 실제로는 서버에서 다시 총 개수를 받아와야 함
+    total.value = campaignResultList.value.length;
     menuOpenId.value = null;
   }
 };
@@ -113,12 +111,10 @@ const toggleMenu = (id) => {
 const fetchCampaignResultList = async () => {
   isLoading.value = true;
   try {
-    // 백엔드 DTO (CampaignResultRequest)가 기대하는 파라미터만 보냅니다.
     const params = {
       page: page.value,
-      size: size.value, // 프론트엔드 size 값을 백엔드로 정확히 전달
-      name: campaignNameSearchQuery.value, // 오직 'name' 필드만 보냅니다.
-      // influencerName, clientCompanyName 필드는 더 이상 보내지 않습니다.
+      size: size.value,
+      name: campaignNameSearchQuery.value,
     };
 
     const apiResponse = await getCampaignResultList(params);
@@ -145,6 +141,5 @@ onMounted(async () => {
 
 <style scoped>
 .input-form-box {
-  /* 기존 스타일 유지 */
 }
 </style>
