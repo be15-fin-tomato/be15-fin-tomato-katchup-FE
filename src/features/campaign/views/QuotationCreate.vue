@@ -39,15 +39,13 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import OpinionBar from '@/components/layout/OpinionBar.vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import {
     createQuotation,
-    getContractReference,
     getProposalDetail,
     getProposalReference,
-    getQuotationDetail,
 } from '@/features/campaign/api.js';
 import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
@@ -55,6 +53,7 @@ import DetailReferenceList from '@/features/campaign/components/DetailReferenceL
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '@/stores/auth.js';
 import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
+import { structuredForm } from '@/features/campaign/utils/structedForm.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -213,12 +212,13 @@ const handleReferenceSelect = async (item) => {
     }
 
     const res = await getProposalDetail(item.pipelineId);
-    const resForm = res.data.data.form;
-    form.name = resForm.name;
+    const resForm = structuredForm(res.data.data.form);
+    // form.name = resForm.name;
     form.requestAt = resForm.requestAt;
-    form.clientCompanyName = resForm.clientCompanyName;
-    form.clientManagerName = resForm.clientManagerName;
-    form.period = resForm.period;
+    form.clientCompany = resForm.clientCompany;
+    form.clientManager = resForm.clientManager;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
     form.presentAt = resForm.presentAt;
     form.campaign = resForm.campaign;
     form.username = resForm.username;
