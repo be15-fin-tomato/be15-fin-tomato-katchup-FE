@@ -1,15 +1,14 @@
 <script setup>
 import { computed } from 'vue';
-import ApexCharts from 'vue3-apexcharts'; // ApexCharts 사용하는 경우
-import { Icon } from '@iconify/vue'; // Icon 사용하는 경우
+import ApexCharts from 'vue3-apexcharts';
+import { Icon } from '@iconify/vue';
 
 const props = defineProps({
-  rows: { type: Array, required: true }, // CampaignResultDashboardView에서 naverSearchDataRows를 받음
+  rows: { type: Array, required: true },
   title: { type: String, required: true },
-  publishedAt: { type: String, required: true } // 날짜 관련 prop
+  publishedAt: { type: String, required: true }
 });
 
-// 날짜 데이터 가공 (GoogleSearchData.vue와 유사하게 유효성 검사 필요)
 const formattedPublishedAt = computed(() => {
   if (!props.publishedAt) return '날짜 정보 없음';
   const date = new Date(props.publishedAt);

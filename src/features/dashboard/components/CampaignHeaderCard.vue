@@ -6,28 +6,32 @@ import { useRouter } from 'vue-router';
 
 const props = defineProps({
   campaign: Object,
-  influencer: Object // influencer 객체를 prop으로 받음
+  influencer: Object
 });
 
 const router = useRouter();
 
-// campaign 객체의 구조에 맞게 속성 접근 변경 (예: campaignName 대신 campaign.campaignName)
-const campaignTitle = computed(() => props.campaign?.campaignName ?? '-'); // campaignName으로 변경
-const clientCompany = computed(() => props.campaign?.clientCompanyName ?? '-'); // clientCompanyName으로 변경
+const campaignTitle = computed(() => props.campaign?.name ?? '-');
+const clientCompany = computed(() => props.campaign?.clientCompanyName ?? '-');
 const productName = computed(() => props.campaign?.productName ?? '-');
-const startDate = computed(() => props.campaign?.startDate ?? '-');
-const endDate = computed(() => props.campaign?.endDate ?? '-');
+
+const displayDate = computed(() => {
+  const date = props.campaign?.registrationDate;
+  if (date) {
+    return date.split('T')[0];
+  }
+  return '-';
+});
 
 const influencerName = computed(() => props.influencer?.name ?? '-');
 const influencerThumbnail = computed(() => props.influencer?.thumbnail ?? '/default-thumbnail.png');
-const tags = computed(() => props.influencer?.tags ?? []); // 태그 배열
+const tags = computed(() => props.influencer?.tags ?? []);
 
 const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black';
 };
 
 function goToDashboard(target) {
-  // influencer.id가 null 또는 undefined인지 확인하는 방어 로직 추가
   if (!props.influencer || !props.influencer.id) {
     console.warn(`Cannot navigate to ${target} dashboard: influencer ID is missing.`);
     alert('인플루언서 ID가 없어 대시보드로 이동할 수 없습니다.');
@@ -36,10 +40,13 @@ function goToDashboard(target) {
 
   switch (target) {
     case 'youtube':
-      router.push(`/influencer/dashboard/youtube?id=${props.influencer.id}`);
+      router.push(`/influencer/dashboard/youtube/${props.influencer.id}`);
       break;
     case 'instagram':
-      router.push(`/influencer/dashboard/instagram?id=${props.influencer.id}`);
+      router.push(`/influencer/dashboard/instagram/${props.influencer.id}`);
+      break;
+    default:
+      console.warn(`Unknown dashboard target: ${target}`);
       break;
   }
 }
@@ -87,8 +94,7 @@ function goToDashboard(target) {
         <div class="text-lg font-bold">{{ clientCompany }}</div>
         <div class="text-lg font-bold">{{ campaignTitle }}</div>
         <div class="flex gap-2 text-sm text-black font-bold">
-          <div>{{ startDate }} ~</div>
-          <div>{{ endDate }}</div>
+          <div>{{ displayDate }}</div>
         </div>
         <div class="text-gray-medium text-lg">{{ productName }}</div>
       </div>

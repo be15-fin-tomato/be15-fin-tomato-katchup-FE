@@ -1,30 +1,17 @@
-<script setup>
-import { computed } from 'vue';
-import { Icon } from '@iconify/vue';
-
-const props = defineProps({
-  meta: Object // meta 객체를 prop으로 받음
-});
-
-// meta?.statistics?.commentCount와 같이 안전하게 접근
-const statistics = computed(() => props.meta?.statistics ?? {});
-
-const formatCount = (val) => {
-  if (val === undefined || val === null) return '0'; // undefined 또는 null일 경우 '0' 반환
-  if (val >= 10000) return `${(val / 10000).toFixed(1)}만`;
-  if (val >= 1000) return `${(val / 1000).toFixed(1)}천`;
-  return val.toLocaleString();
-};
-</script>
-
 <template>
   <div class="dashboard-section flex bg-white rounded-xl shadow p-3 gap-8">
-    <div class="relative w-[35%] h-[180px] mx-7 rounded-xl overflow-hidden">
-      <img :src="meta?.thumbnail || '/default-video-thumbnail.png'" class="w-full h-full object-cover" alt="video thumbnail" />
-      <div class="absolute inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+    <a
+      :href="`https://www.youtube.com/watch?v=${props.meta?.videoId}`"
+      target="_blank"  class="relative w-[35%] h-[180px] mx-7 rounded-xl block overflow-hidden" >
+      <img
+        :src="props.meta?.thumbnail || '/default-video-thumbnail.png'"
+        class="w-full h-full object-cover" alt="video thumbnail"
+        @error="handleImageError"
+      />
+      <div class="absolute inset-0 flex justify-center items-center">
         <Icon icon="mdi:youtube" class="text-white text-5xl" />
       </div>
-    </div>
+    </a>
 
     <div class="grid grid-cols-2 grid-rows-2 w-full">
       <div class="flex justify-between items-center p-5 border-b border-r border-gray-200">
@@ -61,3 +48,32 @@ const formatCount = (val) => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+import { Icon } from '@iconify/vue';
+
+const props = defineProps({
+  meta: Object
+});
+
+console.log('CampaignVideoSummary에서 받은 meta prop:', props.meta);
+
+const statistics = computed(() => {
+  const stats = props.meta?.statistics ?? {};
+  console.log('CampaignVideoSummary에서 계산된 statistics:', stats);
+  return stats;
+});
+
+const formatCount = (val) => {
+  if (val === undefined || val === null) return '0';
+  if (val >= 10000) return `${(val / 10000).toFixed(1)}만`;
+  if (val >= 1000) return `${(val / 1000).toFixed(1)}천`;
+  return val.toLocaleString();
+};
+
+const handleImageError = (event) => {
+  console.error('이미지 로드 실패:', event.target.src);
+  event.target.src = '/default-video-thumbnail.png';
+};
+</script>
