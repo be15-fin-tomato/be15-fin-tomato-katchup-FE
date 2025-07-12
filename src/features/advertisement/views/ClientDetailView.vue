@@ -347,7 +347,12 @@ const handleDeleteCompany = async () => {
             <p class="text-sm font-medium mb-1">{{ item.title }}</p>
 
             <p class="text-xs text-gray-500">
-              {{ item.writer }} / {{ item.department }}
+              <template v-if="item.writer || item.department">
+                {{ item.writer }}<span v-if="item.writer && item.department"> / </span>{{ item.department }}
+              </template>
+              <template v-else>
+                정보 없음
+              </template>
             </p>
 
           </button>
