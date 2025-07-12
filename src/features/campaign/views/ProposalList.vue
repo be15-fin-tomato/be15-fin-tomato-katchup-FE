@@ -1,14 +1,16 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getProposalList } from '@/features/campaign/api.js';
+import { deleteProposal, deleteRevenue, getProposalList } from '@/features/campaign/api.js';
 import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
 import Pagination from '@/components/common/PagingBar.vue';
 import { categoryOptions, filterOptions } from '@/features/campaign/constants/filterOptions.js';
 import { cleanFilterObject } from '@/utils/CleanFilter.js';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 
 const proposalList = ref([]);
 const page = ref(1);
@@ -54,8 +56,14 @@ const goDetail = (id) => {
     router.push(`/sales/proposal/${id}`);
 };
 
-const handleDelete = (id) => {
-    proposalList.value = proposalList.value.filter((item) => item.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteProposal(id);
+        toast.success('견적이 삭제되었습니다.');
+        await fetchProposalList();
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 const menuOpenId = ref(null);

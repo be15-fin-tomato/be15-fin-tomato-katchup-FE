@@ -1,27 +1,24 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted, computed, watch } from 'vue';
 import ApexCharts from 'vue3-apexcharts';
 
-const route = useRoute();
-const campaignId = route.query.id || '1';
+// api.js에서 정의한 함수 임포트
+import { fetchAiCommentSummary } from '@/features/dashboard/api.js'; // api.js 경로에 맞게 수정
 
-const campaign = ref(null);
-const meta = ref(null);
-const rows = ref([]);
-const isLoading = ref(false);
-const isError = ref(false);
+const props = defineProps({
+  trafficSourcesData: {
+    type: Array,
+    default: () => []
+  },
+  // prop 이름을 pipelineInfluencerId로 명확하게 변경
+  pipelineInfluencerId: String
+});
 
-// AI 댓글 요약 예시 (나중에 실제 API로 교체 가능)
-const aiCommentSummary = ref(`
-해당 영상에 대해 긍정적인 반응이 많았으며, 특히 콘텐츠의 신선함과 정보 전달력에 대해 호평이 이어졌습니다.
-몇몇 시청자는 영상 속 제품에 대한 자세한 설명에 감사의 댓글을 남기기도 했습니다.
-또한 영상의 편집 스타일, 배경 음악 선택, 그리고 전달 방식이 매우 효과적이라는 의견도 다수 있었습니다.
-일부 시청자들은 관련된 추가 정보나 링크를 요청하며, 해당 콘텐츠에 대한 깊은 관심을 보이기도 했습니다.
-특히 영상이 초보자에게도 이해하기 쉬운 구성으로 되어 있어 접근성이 높다는 의견이 많았으며,
-앞으로도 이런 유익한 콘텐츠가 지속되기를 바라는 목소리가 컸습니다.
-종합적으로, 영상의 퀄리티와 정보의 유익성에 대한 만족도가 상당히 높은 것으로 나타났습니다.
-`);
+// AI 댓글 요약 데이터를 저장할 ref
+const aiCommentSummary = ref('');
+const isSummaryLoading = ref(true);
+const summaryError = ref(false);
+
 const sourceLabelMap = {
   YT_SEARCH: '유튜브 검색',
   RELATED_VIDEO: '추천 동영상',
@@ -30,28 +27,55 @@ const sourceLabelMap = {
   NOTIFICATION: '알림',
 };
 
-const fetchAllData = async () => {
-  isLoading.value = true;
+// AI 댓글 요약을 가져오는 함수
+const loadAiCommentSummary = async (id) => { // 여기서 id는 pipelineInfluencerId
+  if (!id) {
+    console.warn('Pipeline Influencer ID is missing for AI comment summary.');
+    aiCommentSummary.value = '캠페인 ID가 없어 AI 댓글 요약을 불러올 수 없습니다.';
+    isSummaryLoading.value = false;
+    return;
+  }
+  isSummaryLoading.value = true;
+  summaryError.value = false;
   try {
-    const campaignRes = await fetch(`/api/v1/campaign/${campaignId}`);
-    campaign.value = (await campaignRes.json()).data;
-
-    const metaRes = await fetch(`/api/v1/youtube/video?campaignId=${campaignId}`);
-    meta.value = await metaRes.json();
-
-    const trafficRes = await fetch(`/api/v1/youtube/traffic-sources?campaignId=${campaignId}&groupType=daily`);
-    rows.value = (await trafficRes.json()).rows;
-  } catch (err) {
-    isError.value = true;
+    const summaryText = await fetchAiCommentSummary(id); // 수정된 fetchAiCommentSummary 사용
+    aiCommentSummary.value = summaryText;
+  } catch (error) {
+    summaryError.value = true;
+    aiCommentSummary.value = 'AI 댓글 요약을 불러오는 데 실패했습니다.';
+    console.error('Failed to load AI comment summary:', error);
   } finally {
-    isLoading.value = false;
+    isSummaryLoading.value = false;
   }
 };
 
-onMounted(fetchAllData);
+onMounted(() => {
+  // 컴포넌트 마운트 시 pipelineInfluencerId가 있으면 요약 로드
+  if (props.pipelineInfluencerId) {
+    loadAiCommentSummary(props.pipelineInfluencerId);
+  }
+});
 
-const series = computed(() => rows.value.map((row) => row[1]));
-const labels = computed(() => rows.value.map((row) => sourceLabelMap[row[0]]));
+// pipelineInfluencerId prop이 변경될 때마다 요약을 다시 로드
+watch(() => props.pipelineInfluencerId, (newId) => {
+  if (newId) {
+    loadAiCommentSummary(newId);
+  }
+}, { immediate: true }); // 컴포넌트 초기 로드 시에도 watch가 실행되도록
+
+const series = computed(() => {
+  if (!props.trafficSourcesData || props.trafficSourcesData.length === 0) {
+    return [];
+  }
+  return props.trafficSourcesData.map(row => row.views);
+});
+
+const labels = computed(() => {
+  if (!props.trafficSourcesData || props.trafficSourcesData.length === 0) {
+    return [];
+  }
+  return props.trafficSourcesData.map(row => sourceLabelMap[row.source] || row.source);
+});
 
 const chartOptions = computed(() => ({
   labels: labels.value,
@@ -73,29 +97,43 @@ const chartOptions = computed(() => ({
       formatter: (val) => `${val.toLocaleString()}회`,
     },
   },
+  chart: {
+    toolbar: { show: false }
+  }
 }));
 </script>
 
 <template>
   <div class="dashboard-section w-full flex justify-between items-start gap-6">
-    <!-- 왼쪽 : 유입 분석 텍스트 + AI 요약 -->
     <div class="pl-6 pt-6 w-[45%]">
       <div class="dashboard-title text-xl font-bold mb-4">유입 분석</div>
       <div class="text-sm text-muted mb-1 font-semibold">댓글 요약 (AI)</div>
       <div class="bg-muted/10 p-4 rounded-xl text-sm leading-relaxed text-gray-700 shadow-sm overflow-auto h-[200px]">
-        {{ aiCommentSummary }}
+        <div v-if="isSummaryLoading" class="text-center text-gray-500">
+          AI 댓글 요약을 불러오는 중입니다...
+        </div>
+        <div v-else-if="summaryError" class="text-center text-red-500">
+          {{ aiCommentSummary }}
+        </div>
+        <div v-else>
+          {{ aiCommentSummary }}
+        </div>
       </div>
     </div>
-    <!-- 오른쪽 : 도넛 그래프 -->
     <div
       class="relative bg-background p-6 rounded-3xl shadow flex items-center justify-center h-[400px] w-[50%]"
     >
       <div class="relative w-[340px]">
-        <ApexCharts type="donut" width="340" :series="series" :options="chartOptions" />
-        <div
-          class="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
-        >
-          <div class="text-lg font-semibold">영상유입 경로</div>
+        <div v-if="props.trafficSourcesData.length === 0" class="text-center text-gray-500 py-10">
+          트래픽 소스 데이터가 없습니다.
+        </div>
+        <div v-else>
+          <ApexCharts type="donut" width="340" :series="series" :options="chartOptions" />
+          <div
+            class="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
+          >
+            <div class="text-lg font-semibold">영상유입 경로</div>
+          </div>
         </div>
       </div>
     </div>

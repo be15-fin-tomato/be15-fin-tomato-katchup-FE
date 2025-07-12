@@ -9,8 +9,9 @@ import { fetchCategoryList, fetchInfluencerList } from '@/features/influencer/ap
 const influencerList = ref([])
 const selectedCategory = ref('전체')
 const categoryList = ref([])
+const isLoading = ref(false);
 
-const currentPageZeroBased = ref(0); // 0부터 시작하는 페이지 인덱스
+const currentPageZeroBased = ref(0);
 const pageSize = 6;
 const totalCount = ref(0);
 const totalPages = ref(0);
@@ -37,25 +38,32 @@ const currentPage = computed({
 })
 
 async function loadInfluencers() {
+  isLoading.value = true;
   const params = {
     page: currentPageZeroBased.value,
     size: pageSize,
   };
 
-  const res = await fetchInfluencerList(params);
-  const rawList = res.data.data.data;
+  try {
+    const res = await fetchInfluencerList(params);
+    const rawList = res.data.data.data;
 
-  if (selectedCategory.value === '전체') {
-    influencerList.value = rawList;
-  } else {
-    const selectedEngCategory = categoryMap[selectedCategory.value];
-    influencerList.value = rawList.filter(influencer =>
-      influencer.tags?.some(tag => tag.categoryName === selectedEngCategory)
-    );
+    if (selectedCategory.value === '전체') {
+      influencerList.value = rawList;
+    } else {
+      const selectedEngCategory = categoryMap[selectedCategory.value];
+      influencerList.value = rawList.filter(influencer =>
+        influencer.tags?.some(tag => tag.categoryName === selectedEngCategory)
+      );
+    }
+
+    totalCount.value = res.data.data.pagination.totalCount;
+    totalPages.value = res.data.data.pagination.totalPage;
+  } catch (error) {
+    console.error("인플루언서 목록을 불러오는데 실패했습니다:", error);
+  } finally {
+    isLoading.value = false;
   }
-
-  totalCount.value = res.data.data.pagination.totalCount;
-  totalPages.value = res.data.data.pagination.totalPage;
 }
 
 onMounted(async () => {
@@ -67,7 +75,7 @@ onMounted(async () => {
 })
 
 watch(selectedCategory, () => {
-  currentPageZeroBased.value = 0; // 카테고리 바꾸면 페이지 0으로
+  currentPageZeroBased.value = 0;
   loadInfluencers();
 })
 
@@ -105,7 +113,11 @@ watch(currentPageZeroBased, () => {
         <span class="text-center col-span-1">타깃 연령대</span>
       </div>
 
-      <div v-if="influencerList.length === 0" class="text-center text-gray-500 py-10">
+      <div v-if="isLoading" class="text-center text-gray-500 py-10">
+        데이터를 불러오는 중입니다...
+      </div>
+
+      <div v-else-if="influencerList.length === 0" class="text-center text-gray-500 py-10">
         해당하는 인플루언서가 없습니다.
       </div>
 
@@ -114,7 +126,7 @@ watch(currentPageZeroBased, () => {
       </div>
 
       <!-- 페이지네이션 -->
-      <div v-if="totalPages > 1" class="flex justify-center mt-8">
+      <div v-if="!isLoading && totalPages > 1" class="flex justify-center mt-8">
         <PagingBar
           :totalPages="totalPages"
           :currentPage="currentPage"

@@ -5,8 +5,8 @@ export const categoryOptions = [
 ];
 
 export const filterOptions = [
-    { value: 1, label: '승인완료' },
-    { value: 2, label: '승인요청' },
+    { value: 1, label: '승인요청' },
+    { value: 2, label: '승인완료' },
     { value: 3, label: '보류/대기' },
     { value: 4, label: '거절됨' },
 ];

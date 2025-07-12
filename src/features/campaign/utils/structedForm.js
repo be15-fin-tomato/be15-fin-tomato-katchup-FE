@@ -35,6 +35,8 @@ export const structuredForm = (rawForm, fileList = []) => {
         influencer: rawForm.influencerList.map((i) => ({
             id: i.influencerId,
             name: i.influencerName,
+            strength: i.strength ?? '',
+            note: i.notes ?? '',
         })),
 
         influencerContents: rawForm.influencerList.map((i) => {

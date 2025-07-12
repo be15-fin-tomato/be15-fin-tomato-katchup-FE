@@ -24,9 +24,13 @@ const formatNumber = (val) => {
     <div class="grid grid-cols-3 gap-6 p-4">
         <!-- 프로필 -->
         <div class="flex flex-col items-center col-span-1">
-            <!--            <img :src="influencer.imageUrl" class="w-28 h-28 rounded-full object-cover mb-8" />-->
-            <img :src="kittyImg" class="w-48 h-48 rounded-2xl object-cover mb-4" />
-
+            <div class="w-28 h-28 rounded-full overflow-hidden mb-8">
+                <img
+                    :src="influencer.imageUrl || kittyImg"
+                    class="w-full h-full object-cover"
+                    alt="프로필 이미지"
+                />
+            </div>
             <div class="w-full mt-4">
                 <div class="text-left text-sm font-semibold text-gray-dark">이력</div>
                 <ul v-if="influencer.campaignHistory?.length" class="mt-1 space-y-1 text-sm">
@@ -79,10 +83,6 @@ const formatNumber = (val) => {
                         <div class="flex gap-2">
                             <div class="w-32 font-semibold">평균 댓글 수</div>
                             <div>: {{ formatNumber(platformData.averageComment) ?? '-' }}</div>
-                        </div>
-                        <div class="flex gap-2">
-                            <div class="w-32 font-semibold">주요 카테고리</div>
-                            <div>: {{ platformData.category ?? '-' }}</div>
                         </div>
                         <div v-if="platformKey === 'instagram'" class="flex gap-2">
                             <div class="w-32 font-semibold">팔로워 수</div>

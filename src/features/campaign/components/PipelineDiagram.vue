@@ -43,14 +43,14 @@ const lastPipelineIndex = computed(() => {
   normalizedDiagramSteps.value.forEach(item => {
     let currentStepId = -1;
 
-    if (item.stepType && item.startedAt !== null) {
+    if (item.stepType && item.createdAt !== null) {
       const matchingStep = stepOrder.find(step => step.label === item.stepType);
       if (matchingStep) {
         currentStepId = matchingStep.id;
       }
     }
 
-    else if (item.pipelineStepId && item.startedAt !== null) {
+    else if (item.pipelineStepId && item.createdAt !== null) {
       currentStepId = item.pipelineStepId;
     }
 
@@ -69,7 +69,7 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '.');
 };
 
-// 해당 단계의 startedAt 날짜 찾기
+// 해당 단계의 createdAt 날짜 찾기
 const getDateByStepId = (id) => {
   const stepData = normalizedDiagramSteps.value.find(item => {
     if (item.stepType) {
@@ -81,7 +81,7 @@ const getDateByStepId = (id) => {
     }
     return false;
   });
-  return formatDate(stepData?.startedAt);
+  return formatDate(stepData?.createdAt);
 };
 </script>
 

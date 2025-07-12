@@ -1,5 +1,6 @@
 import api from '@/plugin/axios.js';
 
+/* 성과 리스트 조회 */
 export const getCampaignResultList = async (params = {}) => {
   const response = await api.get('/campaign/resultlist', {
     params: params,
@@ -36,4 +37,49 @@ export const fetchTopVideos = async (influencerId) => {
 export const fetchCampaignListByInfluencer = async (influencerId) => {
   return await api.get(`/dashboard/campaign/${influencerId}`);
 }
+
+/* 유튜브 댓글 요약 */
+export const fetchAiCommentSummary = async (pipelineInfluencerId) => {
+  try {
+    const response = await api.get(`/youtube/commentssummary/${pipelineInfluencerId}`);
+
+    if (response.data && response.data.success) {
+      return response.data.data;
+    } else {
+      const errorMessage = response.data?.message || 'Failed to fetch AI comment summary: Unexpected response structure.';
+      throw new Error(errorMessage);
+    }
+  } catch (error) {
+    console.error('Error fetching AI comment summary:', error);
+    throw error;
+  }
+};
+
+/* 네이버 검색 비율 */
+export async function fetchNaverSearchRatio(pipelineInfluencerId) {
+  try {
+    const response = await api.get(`/dashboard/search-ratio/pipeline-influencer/${pipelineInfluencerId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching Naver search ratio:', error);
+    throw error;
+  }
+}
+
+/* 수익 요약 조회 */
+export const getCampaignRevenue = async (pipelineInfluencerId) => {
+  try {
+    const response = await api.get(`/dashboard/get/revenue/${pipelineInfluencerId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching campaign revenue:', error);
+    throw error;
+  }
+};
+
+/* 컨텐츠 정보 조회 */
+export const fetchCampaignContent = async (pipelineInfluencerId) => {
+  const response = await api.get(`/dashboard/content/${pipelineInfluencerId}`);
+  return response.data.data;
+};
 
