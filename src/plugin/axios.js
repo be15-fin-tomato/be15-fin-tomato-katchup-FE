@@ -10,12 +10,17 @@ const api = axios.create({
 /* 헤더에 AccessToken을 자동으로 붙이는 interceptor*/
 api.interceptors.request.use((config) => {
     const authStore = useAuthStore();
-    if (authStore.accessToken) {
+
+    const skipAuthHeaderUrls = ['/auth/login', '/auth/reissue'];
+
+    const shouldSkip = skipAuthHeaderUrls.some((url) => config.url?.includes(url));
+
+    if (authStore.accessToken && !shouldSkip) {
         config.headers.Authorization = `Bearer ${authStore.accessToken}`;
     }
+
     return config;
 });
-
 /* 만료된 Access Token으로 요청을 한 경우 토큰 재발급 요청 */
 api.interceptors.response.use(
     (response) => response,
