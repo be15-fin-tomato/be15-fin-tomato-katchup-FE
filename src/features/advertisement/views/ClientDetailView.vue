@@ -4,7 +4,8 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   deleteClientCompany,
   getClientCompanyDetail, getClientCompanyUsers,
-  updateClientCompany, deleteClientManager, getCampaignsByClientCompany, getClientCompanyContracts
+  updateClientCompany, deleteClientManager, getCampaignsByClientCompany,
+  getClientCompanyContracts,getClientCompanyCommunicationHistories
 } from '@/features/advertisement/api.js';
 
 import ClientCompanyForm from '@/features/advertisement/components/ClientCompanyForm.vue';
@@ -40,7 +41,11 @@ const fetchClientCompanyData = async () => {
 
     // 캠페인, 계약, 이력 등도 함께 업데이트
     const campaignRes = await getCampaignsByClientCompany(id);  // 고객사 ID로 캠페인 목록 불러오기
-    campaignList.value = campaignRes.data.data ?? [];
+    campaignList.value = (campaignRes.data.data || []).map(campaign => ({
+      id: campaign.campaignId,
+      title: campaign.campaignName,
+      ...campaign
+    }));
 
     const contractRes = await getClientCompanyContracts(id);
     contractList.value = (contractRes.data?.data?.clientCompanyContract || []).map(contract => ({
@@ -54,7 +59,22 @@ const fetchClientCompanyData = async () => {
       influencerName: contract.name || '알 수 없음'
     }));
 
-    communicationHistories.value = res.data.communicationHistories ?? [];
+    const historyRes = await getClientCompanyCommunicationHistories(id);
+    communicationHistories.value = (historyRes.data.data || []).map(history => ({
+      id: history.id,
+      campaignId: history.campaignId,
+      campaignName: history.campaignName,
+
+      category: history.pipelineStepName,
+      createdAt: history.pipelineCreatedAt, // 파이프라인 생성일 사용
+      title: history.pipelineTitle,
+
+      writer: history.managerName,
+      department: history.managerDepartment,
+      content: history.content,
+      feedback: history.notes,
+      file: history.fileName,
+    }));
 
   } catch (e) {
     console.error('데이터 다시 불러오기 실패', e);
