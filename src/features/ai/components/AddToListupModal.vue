@@ -79,8 +79,8 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { createListup } from '@/features/campaign/api.js';
-import { useRouter } from 'vue-router';
+import { createListup, updateListup } from '@/features/campaign/api.js';
+import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 
 const emit = defineEmits(['close']);
@@ -89,6 +89,7 @@ const listupTitle = ref(null);
 const currentFieldKey = ref('');
 const router = useRouter();
 const toast = useToast();
+const route = useRoute();
 
 const popover = ref({
     visible: false,
@@ -173,10 +174,21 @@ const handleSubmit = async () => {
             influencerId: props.selectedInfluencers.map((v) => v.influencerId),
         };
 
+        if (props.isEditing && props.campaign?.id) {
+            payload.pipelineId = route.params.id;
+        }
+
         console.log('제출:', payload);
-        await createListup(payload);
-        toast.success('리스트업이 생성되었습니다.');
-        await router.push('/sales/listup');
+        if (props.isEditing) {
+            await updateListup(payload);
+            toast.success('리스트업이 수정되었습니다.');
+        } else {
+            await createListup(payload);
+            toast.success('리스트업이 생성되었습니다.');
+            await router.push('/sales/listup');
+        }
+
+        // await router.push('/sales/listup');
 
         emit('close');
     } catch (e) {
@@ -185,7 +197,10 @@ const handleSubmit = async () => {
 };
 onMounted(() => {
     if (props.isEditing) {
-        selectedCampaign.value = props.campaign?.name || '';
+        selectedCampaign.value = {
+            id: props.campaign?.id || null,
+            name: props.campaign?.name || '',
+        };
         listupTitle.value = props.campaign?.title || '';
     }
 });
