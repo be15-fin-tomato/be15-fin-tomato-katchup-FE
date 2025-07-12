@@ -72,6 +72,10 @@ export const deleteListup = async (listupId) => {
     return await api.delete(`/campaign/listup/${listupId}`);
 };
 
+export const updateListup = async (payload) => {
+    return await api.put('/campaign/listup', payload);
+};
+
 /* 견적 목록*/
 export const getQuotationList = async (page, size, filters = {}) => {
     return await api.get('/campaign/quotation', {
