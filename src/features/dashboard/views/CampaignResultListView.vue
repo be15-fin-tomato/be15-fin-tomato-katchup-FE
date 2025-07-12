@@ -41,7 +41,7 @@
           :pageType="'campaignResult'"
           @menuToggle="toggleMenu"
           @delete="handleDelete"
-          @click="() => goDetail(campaignResult.pipelineId)"
+          @click="() => goDetail(campaignResult.pipelineInfluencerId)"
         />
       </template>
     </div>
@@ -89,8 +89,8 @@ const handleSearch = () => {
   fetchCampaignResultList();
 };
 
-const goDetail = (pipelineId) => {
-  router.push(`/campaign/dashboard/${pipelineId}`);
+const goDetail = (pipelineInfluencerId) => {
+  router.push(`/campaign/dashboard/${pipelineInfluencerId}`);
 };
 
 const handleDelete = (pipelineId) => {
