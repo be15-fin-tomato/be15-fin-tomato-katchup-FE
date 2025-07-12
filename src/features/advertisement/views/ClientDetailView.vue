@@ -312,8 +312,11 @@ const handleDeleteCompany = async () => {
                     'border-[var(--color-gray-medium)] text-gray-800': selectedCampaignId !== c.id,
                 }"
             @click="selectCampaign(c.id)"
+            :title="c.title"
           >
-            {{ c.title }}
+            <div class="truncate overflow-hidden text-ellipsis whitespace-nowrap px-2">
+              {{ c.title }}
+            </div>
           </button>
           <p v-if="campaignList.length === 0" class="text-center text-gray-500 text-sm mt-4">
             조회된 캠페인이 없습니다.
@@ -321,7 +324,9 @@ const handleDeleteCompany = async () => {
         </div>
 
         <!-- 중앙: 이력 목록 -->
-        <div class="col-span-1 space-y-2 max-h-[500px] overflow-y-auto pr-1">
+        <div class="col-span-1 space-y-2 max-h-[500px] overflow-y-auto pr-1"
+             :key="selectedCampaignId"
+        >
           <button
             v-for="item in filteredHistories"
             :key="item.id"
@@ -329,9 +334,9 @@ const handleDeleteCompany = async () => {
             class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3"
             :class="{
                     'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A]':
-                        selectedMsg?.id === item.id,
+                        selectedMsg && selectedMsg.id === item.id,
                     'border-[var(--color-gray-medium)] text-gray-800':
-                        selectedMsg?.id !== item.id,
+                        !selectedMsg || selectedMsg.id !== item.id
                 }"
           >
             <div class="flex justify-between items-center mb-1">
