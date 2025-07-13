@@ -1,6 +1,9 @@
 <script setup>
 import { reactive, ref, watch, nextTick, toRaw } from 'vue';
 import { Icon } from '@iconify/vue';
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const props = defineProps({
   isEditing: { type: Boolean, default: false },
@@ -160,15 +163,15 @@ const openPostcodeSearch = () => {
 // 사원 추가/수정
 const addEmployee = () => {
   if (!newEmployee.name.trim()) {
-    alert('이름은 필수입니다.');
+    toast.error('이름은 필수입니다.');
     return;
   }
   if (!newEmployee.phone.trim()) {
-    alert('휴대폰번호는 필수입니다.');
+    toast.error('휴대폰번호는 필수입니다.');
     return;
   }
   if (!newEmployee.email.trim()) {
-    alert('이메일은 필수입니다.');
+    toast.error('이메일은 필수입니다.');
     return;
   }
 
