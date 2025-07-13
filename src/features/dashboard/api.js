@@ -1,5 +1,6 @@
 import api from '@/plugin/axios.js';
 
+/* 성과 리스트 조회 */
 export const getCampaignResultList = async (params = {}) => {
   const response = await api.get('/campaign/resultlist', {
     params: params,
@@ -54,6 +55,7 @@ export const fetchAiCommentSummary = async (pipelineInfluencerId) => {
   }
 };
 
+/* 네이버 검색 비율 */
 export async function fetchNaverSearchRatio(pipelineInfluencerId) {
   try {
     const response = await api.get(`/dashboard/search-ratio/pipeline-influencer/${pipelineInfluencerId}`);
@@ -64,15 +66,20 @@ export async function fetchNaverSearchRatio(pipelineInfluencerId) {
   }
 }
 
+/* 수익 요약 조회 */
 export const getCampaignRevenue = async (pipelineInfluencerId) => {
   try {
     const response = await api.get(`/dashboard/get/revenue/${pipelineInfluencerId}`);
-    return response.data; // ApiResponse 객체 전체를 반환 (success, data, errorCode, message 포함)
+    return response.data;
   } catch (error) {
     console.error('Error fetching campaign revenue:', error);
-    // 에러 처리 로직 (예: 에러 메시지 반환 또는 특정 에러 객체 throw)
     throw error;
   }
 };
 
+/* 컨텐츠 정보 조회 */
+export const fetchCampaignContent = async (pipelineInfluencerId) => {
+  const response = await api.get(`/dashboard/content/${pipelineInfluencerId}`);
+  return response.data.data;
+};
 
