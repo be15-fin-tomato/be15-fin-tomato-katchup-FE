@@ -1,6 +1,7 @@
 <script setup>
 import ApexCharts from 'vue3-apexcharts'
 import { computed } from 'vue'
+import { formatNumber } from '@/utils/fomatters.js';
 
 const props = defineProps({
   platform: String,
@@ -53,8 +54,8 @@ const getReachText = () => {
         />
 
         <div v-if="series && series.length > 0"
-             class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <div class="text-3xl font-extrabold">{{ (props.reach / 10000).toFixed(1) }}만</div>
+             class="absolute top-[43%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          <div class="text-3xl font-extrabold">{{ (formatNumber(props.reach)) }}</div>
           <div class="text-gray-400 text-sm mt-1">{{ getReachText() }}</div>
         </div>
       </div>
