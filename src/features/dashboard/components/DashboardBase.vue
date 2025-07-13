@@ -150,7 +150,7 @@ const reachChartData = computed(() => {
         <div class="flex gap-8">
           <AgeChart
             :platform="platform"
-            ::data="ageChartData"
+            :data="ageChartData"
             class="w-2/3"
           />
           <GenderChart
