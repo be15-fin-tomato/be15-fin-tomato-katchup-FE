@@ -1,12 +1,18 @@
 <script setup>
+import { formatNumber } from '@/utils/fomatters.js';
+import { computed } from 'vue';
+
 const props = defineProps({
   platform: String,
   items: Array
 })
 
-const formatNumber = (num) => {
-  return num >= 10000 ? `${(num / 10000).toFixed(1)}만` : num.toString()
-}
+const filteredItems = computed(() => {
+  if (props.platform === 'instagram') {
+    return props.items.filter(item => item.snapshotType === 'topVideos');
+  }
+  return props.items;
+});
 
 const formatDate = (timestamp) => {
   const date = new Date(timestamp);
@@ -14,7 +20,7 @@ const formatDate = (timestamp) => {
 }
 
 const getThumbnail = (item) => {
-  return props.platform === 'instagram' ? item.thumbnail : item.thumbnail;
+  return item.thumbnailUrl;
 }
 
 const getUrl = (item) => {
@@ -22,15 +28,15 @@ const getUrl = (item) => {
 }
 
 const getViews = (item) => {
-  return props.platform === 'instagram' ? item.plays : item.viewCount;
+  return props.platform === 'instagram' ? item.viewCount : item.views;
 }
 
 const getLikes = (item) => {
-  return props.platform === 'instagram' ? item.likes : item.likeCount;
+  return props.platform === 'instagram' ? item.likeCount : item.likes;
 }
 
 const getComments = (item) => {
-  return props.platform === 'instagram' ? item.comments : item.commentCount;
+  return props.platform === 'instagram' ? item.commentCount : item.comments;
 }
 
 const getTimestamp = (item) => {
@@ -43,7 +49,7 @@ const getTimestamp = (item) => {
     <p class="dashboard-title">{{ platform === 'instagram' ? '인기 Reels' : '인기 Shorts' }}</p>
     <div class="grid grid-cols-4 gap-4">
       <div
-        v-for="item in items"
+        v-for="item in filteredItems"
         :key="platform === 'instagram' ? item.id : item.videoId"
         class="overflow-hidden hover:shadow-lg rounded-xl transition cursor-pointer"
       >
