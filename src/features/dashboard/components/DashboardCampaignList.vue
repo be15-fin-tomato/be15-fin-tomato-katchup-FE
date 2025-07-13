@@ -122,7 +122,6 @@ const goToCampaignDashboard = () => {
         <div v-if="selectedCampaign.youtubeLink && extractYoutubeVideoId(selectedCampaign.youtubeLink)" class="mb-6">
           <iframe
             :src="getEmbeddedYoutubeUrl(selectedCampaign)"
-            frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
             class="w-[400px] h-[250px] rounded object-cover"
