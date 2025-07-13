@@ -69,7 +69,9 @@ async function loadInfluencers() {
 onMounted(async () => {
   const categoryRes = await fetchCategoryList();
   const rawCategories = categoryRes.data.data;
-  categoryList.value = ['전체', ...rawCategories.map(cat => reverseCategoryMap[cat.categoryName] || cat.categoryName)];
+  categoryList.value = [
+    '전체', ...rawCategories.map(cat => reverseCategoryMap[cat.categoryName] || cat.categoryName)
+  ];
 
   await loadInfluencers();
 })
