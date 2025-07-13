@@ -7,8 +7,14 @@ import { useToast } from 'vue-toastification'
 import DashboardBase from '@/features/dashboard/components/DashboardBase.vue'
 import DashboardHeader from '@/features/dashboard/components/DashboardHeader.vue'
 import PopularPosts from '@/features/dashboard/components/PopularPosts.vue'
-import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue'
-import DashboardCampaignList from '@/features/dashboard/components/DashboardCampaignList.vue'
+import {
+  fetchInfluencerDetail,
+  fetchInstagramInfo,
+  fetchSatisfaction,
+} from '@/features/dashboard/api.js';
+import { formatNumber } from '@/utils/fomatters.js';
+import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue';
+import DashboardCampaignList from '@/features/dashboard/components/DashboardCampaignList.vue';
 
 const route = useRoute()
 const router = useRouter()
@@ -16,56 +22,64 @@ const toast = useToast()
 
 const dashboard = ref(null)
 const influencer = ref(null)
-const satisfaction = ref(92.5)
+const satisfaction = ref(0)
 const influencerId = route.query.id
 
 onMounted(async () => {
   try {
-    const [dashboardRes, youtubeRes, influencerRes] = await Promise.all([
-      fetch(`/api/v1/dashboard/instagram?id=${influencerId}`),
-      fetch(`/api/v1/influencer/${influencerId}`),
-      fetch(`/api/v1/dashboard/youtube?id=${influencerId}`)
+    const [instagramRes, influencerRes, satisfactionRes] = await Promise.all([
+      fetchInstagramInfo(influencerId),
+      fetchInfluencerDetail(influencerId),
+      fetchSatisfaction(influencerId),
     ])
+    console.log(instagramRes)
 
-    const dashboardData = await dashboardRes.json()
-    const influencerData = await influencerRes.json()
-    const youtubeData = await youtubeRes.json()
+    const dashboardData = instagramRes?.data?.data;
+    const influencerData = influencerRes
+    const satisfactionData = satisfactionRes?.data?.data;
 
-    if (!dashboardData.data) {
-      if(youtubeData.data){
-        toast.success("유튜브 대시보드로 이동")
+    if (!dashboardData) {
+      if(influencerData?.youtube){
+        toast.success("인스타그램 데이터가 없어 유튜브 대시보드로 이동합니다.")
         router.push(`/influencer/dashboard/youtube?id=${influencerId}`)
       } else {
-        toast.warning('계정이 모두 연결되어있지 않습니다.')
+        toast.warning('계정이 모두 연결되어 있지 않습니다.')
         router.replace(`/influencer/list`)
       }
-      return
+      return;
     }
 
-    dashboard.value = dashboardData.data
-    influencer.value = influencerData.data
+    dashboard.value = dashboardData;
+    influencer.value = influencerData;
+    satisfaction.value = satisfactionData ?? 0;
 
   } catch (err) {
-    toast.error('데이터를 불러오지 못했습니다.')
+    toast.error('데이터를 불러오지 못했습니다.');
+    console.error('💥 Instagram Dashboard Error:', err);
+    dashboard.value = null;
+    satisfaction.value = 0;
   }
-})
+});
 
 const summaryData = computed(() => {
-  if (!dashboard.value?.reelsSummary) {
-    return { shorts: 0, views: '0만', comments: '0개', likes: '0만' }
+  if (!dashboard.value) {
+    return {
+      totalPosts: '0개', avgViews: '0만', avgComments: '0개', avgLikes: '0만'
+    }
   }
+
+  const totalPosts = formatNumber(dashboard.value.totalPosts ?? 0);
+  const avgViews = formatNumber(dashboard.value.avgViews ?? 0);
+  const avgComments = formatNumber(dashboard.value.avgComments ?? 0);
+  const avgLikes = formatNumber(dashboard.value.avgLikes ?? 0);
+
   return {
-    shorts: dashboard.value.reelsSummary.count,
-    views: `${(dashboard.value.reelsSummary.avgViews / 10000).toFixed(1)}만`,
-    comments: `${dashboard.value.reelsSummary.avgComments}개`,
-    likes: `${(dashboard.value.reelsSummary.avgLikes / 10000).toFixed(1)}만`
+    totalPosts: `${totalPosts}개`,
+    avgViews: `${avgViews}회`,
+    avgComments: `${avgComments}개`,
+    avgLikes: `${avgLikes}개`
   }
 })
-
-const formatFollowers = (num) => {
-  const parsedNum = parseInt(num)
-  return parsedNum >= 10000 ? `${Math.floor(parsedNum / 10000)}만명` : `${parsedNum}명`
-}
 
 const goToPlatform = (platform) => {
   router.push(`/influencer/dashboard/${platform}?id=${influencerId}`)
@@ -89,13 +103,7 @@ const goToList = () => {
         </button>
       </div>
 
-      <DashboardHeader
-        :name="dashboard.title"
-        :thumbnail="dashboard.thumbnail"
-        :tags="dashboard.tags"
-        :instaFollowers="formatFollowers(dashboard.instagram.followers)"
-        :influencer="influencer"
-      />
+      <DashboardHeader :influencer="influencer" />
 
       <DashboardBase
         platform="instagram"
@@ -105,9 +113,9 @@ const goToList = () => {
         @switch="goToPlatform"
       />
 
-      <PopularPosts :platform="'instagram'" :items="dashboard.popularPosts" />
-      <PopularShortForms :platform="'instagram'" :items="dashboard.popularReels" />
-      <DashboardCampaignList />
+      <PopularPosts :platform="'instagram'" :items="dashboard.mediaSnapshots" />
+      <PopularShortForms :platform="'instagram'" :items="dashboard.mediaSnapshots" />
+      <DashboardCampaignList :influencer-id="influencerId" />
     </div>
 
     <div v-else class="flex justify-center items-center w-full h-full">Loading...</div>
