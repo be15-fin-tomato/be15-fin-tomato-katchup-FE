@@ -11,10 +11,22 @@ import FollowerChart from '@/features/dashboard/components/chart/FollowerChart.v
 import DashboardSummary from '@/features/dashboard/components/DashboardSummary.vue';
 
 const props = defineProps({
-    platform: String,
-    data: Object,
-    summaryData: Object,
-    satisfaction: Number,
+  platform: {
+    type: String,
+    required: true
+  },
+  data: {
+    type: Object,
+    default: () => ({})
+  },
+  summaryData: {
+    type: Object,
+    default: () => ({})
+  },
+  satisfaction: {
+    type: Number,
+    default: 0
+  },
 });
 
 const emit = defineEmits(['switch']);
@@ -38,6 +50,43 @@ const satisfactionColorClass = computed(() => {
     return 'text-green-500';
   }
 })
+
+const averageChartData = computed(() => ({
+  daily: props.data?.dailyAvgViews ?? 0,
+  monthly: props.data?.monthlyAvgViews ?? 0,
+}));
+
+const ageChartData = computed(() => ({
+  age1317: props.data?.age1317 ?? 0,
+  age1824: props.data?.age1824 ?? 0,
+  age2534: props.data?.age2534 ?? 0,
+  age3544: props.data?.age3544 ?? 0,
+  age4554: props.data?.age4554 ?? 0,
+  age5564: props.data?.age5564 ?? 0,
+  age65plus: props.data?.age65plus ?? 0,
+}));
+
+const genderChartData = computed(() => ({
+  male: props.data?.genderMale ?? 0,
+  female: props.data?.genderFemale ?? 0
+}));
+
+const reachChartData = computed(() => {
+  if (props.platform === 'instagram') {
+    return {
+      reach: props.data?.reach ?? 0,
+      followerRate: props.data?.followerRatio ?? 0,
+      nonFollowerRate: props.data?.nonFollowerRatio ?? 0
+    };
+  } else if (props.platform === 'youtube') {
+    return {
+      reach: props.data?.impressions ?? 0,
+      followerRate: props.data?.subscribedRatio ?? 0,
+      nonFollowerRate: props.data?.notSubscribedRatio ?? 0
+    };
+  }
+  return { reach: 0, followerRate: 0, nonFollowerRate: 0 };
+});
 </script>
 
 <template>
@@ -71,8 +120,8 @@ const satisfactionColorClass = computed(() => {
         <div class="flex gap-8">
             <AverageChart
               :platform="platform"
-              :daily="props.data?.dailyAvgViews ?? 0"
-              :monthly="props.data?.monthlyAvgViews ?? 0"
+              :daily="averageChartData.daily"
+              :monthly="averageChartData.monthly"
               class="w-1/3"
             />
             <AlgorithmChart :platform="platform" :data="props.data" class="w-1/3" />
@@ -101,23 +150,12 @@ const satisfactionColorClass = computed(() => {
         <div class="flex gap-8">
           <AgeChart
             :platform="platform"
-            :data="{
-                    age1317: props.data?.age1317 ?? 0,
-                    age1824: props.data?.age1824 ?? 0,
-                    age2534: props.data?.age2534 ?? 0,
-                    age3544: props.data?.age3544 ?? 0,
-                    age4554: props.data?.age4554 ?? 0,
-                    age5564: props.data?.age5564 ?? 0,
-                    age65plus: props.data?.age65plus ?? 0,
-                }"
+            ::data="ageChartData"
             class="w-2/3"
           />
           <GenderChart
             :platform="platform"
-            :data="{
-                    male: props.data?.genderMale ?? 0,
-                    female: props.data?.genderFemale ?? 0
-                }"
+            :data="genderChartData"
             class="w-1/3"
           />
         </div>
@@ -125,15 +163,15 @@ const satisfactionColorClass = computed(() => {
         <div class="flex gap-8">
             <FollowerChart
                 :platform="platform"
-                :data="platform === 'instagram' ? (props.data?.followersTrend ?? []) : (props.data)"
+                :data="props.data"
                 class="w-[70%]"
             />
             <ReachChart
-              platform="platform"
-              :reach="props.data?.reach ?? 0"
-              :followerRate="props.data?.subscribedRatio ?? 0"
-              :nonFollowerRate="props.data?.notSubscribedRatio ?? 0"
-              class="w-[30%]"
+                :platform="platform"
+                :reach="reachChartData.reach"
+                :followerRate="reachChartData.followerRate"
+                :nonFollowerRate="reachChartData.nonFollowerRate"
+                class="w-[30%]"
             />
 
         </div>
