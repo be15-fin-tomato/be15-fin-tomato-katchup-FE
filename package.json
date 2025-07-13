@@ -43,6 +43,7 @@
     "vue-router": "^4.5.0",
     "vue-toastification": "^2.0.0-rc.5",
     "vue3-apexcharts": "^1.8.0",
+    "vue3-skeleton-loader": "^0.2.0",
     "wordcloud2": "^1.0.0"
   },
   "devDependencies": {

@@ -8,13 +8,7 @@ export const fetchAICampaigns = async () => {
 };
 
 export const fetchListupDetail = async (id) => {
-    try {
-        const res = await axios.get(`/api/v1/listup/${id}`);
-        return res.data.data;
-    } catch (error) {
-        console.error('리스트업 상세 조회 실패:', error);
-        throw error;
-    }
+    return await api.get(`/campaign/listup/${id}`);
 };
 
 export const fetchCampaignList = async (params) => {
