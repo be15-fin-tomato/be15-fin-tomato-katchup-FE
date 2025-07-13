@@ -327,7 +327,7 @@ watch(isAddingEmployee, (val) => {
             </p>
           </div>
             <div class="flex gap-2">
-                <button class="btn-icon">
+                <button class="btn-icon" v-if="!isEditing">
                     <Icon icon="material-symbols:mail-outline" width="20" height="20" />
                     MAIL
                 </button>
