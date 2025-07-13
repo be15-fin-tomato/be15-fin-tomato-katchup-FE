@@ -94,18 +94,22 @@ onMounted(async () => {
 });
 
 const summaryData = computed(() => {
-  if (!dashboard.value) return { totalVideos: '0개', views: '0만', comments: '0개', likes: '0만' };
+  if (!dashboard.value) {
+    return {
+      totalVideos: '0개', avgViews: '0만', avgComments: '0개', avgLikes: '0만'
+    }
+  }
 
   const totalVideos = formatNumber(dashboard.value.totalVideos ?? 0);
-  const views = formatNumber(dashboard.value.avgViews ?? 0);
-  const likes = formatNumber(dashboard.value.avgLikes ?? 0);
-  const comments = formatNumber(dashboard.value.avgComments ?? 0);
+  const avgViews = formatNumber(dashboard.value.avgViews ?? 0);
+  const avgLikes = formatNumber(dashboard.value.avgLikes ?? 0);
+  const avgComments = formatNumber(dashboard.value.avgComments ?? 0);
 
   return {
     totalVideos: `${totalVideos}개`,
-    views: `${views}회`,
-    comments: `${comments}개`,
-    likes: `${likes}개`
+    avgViews: `${avgViews}회`,
+    avgComments: `${avgComments}개`,
+    avgLikes: `${avgLikes}개`
   };
 });
 

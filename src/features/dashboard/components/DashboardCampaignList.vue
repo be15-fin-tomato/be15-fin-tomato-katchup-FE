@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { fetchCampaignListByInfluencer } from '@/features/dashboard/api.js';
-import defaultPlaceholderImage from '@/assets/images/mock/냥냥이.png';
+import instagramPlaceholderImage from '@/assets/images/instagram-default-thumbnail.png';
+import defaultPlaceholderImage from '@/assets/images/logofinal.png';
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router';
 
@@ -67,17 +68,6 @@ const getCampaignTitle = (item) => item.campaignName;
 const getProductName = (item) => item.productName;
 const getClientCompanyName = (item) => item.clientCompanyName;
 
-const getPostThumbnail = (item) => {
-  const videoId = extractYoutubeVideoId(item.youtubeLink);
-  if (videoId) {
-    return `http://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  }
-  if (item.instagramLink) {
-    return 'https://via.placeholder.com/384x192?text=Instagram+Post'; // 임시 인스타그램 이미지
-  }
-  return defaultPlaceholderImage;
-};
-
 const getPostTitle = (item) => {
   return item.campaignName || item.productName || '제목 없음';
 };
@@ -132,7 +122,6 @@ const goToCampaignDashboard = () => {
         <div v-if="selectedCampaign.youtubeLink && extractYoutubeVideoId(selectedCampaign.youtubeLink)" class="mb-6">
           <iframe
             :src="getEmbeddedYoutubeUrl(selectedCampaign)"
-            frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
             class="w-[400px] h-[250px] rounded object-cover"
@@ -140,7 +129,7 @@ const goToCampaignDashboard = () => {
         </div>
         <div v-else-if="selectedCampaign.instagramLink" class="mb-6">
           <a :href="selectedCampaign.instagramLink" target="_blank" rel="noopener noreferrer" class="block">
-            <img :src="getPostThumbnail(selectedCampaign)" :alt="getPostTitle(selectedCampaign)" class="w-[400px] h-48 rounded object-cover" />
+            <img :src="instagramPlaceholderImage" alt="instagram-post" class="w-[400px] h-[250px] rounded-md object-cover border border-gray-medium" />
           </a>
         </div>
         <div v-else class="mb-6">
