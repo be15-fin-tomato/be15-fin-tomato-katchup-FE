@@ -3,11 +3,17 @@ import ApexCharts from 'vue3-apexcharts';
 import { ref, reactive, computed, watch, nextTick } from 'vue';
 
 const props = defineProps({
-  platform: String,
-  data: Object
+  platform: {
+    type: String,
+    required: true
+  },
+  data: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
-console.log('AgeChart - Raw props.data:', props.data);
+console.log('AgeChart 초기 로드 - 받은 props.data:', props.data);
 
 const chartSeries = ref([]);
 const chartCategories = ref([]);
@@ -67,11 +73,10 @@ const chartOptions = reactive({
   }
 });
 
-
 const chartTitle = computed(() => props.platform === 'instagram' ? '팔로워 연령대' : '구독자 연령대');
 
 watch(() => props.data, async (newData) => {
-  console.log('AgeChart - watch triggered with newData:', newData);
+  console.log('AgeChart - watch 훅 트리거됨 (새 데이터):', newData);
   if (newData) {
     const ageGroups = [
       { ageRange: '13-17', value: newData.age1317 ?? 0 },
@@ -100,7 +105,7 @@ watch(() => props.data, async (newData) => {
 
     chartOptions.xaxis.categories = chartCategories.value;
   }
-}, { immediate: true, deep: true }); // 컴포넌트 마운트 시 즉시 실행, 객체 내부 변경 감지
+}, { immediate: true, deep: true });
 </script>
 
 <template>
