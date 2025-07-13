@@ -12,20 +12,6 @@
         </div>
         <div class="flex gap-2 items-center">
           <button class="btn-create" @click="openModal">등록</button>
-          <button
-            @click="isYoutubeConnectIdModalOpen = true"
-            class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
-            title="유튜브 계정 연동"
-          >
-            <Icon icon="logos:youtube-icon" class="text-red-600" width="32" height="32" />
-          </button>
-          <button
-            @click="openInstagramConnectModal"
-            class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
-            title="인스타그램 계정 연동"
-          >
-            <Icon icon="skill-icons:instagram" class="text-pink-600" width="32" height="32" />
-          </button>
         </div>
       </div>
 
@@ -144,12 +130,14 @@ const fetchInfluencers = async () => {
 
     influencers.value = apiData.data.map(influencer => ({
       id: influencer.influencerId,
-      name: influencer.youtube?.name || '',
+      name: (influencer.youtubeIsConnected === true && influencer.youtube && influencer.youtube.name)
+        ? influencer.youtube.name
+        : '미연결',
       realName: influencer.name,
       subscribers: (() => {
         const subscriberCount = influencer.youtube?.subscriber;
         if (subscriberCount === undefined || subscriberCount === null) {
-          return '0명';
+          return null;
         }
         if (subscriberCount < 10000) {
           return `${subscriberCount.toLocaleString()}명`;
@@ -162,7 +150,7 @@ const fetchInfluencers = async () => {
         : '미연결',
       instaFollowers: (() => {
         const followerCount = influencer.instagram?.follower;
-        if (followerCount === undefined || followerCount === null || followerCount === 0) {
+        if (followerCount === undefined || followerCount === null) {
           return null;
         }
         if (followerCount < 10000) {
