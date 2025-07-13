@@ -94,7 +94,11 @@ onMounted(async () => {
 });
 
 const summaryData = computed(() => {
-  if (!dashboard.value) return { totalVideos: '0개', views: '0만', comments: '0개', likes: '0만' };
+  if (!dashboard.value) {
+    return {
+      totalVideos: '0개', views: '0만', comments: '0개', likes: '0만'
+    }
+  }
 
   const totalVideos = formatNumber(dashboard.value.totalVideos ?? 0);
   const views = formatNumber(dashboard.value.avgViews ?? 0);
