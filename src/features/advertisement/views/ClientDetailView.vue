@@ -382,6 +382,7 @@ const handleDeleteCompany = async () => {
         'bg-pipeline-quotation': selectedMsg.category === '견적',
         'bg-pipeline-list-up': selectedMsg.category === '리스트업',
         'bg-pipeline-chance': selectedMsg.category === '기회인지',
+        'bg-pipeline-revenue': selectedMsg.category === '매출',
       }"
     >
       {{ selectedMsg.category }}
