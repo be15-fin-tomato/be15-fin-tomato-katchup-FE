@@ -1,12 +1,20 @@
 <script setup>
 import { formatNumber } from '@/utils/fomatters.js';
+import { computed } from 'vue';
 
 const props = defineProps({
-  platform: String, // 'instagram' or 'youtube'
+  platform: String,
   items: {
     type: Array,
     default: () => []
   }
+});
+
+const filteredItems = computed(() => {
+  if (props.platform === 'instagram') {
+    return props.items.filter(item => item.snapshotType === 'topPosts');
+  }
+  return props.items;
 });
 
 const formatDate = (timestamp) => {
@@ -24,14 +32,16 @@ const getUrl = (item) => {
 };
 
 const getLikes = (item) => {
-  return item.likes;
-};
+  return props.platform === 'instagram' ? item.likeCount : item.likes;};
 
 const getComments = (item) => {
-  return item.comments;
+  return props.platform === 'instagram' ? item.commentCount : item.comments;
 };
 
 const getThumbnail = (item) => {
+  if (props.platform === 'instagram') {
+    return item.mediaUrl;
+  }
   return item.thumbnailUrl;
 };
 
@@ -40,11 +50,13 @@ const getTitle = (item) => {
 };
 
 const getUploadDay = (item) => {
+  if (props.platform === 'instagram') {
+    return item.timestamp;
+  }
   return item.publishedAt;
 };
 
 const getKey = (item) => {
-  // YouTube는 videoId, Instagram은 id를 사용
   return props.platform === 'instagram' ? item.id : item.videoId;
 };
 </script>
@@ -54,7 +66,7 @@ const getKey = (item) => {
     <p class="dashboard-title">{{ platform === 'instagram' ? '인기 게시글' : '인기 동영상' }}</p>
     <div class="grid grid-cols-4 gap-4">
       <div
-        v-for="item in items"
+        v-for="item in filteredItems"
         :key="getKey(item)"
         class="overflow-hidden hover:shadow-lg rounded-xl transition cursor-pointer"
       >
