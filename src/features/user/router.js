@@ -48,4 +48,11 @@ export const userRoutes = [
         component: YoutubeOAuthCallback,
         meta: { requiresAuth: false }
     },
+    // 인스타 연동할 때 주석 풀 것임
+    // {
+    //   path: '/oauth2/instagram/callback',
+    //   name: 'instagram-oauth-callback',
+    //   component: InstagramOAuthCallback,
+    //   meta: { requiresAuth: false }
+    // },
 ];
