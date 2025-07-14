@@ -72,7 +72,9 @@
         </div>
 
         <!-- 검색 버튼 -->
-        <button type="submit" class="w-full bg-blue-400 text-white py-2 rounded">검색</button>
+        <button type="submit" class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md
+         hover:brightness-95 active:scale-95 active:brightness-90
+         transition transform shadow-sm hover:shadow-md">검색</button>
     </form>
 </template>
 
