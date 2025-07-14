@@ -2,10 +2,42 @@ import api from '@/plugin/axios.js';
 
 /* 성과 리스트 조회 */
 export const getCampaignResultList = async (params = {}) => {
-  const response = await api.get('/campaign/resultlist', {
-    params: params,
-  });
-  return response.data.data;
+  try {
+    const response = await api.get('/campaign/resultlist', {
+      params: params,
+    });
+
+    if (response.data && response.data.success) {
+      if (response.data.data && Array.isArray(response.data.data.data) && typeof response.data.data.total === 'number') {
+        return {
+          campaignList: response.data.data.data,
+          pagination: {
+            currentPage: params.page || 1,
+            size: params.size || 10,
+            totalCount: response.data.data.total, // 전체 개수
+            totalPage: Math.ceil(response.data.data.total / (params.size || 10))
+          }
+        };
+      } else {
+        console.error('API 응답 구조 오류 (내부 data):', response.data);
+        throw new Error(errorMessage);
+      }
+    } else {
+      const errorMessage = response.data?.message || 'API 응답이 성공적이지 않거나 최상위 data 필드가 없습니다.';
+      console.error('API 응답 실패:', response.data);
+      throw new Error(errorMessage);
+    }
+  } catch (error) {
+    return {
+      campaignList: [],
+      pagination: {
+        currentPage: params.page || 1,
+        size: params.size || 10,
+        totalCount: 0,
+        totalPage: 0
+      }
+    };
+  }
 };
 
 /* 인플루언서 개별 조회 */

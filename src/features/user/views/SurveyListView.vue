@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Filtering from '@/features/user/components/Filtering.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
 import SatisfactionCard from '@/features/user/components/SatisfactionCard.vue';
@@ -42,6 +42,10 @@ const handleSearch = (filters) => {
   currentPage.value = 1;
   loadSatisfactionList();
 };
+
+watch(currentPage, () => {
+  loadSatisfactionList();
+});
 
 onMounted(() => {
   loadSatisfactionList();
@@ -106,11 +110,7 @@ onMounted(() => {
       <div class="flex justify-center mt-8 mb-8">
         <PagingBar
           :totalPages="totalPages"
-          :currentPage="currentPage"
-          @update:currentPage="(val) => {
-            currentPage.value = val;
-            loadSatisfactionList();
-          }"
+          v-model:currentPage="currentPage"
         />
       </div>
     </div>

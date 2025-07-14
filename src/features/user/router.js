@@ -20,7 +20,7 @@ export const userRoutes = [
     {
         path: '/findPassword',
         name: 'findPassword',
-        component: () => import('@/features/user/views/FindPasswordView.vue'),
+        component: () => import('@/features/user/views/findPasswordView.vue'),
         meta: {
             useLayout: 'none',
         },

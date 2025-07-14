@@ -84,7 +84,10 @@ const profileImageUrl = computed(() => {
                         {{ influencer?.youtube?.name }}
                     </template>
                     <template v-else>
-                      <p class="text-gray-dark">이름 : {{ influencer?.name }}</p>
+                      <div class="flex items-center gap-1 max-w-[125px] font-bold text-sm truncate">
+                        <p class="truncate">{{ influencer?.name }}</p>
+                        <p class="text-[14px] text-gray-400 font-normal">(연동x)</p>
+                      </div>
                     </template>
                 </div>
             </div>
@@ -95,7 +98,10 @@ const profileImageUrl = computed(() => {
                 @{{ influencer?.instagram?.name }}
               </template>
               <template v-else>
-                <p class="text-gray-dark">이름 : {{ influencer?.name }}</p>
+                <div class="flex items-center gap-1 max-w-[125px] font-bold text-sm truncate">
+                  <p class="truncate">{{ influencer?.name }}</p>
+                  <p class="text-[14px] text-gray-400 font-normal">(연동x)</p>
+                </div>
               </template>
             </div>
 
@@ -118,7 +124,7 @@ const profileImageUrl = computed(() => {
               </div>
             <div v-else class="text-sm text-gray-500 py-2">
               <button
-                @click="goToDashboard('youtube')"
+                @click="router.push('/management/influencer')"
                 class="flex items-center justify-center bg-white text-black border border-black rounded-lg text-xs font-bold p-1.5 whitespace-nowrap w-[130px]"
               >
                 <Icon icon="logos:youtube-icon" width="24" height="24" class="mr-2" />
@@ -146,11 +152,11 @@ const profileImageUrl = computed(() => {
               </div>
               <div v-else class="text-sm text-gray-500 py-2">
                 <button
-                  @click="goToDashboard('youtube')"
+                  @click="router.push('/management/influencer')"
                   class="flex items-center justify-center bg-white text-black border border-black rounded-lg text-xs font-bold p-1.5 whitespace-nowrap w-[130px]"
                 >
                   <Icon icon="skill-icons:instagram" width="24" height="24" class="mr-2" />
-                  <span class="hidden md:inline">유튜브 연동</span>
+                  <span class="hidden md:inline">인스타그램 연동</span>
                 </button>
               </div>
             </div>

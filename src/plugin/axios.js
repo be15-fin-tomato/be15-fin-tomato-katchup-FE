@@ -1,10 +1,15 @@
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 import { refreshToken } from '@/features/user/api.js';
+import qs from 'qs';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
+    baseURL:
+        import.meta.env.MODE === 'development'
+            ? import.meta.env.VITE_API_BASE_URL
+            : 'https://api.tomato-katchup.xyz/api/v1',
     withCredentials: true,
+    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
 });
 
 /* 헤더에 AccessToken을 자동으로 붙이는 interceptor*/

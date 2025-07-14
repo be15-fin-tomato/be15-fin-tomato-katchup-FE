@@ -24,6 +24,7 @@
   --color-pipeline-negotiation: #83D4FF;
   --color-pipeline-contract: #D57EEB;
   --color-pipeline-aftercare: #A18CD1;
+  --color-pipeline-revenue: #7DFF78;
 
   --color-request: #3E7BFF;
   --color-complete: #2ECE36;
@@ -87,22 +88,30 @@
   /* === 버튼 === */
   /* 등록 버튼*/
   .btn-create {
-    @apply px-4 py-2 mr-2 bg-btn-gray text-white rounded-lg hover:brightness-95 active:brightness-90 transition cursor-pointer
+    @apply px-4 py-2 mr-2 bg-btn-blue text-white rounded-lg font-semibold
+    hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
+    transition transform shadow-md cursor-pointer;
   }
 
   /* 삭제 버튼 */
   .btn-delete {
-    @apply px-4 py-2 bg-gray-medium text-white rounded-lg hover:brightness-95 active:brightness-90 transition cursor-pointer
+    @apply px-4 py-2 bg-gray-medium text-white rounded-lg font-semibold
+    hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
+    transition transform shadow-md cursor-pointer;
   }
 
   /* 수정 버튼 */
   .btn-edit {
-    @apply px-4 py-2 mr-2 bg-btn-gray text-white rounded-lg hover:brightness-95 active:brightness-90 transition cursor-pointer
+    @apply px-4 py-2 mr-2 bg-btn-blue text-white rounded-lg font-semibold
+    hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
+    transition transform shadow-md cursor-pointer;
   }
 
   /* 팝업 여는 버튼 */
   .btn-open-popup {
-    @apply px-3 py-2 bg-btn-open-popup text-white rounded hover:brightness-95 active:brightness-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-3 py-2 bg-btn-open-popup text-white rounded font-semibold
+    hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
+    transition transform shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   /* === 페이지 상단 타이틀 === */

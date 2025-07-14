@@ -1,5 +1,6 @@
 import api from '@/plugin/axios.js';
 import qs from 'qs';
+import { EventSourcePolyfill } from 'event-source-polyfill';
 
 export const connectYoutube = async () => {
     return await api.get('/oauth2/authorize/youtube');
@@ -80,38 +81,30 @@ export const deleteAllNotifications = async () => {
 
 
 /* 알림 SSE 구독 */
-export const subscribeNotificationSse = ({ onMessage, onConnect, onError }) => {
-  const eventSource = new EventSource(`${import.meta.env.VITE_API_BASE_URL}/sse/subscribe`, {
+export const subscribeNotificationSse = ({ onMessage, onConnect }) => {
+  const eventSource = new EventSourcePolyfill(`${import.meta.env.VITE_API_BASE_URL}/sse/subscribe`, {
     withCredentials: true
   });
 
   eventSource.onopen = (event) => {
-    console.log('SSE 연결됨 : ', event);
     if (typeof onConnect === 'function') onConnect(event);
   };
-
-  eventSource.addEventListener('new-notification', (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      console.log('새 알림 수신 : ', data);
-      if (typeof onMessage === 'function') onMessage(data);
-    } catch (e) {
-      console.error('알림 파싱 실패 : ', e);
-    }
-  });
 
   eventSource.addEventListener('connect', (event) => {
     if (typeof onConnect === 'function') onConnect(event.data);
   });
 
-  eventSource.onerror = (error) => {
-    console.error('SSE 오류 : ', error);
-    eventSource.close();
-    if (typeof onError === 'function') onError(error);
-  };
-
+  eventSource.addEventListener('new-notification', (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (typeof onMessage === 'function') onMessage(data);
+    } catch (e) {
+      console.error('알림 파싱 실패:', e, event.data);
+    }
+  });
   return eventSource;
 };
+
 
 /* 만족도 조사 페이지 목록 조회 */
 export const fetchSatisfactionList = (params) => {

@@ -29,7 +29,7 @@ const selectCategory = (category) => {
       @click="selectCategory(category)"
       :class="[
         'px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 whitespace-nowrap',
-        selected === category
+        selected.value === category
           ? 'bg-btn-sky text-white'
           : 'text-click hover:text-black hover:bg-gray-light'
       ]"

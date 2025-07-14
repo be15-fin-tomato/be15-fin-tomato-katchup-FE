@@ -63,24 +63,45 @@ const fetchAll = async () => {
   try {
     const currentId = campaignId.value;
 
-    const allCampaignsData = await getCampaignResultList();
-    const allCampaigns = allCampaignsData.data;
+    if (!currentId) {
+      isError.value = true;
+      isLoading.value = false;
+      return;
+    }
 
-    const currentCampaign = allCampaigns.find(c => c.pipelineInfluencerId == currentId);
+    let allCampaigns = [];
+    let currentPage = 1;
+    let totalCount = 0;
+    const pageSize = 10;
+
+    do {
+      const responseData = await getCampaignResultList({ page: currentPage, size: pageSize });
+
+      if (responseData && responseData.campaignList && responseData.campaignList.length > 0) {
+        allCampaigns = allCampaigns.concat(responseData.campaignList);
+        totalCount = responseData.pagination.totalCount;
+        currentPage++;
+      } else {
+        break;
+      }
+    } while (allCampaigns.length < totalCount);
+
+    const idToFind = parseInt(currentId);
+    const currentCampaign = allCampaigns.find(c => c.pipelineInfluencerId === idToFind);
 
     if (currentCampaign) {
       campaign.value = {
-        campaignId: currentCampaign.pipelineInfluencerId,
+        campaignId: currentCampaign.pipelineId,
         campaignName: currentCampaign.name,
         influencerId: currentCampaign.pipelineInfluencerId,
         productName: currentCampaign.productName,
-        expectedRevenue: 0,
+        expectedRevenue: currentCampaign.expectedRevenue || 0,
         productPrice: 0,
-        startDate: '2023-01-01',
-        endDate: '2023-01-31',
-        name: currentCampaign.name, // CampaignHeaderCard의 name prop을 위해 추가
-        clientCompanyName: currentCampaign.clientCompanyName, // CampaignHeaderCard의 clientCompanyName prop을 위해 추가
-        registrationDate: currentCampaign.registrationDate, // CampaignHeaderCard의 registrationDate prop을 위해 추가
+        startDate: currentCampaign.startedAt || '2023-01-01',
+        endDate: currentCampaign.endedAt || '2023-01-31',
+        name: currentCampaign.name,
+        clientCompanyName: currentCampaign.clientCompanyName,
+        registrationDate: currentCampaign.registrationDate,
       };
 
       influencer.value = {
@@ -93,7 +114,6 @@ const fetchAll = async () => {
       };
 
     } else {
-      console.warn(`Campaign with ID ${currentId} not found in resultlist.`);
       isError.value = true;
       isLoading.value = false;
       return;

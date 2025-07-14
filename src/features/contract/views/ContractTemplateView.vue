@@ -167,8 +167,8 @@
         :title="selectedSmall"
         :initialContent="selectedSmall?.content"
         :initialFile="selectedSmall?.file"
-        :name="null"
-        :email="null"
+        :name="initialRecipientName"
+        :email="initialRecipientEmail"
       />
     </div>
   </div>
@@ -194,16 +194,18 @@ import { Icon } from '@iconify/vue';
 import SmallTemplateModal from '@/features/contract/components/SmallTemplateModal.vue';
 import SmallTemplateEditModal from '@/features/contract/components/SmallTemplateEditModal.vue';
 import SendEmail from '@/features/contract/components/SendEmail.vue';
+import { useRoute } from 'vue-router';
 import { fetchContractObjects, createContractObject,
   updateContractObject, deleteContractObject, fetchContractDetails,
   createContractDetail, updateContractDetail, deleteContractDetail
 } from '@/features/contract/api.js';
+import { useToast } from 'vue-toastification';
 
+const route = useRoute();
+const toast = useToast();
 
 const bigList = ref([]);
-
 const smallList = ref([]);
-
 const selectedBig = ref(null);
 const selectedSmall = ref(null);
 const showBigInput = ref(false);
@@ -215,6 +217,9 @@ const editTarget = ref(null);
 const editingBigId = ref(null);
 const editBigName = ref('');
 
+const initialRecipientEmail = ref('');
+const initialRecipientName = ref('');
+
 async function fetchBigList() {
   try {
     const data = await fetchContractObjects();
@@ -224,10 +229,21 @@ async function fetchBigList() {
     }));
 
     if (bigList.value.length > 0) {
-      selectedBig.value = bigList.value[0];
+      const initialObjectId = route.query.objectId;
+      if (initialObjectId) {
+        const found = bigList.value.find(item => item.id == initialObjectId);
+        if (found) {
+          selectedBig.value = found;
+        } else {
+          selectedBig.value = bigList.value[0];
+        }
+      } else {
+        selectedBig.value = bigList.value[0];
+      }
     }
   } catch (error) {
     console.error("큰 목록을 가져오는 데 실패했습니다:", error);
+    toast.error('템플릿 종류 목록을 가져오는 데 실패했습니다.');
     bigList.value = [
       { id: 1, name: '계약서 (API 로드 실패)' },
       { id: 2, name: '이메일 (API 로드 실패)' },
@@ -271,6 +287,7 @@ async function fetchSmallListAndDetails(objectId, detailId = null) {
     }
   } catch (error) {
     console.error(`작은 목록 및 상세 정보 (ObjectID: ${objectId}) 가져오기 실패:`, error);
+    toast.error('템플릿 목록 및 상세 정보를 가져오는 데 실패했습니다.');
     smallList.value = [];
     selectedSmall.value = null;
   }
@@ -278,11 +295,23 @@ async function fetchSmallListAndDetails(objectId, detailId = null) {
 
 onMounted(() => {
   fetchBigList();
+  if (route.query.recipientEmail) {
+    initialRecipientEmail.value = route.query.recipientEmail;
+  }
+  if (route.query.recipientName) {
+    initialRecipientName.value = route.query.recipientName;
+  }
 });
 
 watch(selectedBig, (newVal) => {
   if (newVal) {
-    fetchSmallListAndDetails(newVal.id);
+    // URL 쿼리에 detailId가 있다면 해당 detail을 먼저 로드 시도
+    const initialDetailId = route.query.detailId;
+    if (newVal.id == route.query.objectId && initialDetailId) {
+      fetchSmallListAndDetails(newVal.id, initialDetailId);
+    } else {
+      fetchSmallListAndDetails(newVal.id);
+    }
   } else {
     smallList.value = [];
     selectedSmall.value = null;
@@ -294,7 +323,6 @@ const selectSmallItem = (item) => {
   fetchSmallListAndDetails(selectedBig.value.id, item.id);
 };
 
-
 function startEditBig(item) {
   editingBigId.value = item.id;
   editBigName.value = item.name;
@@ -303,25 +331,26 @@ function startEditBig(item) {
 async function confirmEditBig(item) {
   const newName = editBigName.value.trim();
   if (!newName) {
-    alert('이름을 입력해주세요.');
+    toast.warning('이름을 입력해주세요.');
     return;
   }
   if (bigList.value.some((b) => b.name === newName && b.id !== item.id)) {
-    alert('이미 존재하는 이름입니다.');
+    toast.warning('이미 존재하는 이름입니다.');
     return;
   }
 
   try {
     const response = await updateContractObject(item.id, newName);
     if (response.success) {
+      toast.success('템플릿 종류가 성공적으로 수정되었습니다.');
       await fetchBigList();
       editingBigId.value = null;
       editBigName.value = '';
     } else {
-      alert(`목적 수정 실패: ${response.message || '알 수 없는 오류'}`);
+      toast.error(`템플릿 종류 수정 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    alert('목적 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    toast.error('템플릿 종류 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
     console.error('목적 수정 API 호출 중 에러:', error);
   }
 }
@@ -333,7 +362,7 @@ function cancelEditBig() {
 
 async function handleAddSmall(newItem) {
   if (!selectedBig.value) {
-    alert('먼저 큰 종류를 선택해주세요.');
+    toast.warning('먼저 큰 종류를 선택해주세요.');
     return;
   }
 
@@ -347,14 +376,14 @@ async function handleAddSmall(newItem) {
   try {
     const response = await createContractDetail(requestData, fileToUpload);
     if (response.success) {
-      alert('계약서 상세 템플릿이 성공적으로 생성되었습니다.');
+      toast.success('템플릿이 성공적으로 생성되었습니다.');
       await fetchSmallListAndDetails(selectedBig.value.id);
       showSmallModal.value = false;
     } else {
-      alert(`계약서 상세 템플릿 생성 실패: ${response.message || '알 수 없는 오류'}`);
+      toast.error(`템플릿 생성 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    alert('계약서 상세 템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    toast.error('템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
     console.error('계약서 상세 템플릿 생성 API 호출 중 에러:', error);
   }
 }
@@ -365,20 +394,19 @@ async function handleUpdateSmall(updatedData) {
   try {
     const response = await updateContractDetail(detailId, requestData, file);
     if (response.success) {
-      alert('계약서 상세 템플릿이 성공적으로 수정되었습니다.');
+      toast.success('템플릿이 성공적으로 수정되었습니다.');
       await fetchSmallListAndDetails(selectedBig.value.id, detailId);
       showEditModal.value = false;
     } else {
-      alert(`계약서 상세 템플릿 수정 실패: ${response.message || '알 수 없는 오류'}`);
+      toast.error(`템플릿 수정 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    alert('계약서 상세 템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    toast.error('템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
     console.error('계약서 상세 템플릿 수정 API 호출 중 에러:', error);
   }
 }
 
 const filteredSmallList = computed(() => smallList.value);
-
 
 function editItem(item) {
   editTarget.value = { ...item };
@@ -387,6 +415,7 @@ function editItem(item) {
 
 async function deleteItem(item, type) {
   if (type === 'big') {
+
     if (!confirm(`정말로 "${item.name}" 종류를 삭제하시겠습니까? 이 종류에 속한 모든 하위 템플릿도 삭제됩니다.`)) {
       return;
     }
@@ -394,19 +423,20 @@ async function deleteItem(item, type) {
     try {
       const response = await deleteContractObject(item.id);
       if (response.success) {
+        toast.success('템플릿 종류가 성공적으로 삭제되었습니다.');
         await fetchBigList();
         if (selectedBig.value?.id === item.id) {
-          selectedBig.value = bigList.value[0] || null;
+          selectedBig.value = bigList.value[0] || null; // 삭제된 경우 첫 번째 항목으로 대체
         }
         smallList.value = smallList.value.filter(s => s.parentId !== item.id);
         if (selectedSmall.value && selectedSmall.value.parentId === item.id) {
           selectedSmall.value = null;
         }
       } else {
-        alert(`목적 삭제 실패: ${response.message || '알 수 없는 오류'}`);
+        toast.error(`템플릿 종류 삭제 실패: ${response.message || '알 수 없는 오류'}`);
       }
     } catch (error) {
-      alert('목적 삭제 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+      toast.error('템플릿 종류 삭제 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
       console.error('목적 삭제 API 호출 중 에러:', error);
     }
 
@@ -417,13 +447,13 @@ async function deleteItem(item, type) {
     try {
       const response = await deleteContractDetail(item.id);
       if (response.success) {
-        alert('계약서 상세 템플릿이 성공적으로 삭제되었습니다.');
+        toast.success('템플릿이 성공적으로 삭제되었습니다.');
         await fetchSmallListAndDetails(selectedBig.value.id);
       } else {
-        alert(`계약서 상세 템플릿 삭제 실패: ${response.message || '알 수 없는 오류'}`);
+        toast.error(`템플릿 삭제 실패: ${response.message || '알 수 없는 오류'}`);
       }
     } catch (error) {
-      alert('계약서 상세 템플릿 삭제 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+      toast.error('템플릿 삭제 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
       console.error('계약서 상세 템플릿 삭제 API 호출 중 에러:', error);
     }
   }
@@ -432,26 +462,27 @@ async function deleteItem(item, type) {
 async function confirmAddBig() {
   const name = newBigName.value.trim();
   if (!name) {
-    alert('이름을 입력해주세요.');
+    toast.warning('이름을 입력해주세요.');
     return;
   }
   if (bigList.value.some((item) => item.name === name)) {
-    alert('이미 존재하는 이름입니다.');
+    toast.warning('이미 존재하는 이름입니다.');
     return;
   }
 
   try {
     const response = await createContractObject(name);
     if (response.success) {
+      toast.success('템플릿 종류가 성공적으로 생성되었습니다.');
       await fetchBigList();
       newBigName.value = '';
       showBigInput.value = false;
     } else {
-      alert(`목적 생성 실패: ${response.message || '알 수 없는 오류'}`);
+      toast.error(`템플릿 종류 생성 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    alert('목적 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
-    console.error('목적 생성 API 호출 중 에러:', error);
+    toast.error('템플릿 종류 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    console.error('종류 생성 API 호출 중 에러:', error);
   }
 }
 
@@ -460,3 +491,6 @@ function cancelAddBig() {
   showBigInput.value = false;
 }
 </script>
+
+<style scoped>
+</style>

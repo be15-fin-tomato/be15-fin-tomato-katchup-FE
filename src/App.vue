@@ -70,15 +70,12 @@ const openChatRoom = (room) => {
 };
 
 onMounted(async () => {
-    console.log('✅ App.vue mounted');
-
     // 서비스워커 등록
     if ('serviceWorker' in navigator) {
         try {
-            const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-            console.log('✅ 서비스워커 등록 성공:', swReg);
+            await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         } catch (err) {
-            console.error('❌ 서비스워커 등록 실패:', err);
+            console.error('서비스워커 등록 실패:', err);
         }
     }
 
@@ -87,7 +84,7 @@ onMounted(async () => {
         if (Notification.permission === 'default') {
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
-                console.warn('🚫 알림 권한 거부됨');
+                console.warn('알림 권한 거부됨');
             }
         }
     }
@@ -106,15 +103,10 @@ onMounted(async () => {
 
         if (token) {
             await registerFcmToken(token);
-            console.log('🚀 FCM 토큰 서버 전송 완료');
-        } else {
-            console.warn('⚠️ FCM 토큰 없음');
         }
 
         // 포그라운드 알림 수신 및 직접 Notification 표시
         onMessage(messaging, (payload) => {
-            console.log('📨 [포그라운드] 메시지 수신:', payload);
-
             if (Notification.permission === 'granted' && payload.notification) {
                 const { title, body } = payload.notification;
                 new Notification(title, {
@@ -124,7 +116,7 @@ onMounted(async () => {
             }
         });
     } catch (err) {
-        console.error('🔥 FCM 초기화 또는 토큰 요청 오류:', err);
+        console.error('FCM 초기화 또는 토큰 요청 오류:', err);
     }
 
     await fetchInitialChatRooms();

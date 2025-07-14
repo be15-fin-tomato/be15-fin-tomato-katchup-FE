@@ -12,7 +12,7 @@ import {
   fetchInfluencerDetail,
   fetchYoutubeInfo,
   fetchSatisfaction,
-  fetchTopVideos
+  fetchTopVideos, fetchInstagramInfo
 } from '@/features/dashboard/api.js';
 import { formatNumber } from '@/utils/fomatters.js';
 
@@ -28,22 +28,29 @@ const influencerId = route.query.id
 
 onMounted(async () => {
   try {
-    const [youtubeRes, influencerRes, satisfactionRes, topVideoRes] = await Promise.all([
+    const [youtubeRes, instagramRes, influencerRes, satisfactionRes, topVideoRes] = await Promise.all([
       fetchYoutubeInfo(influencerId),    // YouTube 대시보드 데이터
+      fetchInstagramInfo(influencerId),
       fetchInfluencerDetail(influencerId), // 인플루언서 프로필 정보
       fetchSatisfaction(influencerId), // 인플루언서 평균 만족도
       fetchTopVideos(influencerId), // 인플루언서 인기 동영상
     ])
 
     const youtubeRawData = youtubeRes?.data?.data?.[0];
+    const instagramRawData = instagramRes?.data?.data?.[0];
     const influencerData = influencerRes
     const satisfactionData = satisfactionRes?.data?.data;
     const topVideoListData = topVideoRes.data?.data || [];
 
     if (!youtubeRawData) {
-      toast.warning('YouTube 계정이 연결되어있지 않습니다.')
-      router.replace('/influencer/list')
-      return
+      if(instagramRawData){
+        toast.success("유튜브 데이터가 없어 유튜브 대시보드로 이동합니다.")
+        router.replace(`/influencer/dashboard/instagram?id=${influencerId}`)
+      } else {
+        toast.warning('계정이 모두 연결되어 있지 않습니다.')
+        router.replace(`/influencer/list`)
+      }
+      return;
     }
 
     dashboard.value = {

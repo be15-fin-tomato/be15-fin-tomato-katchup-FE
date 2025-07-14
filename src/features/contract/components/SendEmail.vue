@@ -6,8 +6,7 @@
       <label class="w-[76px] font-semibold">이름</label>
       <input
         type="text"
-        :value="name"
-        disabled
+        :value="form.email?.name ?? ''" disabled
         class="border px-2 py-1 rounded w-[10%] bg-gray-100 border-gray-dark"
       />
     </div>
@@ -16,8 +15,7 @@
       <label class="w-[75px] font-semibold">이메일</label>
       <input
         type="email"
-        :value="form.email?.email ?? ''"
-        disabled
+        :value="form.email?.email ?? ''" disabled
         class="border px-2 py-1 rounded w-[20%] bg-gray-100 border-gray-dark"
       />
       <button
@@ -114,16 +112,13 @@ import { useToast } from "vue-toastification";
 const props = defineProps({
   name: String,
   email: String,
-  title: Object, // selectedSmall 객체를 받는 prop
+  title: Object,
   initialContent: String,
-  initialFile: Object, // file 객체를 받는 prop (fileId, originalName, program 등 포함)
+  initialFile: Object,
 });
 
 const editorContent = ref('');
 const emailTitle = ref(''); // 이메일 제목 필드 (v-model="emailTitle"에 바인딩)
-
-const name = ref('');
-const email = ref('');
 
 const currentFieldKey = ref('');
 const form = ref({
@@ -137,14 +132,9 @@ const isSending = ref(false);
 
 const toast = useToast();
 
-watch(() => props.name, (newName) => {
-  name.value = newName || '';
-}, { immediate: true });
-
-watch(() => props.email, (newEmail) => {
-  email.value = newEmail || '';
+watch(() => [props.name, props.email], ([newName, newEmail]) => {
   if (newEmail) {
-    form.value.email = { email: newEmail };
+    form.value.email = { email: newEmail, name: newName || '' };
   } else {
     form.value.email = null;
   }
@@ -196,20 +186,17 @@ const openSearchPopup = (key, type) => {
   const currentValue = form.value[key];
   const selected = currentValue?.id ?? '';
 
+  const currentEmail = form.value.email?.email || '';
+  const currentName = form.value.email?.name || '';
+
   const popup = window.open(
-    `/search-popup?type=${type}&selected=${encodeURIComponent(selected)}&labelKey=fullLabel`,
+    `/search-popup?type=${type}&selected=${encodeURIComponent(selected)}&labelKey=fullLabel&email=${encodeURIComponent(currentEmail)}&name=${encodeURIComponent(currentName)}`,
     'SearchPopup',
     'width=500,height=600',
   );
 
   window.handleUserSelect = (selectedItem) => {
     form.value[currentFieldKey.value] = selectedItem;
-
-    if (key === 'email') {
-      name.value = selectedItem.name;
-      email.value = selectedItem.email;
-    }
-
     popup.close();
   };
 };
@@ -254,8 +241,9 @@ watch(editorContent, (newValue) => {
 
 const sendEmail = async () => {
   console.log("--- 전송 버튼 클릭됨 ---");
+  console.log("수신자 이름:", form.value.email?.name);
   console.log("수신자 이메일:", form.value.email?.email);
-  console.log("제목:", emailTitle.value); // 변경된 emailTitle 사용
+  console.log("제목:", emailTitle.value);
   console.log("Quill Editor 내용 (HTML):", editorContent.value);
   console.log("첨부 파일들:", attachedFiles.value);
   console.log("-----------------------");
@@ -264,7 +252,7 @@ const sendEmail = async () => {
     toast.error('수신자 이메일을 선택하거나 입력해주세요.');
     return;
   }
-  if (!emailTitle.value.trim()) { // 변경된 emailTitle 사용
+  if (!emailTitle.value.trim()) {
     toast.error('이메일 제목을 입력해주세요.');
     return;
   }
@@ -289,7 +277,7 @@ const sendEmail = async () => {
 
   const requestData = {
     content: editorContent.value,
-    title: emailTitle.value, // 변경된 emailTitle 사용
+    title: emailTitle.value,
     targetEmail: form.value.email.email,
     fileId: fileIdToSend,
   };
@@ -300,11 +288,9 @@ const sendEmail = async () => {
 
     if (response.success) {
       toast.success('이메일이 성공적으로 전송되었습니다.');
-      name.value = '';
-      email.value = '';
-      emailTitle.value = ''; // 변경된 emailTitle 초기화
+      emailTitle.value = '';
       editorContent.value = '';
-      form.value.email = null;
+      form.value.email = null; // 이름과 이메일 필드를 모두 초기화
       attachedFiles.value = [];
       if (fileInput.value) {
         fileInput.value.value = '';
