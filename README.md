@@ -57,9 +57,7 @@
 
 <a href="#4">4. 시스템 통합 </a>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#4-1">4-1. CI/CD 계획서</a>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#4-2">4-2. 통합 테스트 결과서</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#4-1">4-1. 통합 테스트 결과서</a>
 
 <a href="#5">5. 트러블 슈팅 </a>
 
@@ -513,11 +511,7 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 
 ## <p id="4"> 4. 시스템 통합</p>
 
-## <p id="4-1">4-1. CI/CD 계획서</p>
-
----
-
-## <p id="4-2">4-2. 통합 테스트 결과서</p>
+## <p id="4-1">4-1. 통합 테스트 결과서</p>
 
 ---
 
