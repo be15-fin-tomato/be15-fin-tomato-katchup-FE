@@ -2,8 +2,10 @@
 import { reactive, ref, watch, nextTick, toRaw } from 'vue';
 import { Icon } from '@iconify/vue';
 import { useToast } from 'vue-toastification';
+import { useRouter } from 'vue-router';
 
 const toast = useToast();
+const router = useRouter();
 
 const props = defineProps({
   isEditing: { type: Boolean, default: false },
@@ -327,20 +329,20 @@ watch(isAddingEmployee, (val) => {
             </p>
           </div>
             <div class="flex gap-2">
-                <button class="btn-icon" v-if="!isEditing">
-                    <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-                    MAIL
+              <button class="btn-icon" v-if="!isEditing" @click="router.push('/contract/template')">
+                <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                MAIL
+              </button>
+              <template v-if="isEditing">
+                <button class="btn-icon" @click="editEmployee(index)">
+                  <Icon icon="lucide:edit" width="20" height="20" />
+                  수정
                 </button>
-                <template v-if="isEditing">
-                    <button class="btn-icon" @click="editEmployee(index)">
-                        <Icon icon="lucide:edit" width="20" height="20" />
-                        수정
-                    </button>
-                    <button class="btn-icon" @click="deleteEmployee(index)">
-                        <Icon icon="gg:trash" width="20" height="20" />
-                        삭제
-                    </button>
-                </template>
+                <button class="btn-icon" @click="deleteEmployee(index)">
+                  <Icon icon="gg:trash" width="20" height="20" />
+                  삭제
+                </button>
+              </template>
             </div>
         </div>
       </div>
