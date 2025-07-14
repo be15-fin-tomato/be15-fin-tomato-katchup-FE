@@ -4,7 +4,7 @@ import defaultThumbnail from '@/assets/images/logo.png';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
-import { requestYoutubeAuthUrl } from '@/features/influencer/api.js';
+import { disconnectYoutube, requestYoutubeAuthUrl } from '@/features/influencer/api.js';
 import { useToast } from 'vue-toastification';
 
 const props = defineProps({
@@ -48,6 +48,17 @@ const handleYoutubeConnect = async () => {
   } catch (error) {
     console.error('YouTube 연동 중 오류 발생:', error);
     toast.error('유튜브 연동에 실패했습니다. 다시 시도해주세요.');
+  }
+};
+
+const handleYoutubeDisconnect = async () => {
+  try {
+    await disconnectYoutube(props.id);
+    toast.success('유튜브 연동이 성공적으로 해제되었습니다!');
+    console.log('YouTube 연동 해제 성공');
+  } catch (error) {
+    toast.error('유튜브 연동 해제에 실패했습니다. 다시 시도해주세요.');
+    console.error('YouTube 연동 해제 중 오류 발생:', error);
   }
 };
 
@@ -103,6 +114,7 @@ const handleInstagramIdConfirmed = (id) => {
       </div>
     </div>
     <div class="flex-1 flex-wrap min-w-0">
+      <!-- 인스타그램 -->
       <div
         class="flex flex-wrap gap-1 mb-2 border px-3 py-2 rounded-lg justify-between items-center"
       >
@@ -129,11 +141,18 @@ const handleInstagramIdConfirmed = (id) => {
           <Icon icon="solar:link-round-bold" width="20" height="20" />
           연동
         </button>
-        <span v-else class="text-green-600 font-bold px-2 py-1 rounded-md bg-green-50">
-          연결됨
-        </span>
+
+        <button
+          v-else
+          @click="handleYoutubeDisconnect"
+          class="flex px-2 h-[40px] border-[1px] border-red-600 rounded-lg items-center justify-center gap-1 font-bold text-red-600 hover:bg-red-50 transition-colors"
+        >
+          <Icon icon="solar:link-round-bold" width="20" height="20" />
+          해제
+        </button>
       </div>
 
+      <!-- 인스타그램 -->
       <div
         class="flex flex-wrap gap-1 border px-3 py-2 rounded-lg justify-between items-center"
       >
@@ -160,9 +179,13 @@ const handleInstagramIdConfirmed = (id) => {
           <Icon icon="solar:link-round-bold" width="20" height="20" />
           연동
         </button>
-        <span v-else class="text-green-600 font-bold px-2 py-1 rounded-md bg-green-50">
-          연결됨
-        </span>
+        <button
+          v-else @click="handleInstagramUnConnect"
+          class="flex px-2 h-[40px] border-[1px] border-red-600 rounded-lg items-center justify-center gap-1 font-bold text-red-600 hover:bg-red-50 transition-colors"
+        >
+          <Icon icon="solar:link-round-bold" width="20" height="20" />
+          해제
+        </button>
       </div>
     </div>
 
