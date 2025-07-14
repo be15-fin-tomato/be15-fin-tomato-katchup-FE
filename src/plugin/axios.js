@@ -4,11 +4,12 @@ import { refreshToken } from '@/features/user/api.js';
 import qs from 'qs';
 
 const api = axios.create({
-    // baseURL: import.meta.env.VITE_API_BASE_URL,
-    // 임시 배포용 URL => 매번 바뀜
-    baseURL: 'https://api.tomato-katchup.xyz/api/v1',
+    baseURL:
+        import.meta.env.MODE === 'development'
+            ? import.meta.env.VITE_API_BASE_URL
+            : 'https://api.tomato-katchup.xyz/api/v1',
     withCredentials: true,
-    paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
+    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
 });
 
 /* 헤더에 AccessToken을 자동으로 붙이는 interceptor*/
