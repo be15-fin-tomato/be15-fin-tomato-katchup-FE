@@ -104,13 +104,17 @@ const selectedCampaignId = ref(null);
 const selectedMsg = ref(null);
 
 // 선택된 캠페인에 따라 필터링된 이력
-const filteredHistories = computed(() =>
-  selectedCampaignId.value === null
-    ? communicationHistories.value
-    : communicationHistories.value.filter(
+const filteredHistories = computed(() => {
+  const historiesWithoutListup = communicationHistories.value.filter(
+    (h) => h.category !== '리스트업' // '리스트업'인 경우 제외
+  );
+
+  return selectedCampaignId.value === null
+    ? historiesWithoutListup
+    : historiesWithoutListup.filter(
       (h) => h.campaignId === selectedCampaignId.value
-    )
-);
+    );
+});
 
 // PDF Viewer 관련
 const isPdfModalOpen = ref(false);
@@ -378,6 +382,7 @@ const handleDeleteCompany = async () => {
         'bg-pipeline-quotation': selectedMsg.category === '견적',
         'bg-pipeline-list-up': selectedMsg.category === '리스트업',
         'bg-pipeline-chance': selectedMsg.category === '기회인지',
+        'bg-pipeline-revenue': selectedMsg.category === '매출',
       }"
     >
       {{ selectedMsg.category }}
