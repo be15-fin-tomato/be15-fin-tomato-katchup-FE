@@ -25,6 +25,7 @@ const isNotificationOpen = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
 let sseSource = null;
+let reconnectTimeout = null;
 
 const userInfo = ref({
   name: '',
@@ -48,6 +49,8 @@ const getHeaderUserInfo = async () => {
     userInfo.value.name = data.name;
     userInfo.value.position = data.position;
     userInfo.value.profileImg = data.fileRoute || '/tomato.png';
+
+    startSse();
   } catch (error) {
     console.error('헤더 사용자 정보 조회 실패 : ', error);
   }
@@ -145,6 +148,10 @@ function formatDateTime(date) {
 
 // SSE 구독
 const startSse = () => {
+  if (sseSource) {
+    sseSource.close();
+  }
+
   sseSource = subscribeNotificationSse({
     onMessage: (data) => {
       notifications.value.unshift({
@@ -159,10 +166,25 @@ const startSse = () => {
     },
 
     onConnect: (msg) => {
-      console.log('서버 연결 성공 : ', msg);
+      console.log('SSE 연결됨: ', msg);
     },
+
     onError: (err) => {
-      console.error('SSE 오류 : ', err);
+      console.error('SSE 연결 끊김: ', err);
+
+      if (sseSource) {
+        sseSource.close();
+        sseSource = null;
+      }
+
+      // 재연결 시도 (3초 후)
+      if (!reconnectTimeout) {
+        reconnectTimeout = setTimeout(() => {
+          console.log('SSE 재연결 시도...');
+          startSse();
+          reconnectTimeout = null;
+        }, 3000); // 3초 후 재연결
+      }
     }
   });
 };
@@ -170,13 +192,19 @@ const startSse = () => {
 onMounted(() => {
   getHeaderUserInfo();
   getNotifications();
-  startSse();
   document.addEventListener('click', handleClickOutside);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
-  if (sseSource) sseSource.close();
+  if (sseSource) {
+    sseSource.close();
+    sseSource = null;
+  }
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
+  }
 });
 </script>
 

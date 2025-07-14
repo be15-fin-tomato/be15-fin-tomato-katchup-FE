@@ -26,6 +26,7 @@
     "chart.js": "^4.5.0",
     "chartjs-plugin-datalabels": "^2.2.0",
     "cors": "^2.8.5",
+    "event-source-polyfill": "^1.0.31",
     "express": "^5.1.0",
     "firebase": "^11.10.0",
     "google-trends-api": "^4.9.2",
