@@ -87,7 +87,7 @@ const applyFilter = () => {
     <!-- 검색 버튼 -->
     <button
       @click="applyFilter"
-      class="w-full bg-btn-gray text-white font-semibold py-2 rounded-md"
+      class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md"
     >
       검색
     </button>

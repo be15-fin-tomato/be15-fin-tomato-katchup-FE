@@ -198,7 +198,7 @@ const handleDeleteCompany = async () => {
               icon="material-symbols:lists-rounded"
               width="48"
               height="48"
-              class="text-btn-gray cursor-pointer"
+              class="text-btn-blue cursor-pointer"
               @click="router.push('/management/client')"
             />
           </div>
@@ -264,7 +264,7 @@ const handleDeleteCompany = async () => {
           <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
           <td class="px-4 whitespace-nowrap">
             <RouterLink
-              :to="`/dashboard/campaign-result?id=${c.campaignId}`"
+              :to="`/campaign/dashboard/${c.pipelineInfluencerId}`"
               class="text-primary underline hover:font-medium"
             >
               보러가기
