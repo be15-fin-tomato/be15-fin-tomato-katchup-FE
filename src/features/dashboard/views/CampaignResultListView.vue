@@ -29,13 +29,13 @@
           데이터를 불러오는 중입니다...
         </p>
       </template>
-      <template v-else-if="campaignResultList.length === 0">
+      <template v-else-if="campaignResultList.length === 0 && !isLoading">
         <p class="col-span-2 text-center text-gray-dark py-10">데이터가 없습니다.</p>
       </template>
       <template v-else>
         <SalesCards
           v-for="campaignResult in campaignResultList"
-          :key="campaignResult.pipelineId"
+          :key="campaignResult.pipelineInfluencerId"
           :managementOption="campaignResult"
           :openMenuId="menuOpenId"
           :pageType="'campaignResult'"
@@ -119,9 +119,9 @@ const fetchCampaignResultList = async () => {
 
     const apiResponse = await getCampaignResultList(params);
 
-    // API 응답 구조가 { data: [캠페인 결과 목록], total: 총 개수 } 인지 확인
-    campaignResultList.value = apiResponse.data || [];
-    total.value = apiResponse.total || 0; // 백엔드에서 받은 total 값을 사용
+    // API 응답 구조가 { campaignList: [캠페인 결과 목록], pagination: { totalCount: N, ... } } 인지 확인
+    campaignResultList.value = apiResponse.campaignList || [];
+    total.value = apiResponse.pagination.totalCount || 0; // pagination 객체 안의 totalCount 사용
 
     console.log('백엔드에서 가져온 캠페인 결과 (프론트엔드):', campaignResultList.value);
     console.log('총 결과 개수 (프론트엔드):', total.value);
