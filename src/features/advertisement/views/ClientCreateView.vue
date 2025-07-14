@@ -55,7 +55,7 @@ const handleSave = async () => {
               icon="material-symbols:lists-rounded"
               width="48"
               height="48"
-              class="text-btn-gray cursor-pointer"
+              class="text-btn-blue cursor-pointer"
               @click="router.push('/management/client')"
             />
 
