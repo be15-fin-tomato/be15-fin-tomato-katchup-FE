@@ -1,109 +1,185 @@
-<template>
-  <div class="relative w-full p-4 border border-[color:var(--color-gray-dark)] rounded-xl bg-white font-sans flex flex-col min-h-[240px]">
-    <div class="absolute top-5 right-5">
-      <button class="flex flex-col gap-[2px]" @click="toggleDropdown">
-        <span class="w-1 h-1 bg-black rounded-full" v-for="i in 3" :key="i"></span>
-      </button>
+<script setup>
+import { ref } from 'vue';
+import defaultThumbnail from '@/assets/images/logo.png';
+import { Icon } from '@iconify/vue';
+import { TAG_COLOR_MAP } from '@/constants/tags.js';
+import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
+import { requestYoutubeAuthUrl } from '@/features/influencer/api.js';
+import { useToast } from 'vue-toastification';
 
-      <div
-        v-if="showDropdown"
-        class="absolute top-0 right-7 flex flex-col bg-white border border-[color:var(--color-gray-medium)] rounded shadow-md z-10"
-      >
-        <div
-          class="w-[100px] px-3 py-2 text-sm text-center whitespace-nowrap bg-[color:var(--color-gray-medium)] hover:bg-[color:var(--color-dropdown)] cursor-pointer"
+const props = defineProps({
+    id: Number,
+    name: String,
+    realName: String,
+    subscribers: String,
+    instagram: String,
+    instaFollowers: String, // 이제 null일 수 있음
+    tags: Array,
+    ownerName: String,
+    thumbnail: String,
+    _originalData: Object,
+});
+
+const toast = useToast();
+
+const emit = defineEmits(['edit', 'delete']);
+
+const isInstagramConnectModalOpen = ref(false);
+const currentInfluencerIdForInstagram = ref(null);
+
+const handleEdit = () => {
+    emit('edit', { ...props, _originalData: props._originalData });
+};
+
+const handleDelete = () => {
+    emit('delete', props.id);
+};
+
+const handleYoutubeConnect = async () => {
+  try {
+    const authUrl = await requestYoutubeAuthUrl(props.id);
+
+    if (authUrl) {
+      console.log('유튜브 인증 URL:', authUrl);
+      window.location.href = authUrl;
+    } else {
+      toast.error('유튜브 인증 URL을 가져오지 못했습니다.');
+    }
+  } catch (error) {
+    console.error('YouTube 연동 중 오류 발생:', error);
+    toast.error('유튜브 연동에 실패했습니다. 다시 시도해주세요.');
+  }
+};
+
+const openInstagramConnectModal = () => {
+  isInstagramConnectModalOpen.value = true;
+  currentInfluencerIdForInstagram.value = props.id;
+};
+
+const handleInstagramIdConfirmed = (id) => {
+  currentInfluencerIdForInstagram.value = id;
+  isInstagramConnectModalOpen.value = false;
+  console.log('Instagram 연동을 위한 인플루언서 ID 확인:', id);
+  alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
+  // TODO: 인스타그램 연동 로직 등록
+};
+</script>
+
+<template>
+  <div
+    class="flex flex-col gap-3 relative w-full p-4 border border-gray-dark rounded-xl min-h-[240px]"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <img
+          :src="thumbnail || defaultThumbnail"
+          alt="thumbnail"
+          class="w-[70px] h-[70px] rounded-full object-cover border border-color-gray-light"
+        />
+        <div class="flex flex-col ml-3">
+          <div class="flex items-center gap-1">
+            <Icon icon="stash:star-duotone" class="w-5 h-5" />
+            <span v-if="realName">{{ realName }}</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-gray-dark">
+            <Icon icon="tdesign:user" class="w-4 h-4" />
+            <span class="truncate">담당자 : {{ ownerName }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button
+          class="px-3 h-[40px] text-sm rounded-md text-center text-black whitespace-nowrap bg-btn-blue drop-shadow-md border border-gray-medium hover:bg-btn-sky cursor-pointer"
           @click="handleEdit"
         >
-          수정하기
-        </div>
-        <div
-          class="w-[100px] px-3 py-2 text-sm text-center whitespace-nowrap bg-[color:var(--color-gray-medium)] hover:bg-[color:var(--color-dropdown)] cursor-pointer"
+          수정
+        </button>
+        <button
+          class="px-3 h-[40px] text-sm rounded-md text-center text-black whitespace-nowrap bg-gray-light border border-gray-medium drop-shadow-md hover:bg-btn-sky cursor-pointer"
           @click="handleDelete"
         >
-          삭제하기
+          삭제
+        </button>
+      </div>
+    </div>
+    <div class="flex-1 flex-wrap min-w-0">
+      <div
+        class="flex flex-wrap gap-1 mb-2 border px-3 py-2 rounded-lg justify-between items-center"
+      >
+        <div class="flex flex-col flex-wrap">
+          <div class="flex flex-wrap items-center gap-2 text-base font-medium">
+            <Icon icon="logos:youtube-icon" class="w-7 h-7" />
+            <span
+              class="font-bold truncate max-w-[155px]"
+              :title="name"
+              :class="{'text-gray-500': name === '미연결'}"
+            >
+              {{ name }}
+            </span>
+          </div>
+          <div v-if="subscribers" class="text-sm text-gray-dark truncate">
+            구독자 {{ subscribers }}
+          </div>
         </div>
+        <button
+          v-if="name === '미연결'"
+          @click="handleYoutubeConnect"
+          class="flex px-2 h-[40px] border-[1px] border-blue-600 rounded-lg items-center justify-center gap-1 font-bold text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+          <Icon icon="solar:link-round-bold" width="20" height="20" />
+          연동
+        </button>
+        <span v-else class="text-green-600 font-bold px-2 py-1 rounded-md bg-green-50">
+          연결됨
+        </span>
+      </div>
+
+      <div
+        class="flex flex-wrap gap-1 border px-3 py-2 rounded-lg justify-between items-center"
+      >
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2 text-base font-medium">
+            <Icon icon="skill-icons:instagram" class="w-7 h-7" />
+            <span
+              class="font-bold truncate"
+              :title="instagram"
+              :class="{'text-gray-500': instagram === '미연결'}"
+            >
+                            {{ instagram }}
+                        </span>
+          </div>
+          <div v-if="instaFollowers" class="text-sm text-gray-dark truncate">
+            팔로워 {{ instaFollowers }}
+          </div>
+        </div>
+        <button
+          v-if="instagram === '미연결'"
+          @click="openInstagramConnectModal"
+          class="flex px-2 h-[40px] border-[1px] border-blue-600 rounded-lg items-center justify-center gap-1 font-bold text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+          <Icon icon="solar:link-round-bold" width="20" height="20" />
+          연동
+        </button>
+        <span v-else class="text-green-600 font-bold px-2 py-1 rounded-md bg-green-50">
+          연결됨
+        </span>
       </div>
     </div>
 
-    <div class="flex gap-5 items-start mb-3 ml-2 flex-wrap">
-      <img
-        :src="thumbnail || defaultThumbnail"
-        alt="thumbnail"
-        class="w-[90px] h-[90px] rounded-full object-cover border border-[color:var(--color-gray-light)]"
-      />
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 text-base font-medium mb-1 mt-2">
-          <Icon icon="logos:youtube-icon" class="w-7 h-6" />
-          <span class="font-bold text-[color:var(--color-click)] truncate">
-            {{ name }}
-          </span>
-          <span v-if="realName" class="text-xs text-gray-500 truncate">
-            ({{ realName }})
-          </span>
-        </div>
-
-        <div class="text-sm text-[color:var(--color-gray-dark)] mb-2 truncate">
-          {{ subscribers }}
-        </div>
-
-        <div class="flex items-center gap-3 text-base font-medium mb-1">
-          <Icon icon="skill-icons:instagram" class="w-7 h-6" />
-          <span class="font-bold truncate">{{ instagram }}</span>
-        </div>
-        <div v-if="instaFollowers" class="text-sm text-[color:var(--color-gray-dark)] mb-2 truncate">
-          {{ instaFollowers }}
-        </div>
-        <div class="flex flex-wrap gap-1 text-xs font-bold leading-snug text-black mt-2">
-          <span
-            v-for="(tag, index) in tags"
-            :key="index"
-            :class="[TAG_COLOR_MAP[tag] || 'bg-gray-200 text-black', 'px-2 py-1 rounded-full']"
-          >
-            #{{ tag }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-1 text-sm text-[color:var(--color-gray-dark)] mt-auto pl-[2px]">
-      <Icon icon="tdesign:user" class="w-4 h-4" />
-      <span class="truncate">{{ ownerName }}</span>
+    <InstagramConnectModal
+      v-if="isInstagramConnectModalOpen"
+      @close="isInstagramConnectModalOpen = false"
+      @confirm="handleInstagramIdConfirmed"
+      :influencerId="currentInfluencerIdForInstagram"
+    />
+    <div class="flex flex-wrap gap-1 text-xs font-bold leading-snug text-black">
+            <span
+              v-for="(tag, index) in tags"
+              :key="index"
+              :class="[TAG_COLOR_MAP[tag] || 'bg-gray-200 text-black', 'px-2 py-1 rounded-full']"
+            >
+                #{{ tag }}
+            </span>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import defaultThumbnail from '@/assets/images/logo.png'
-import { Icon } from '@iconify/vue'
-import { TAG_COLOR_MAP } from '@/constants/tags.js';
-
-const props = defineProps({
-  id: Number,
-  name: String,
-  realName: String,
-  subscribers: String,
-  instagram: String,
-  instaFollowers: String, // 이제 null일 수 있음
-  tags: Array,
-  ownerName: String,
-  thumbnail: String,
-  _originalData: Object
-})
-
-const emit = defineEmits(['edit', 'delete'])
-
-const showDropdown = ref(false)
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value
-}
-
-const handleEdit = () => {
-  emit('edit', { ...props, _originalData: props._originalData })
-  showDropdown.value = false;
-}
-
-const handleDelete = () => {
-  emit('delete', props.id)
-  showDropdown.value = false;
-}
-</script>

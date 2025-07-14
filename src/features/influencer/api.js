@@ -11,14 +11,10 @@ export const fetchInfluencerList = (params = {}) =>
 /* 인플루언서 유튜브 연동 */
 export const requestYoutubeAuthUrl = async (influencerId) => {
   try {
-    const response = await api.get('/oauth2/youtube/auth-url', {
-      params: {
-        influencerId: influencerId
-      }
-    });
-    return response.data.authUrl;
+    const response = await api.get(`/oauth2/youtube/auth-url/${influencerId}`)
+    return response.data.data;
   } catch (error) {
     console.error('Failed to get Youtube auth URL:', error);
     throw error;
   }
-};
+}

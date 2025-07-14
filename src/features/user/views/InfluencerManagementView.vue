@@ -4,32 +4,18 @@
       @apply-filters="handleApplyFilters"
     />
 
-    <div class="container flex-grow p-8">
-      <div class="flex justify-between items-center mb-6 px-2">
-        <div class="text-3xl font-bold text-gray-800">
+    <div class="container">
+      <div class="page-header">
+        <div class="page-title">
           인플루언서 관리
-          <span class="text-xl text-gray-600 font-medium"> (검색결과: {{ totalCount }}건) </span>
+          <span class="cnt-search"> (검색결과: {{ totalCount }}건) </span>
         </div>
         <div class="flex gap-2 items-center">
-          <button class="bg-btn-gray text-white py-2 px-4 rounded-md font-semibold hover:dark:bg-gray-600 transition-colors shadow-md" @click="openModal">등록</button>
-          <button
-            @click="isYoutubeConnectIdModalOpen = true"
-            class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
-            title="유튜브 계정 연동"
-          >
-            <Icon icon="logos:youtube-icon" class="text-red-600" width="32" height="32" />
-          </button>
-          <button
-            @click="openInstagramConnectModal"
-            class="p-0 bg-transparent hover:opacity-80 transition-opacity flex items-center justify-center"
-            title="인스타그램 계정 연동"
-          >
-            <Icon icon="skill-icons:instagram" class="text-pink-600" width="32" height="32" />
-          </button>
+          <button class="btn-create" @click="openModal">등록</button>
         </div>
       </div>
 
-      <div class="h-0.5 bg-blue-500 mb-8"></div>
+      <div class="blue-line"></div>
 
       <div class="px-10">
         <div v-if="isLoading" class="text-center py-10 text-gray-500">
@@ -144,12 +130,14 @@ const fetchInfluencers = async () => {
 
     influencers.value = apiData.data.map(influencer => ({
       id: influencer.influencerId,
-      name: influencer.youtube?.name || '',
+      name: (influencer.youtubeIsConnected === true && influencer.youtube && influencer.youtube.name)
+        ? influencer.youtube.name
+        : '미연결',
       realName: influencer.name,
       subscribers: (() => {
         const subscriberCount = influencer.youtube?.subscriber;
         if (subscriberCount === undefined || subscriberCount === null) {
-          return '0명';
+          return null;
         }
         if (subscriberCount < 10000) {
           return `${subscriberCount.toLocaleString()}명`;
@@ -162,7 +150,7 @@ const fetchInfluencers = async () => {
         : '미연결',
       instaFollowers: (() => {
         const followerCount = influencer.instagram?.follower;
-        if (followerCount === undefined || followerCount === null || followerCount === 0) {
+        if (followerCount === undefined || followerCount === null) {
           return null;
         }
         if (followerCount < 10000) {
@@ -276,6 +264,3 @@ const handleInstagramIdConfirmed = (id) => {
   alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
 };
 </script>
-
-<style scoped>
-</style>
