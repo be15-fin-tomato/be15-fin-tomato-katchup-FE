@@ -18,7 +18,7 @@ const applyFilter = () => {
 </script>
 
 <template>
-  <div class="custom-sidebar flex flex-col gap-4">
+  <div class="custom-sidebar flex flex-col gap-2">
     <!-- 제목 -->
     <p class="text text-md font-semibold mb-4 mt-5">고객사 검색</p>
 
