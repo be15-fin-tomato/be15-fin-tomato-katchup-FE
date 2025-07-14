@@ -109,10 +109,9 @@ onMounted(() => {
 
       <div class="flex justify-center mt-8 mb-8">
         <PagingBar
-          v-model="currentPage"
           :totalPages="totalPages"
+          v-model:currentPage="currentPage"
         />
-
       </div>
     </div>
   </div>
