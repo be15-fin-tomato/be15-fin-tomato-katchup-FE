@@ -113,7 +113,14 @@
 
       <!-- 검색 버튼 -->
       <div class="flex justify-end">
-        <button @click="onSearch" class="btn-open-popup px-6 py-2">검색</button>
+        <button
+          @click="onSearch"
+          class="bg-btn-blue text-white px-6 py-2 rounded-md font-semibold
+           hover:brightness-95 active:scale-95 active:brightness-90
+           transition transform shadow-sm hover:shadow-md"
+        >
+          검색
+        </button>
       </div>
     </div>
   </div>

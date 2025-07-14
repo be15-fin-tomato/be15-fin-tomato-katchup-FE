@@ -18,7 +18,7 @@ const applyFilter = () => {
 </script>
 
 <template>
-  <div class="custom-sidebar flex flex-col gap-4">
+  <div class="custom-sidebar flex flex-col gap-2">
     <!-- 제목 -->
     <p class="text text-md font-semibold mb-4 mt-5">고객사 검색</p>
 
@@ -37,9 +37,9 @@ const applyFilter = () => {
         class="appearance-none w-full border border-gray-medium rounded-md p-2 mb-3 leading-tight focus:outline-none"
       >
         <option :value="null">고객사 상태</option>
-        <option :value="1">진행중</option>
-        <option :value="2">보류</option>
-        <option :value="3">거절</option>
+        <option :value="1">잠재</option>
+        <option :value="2">기존</option>
+        <option :value="3">신규</option>
       </select>
       <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
         <i class="bi bi-chevron-down text-black"></i>
@@ -87,7 +87,9 @@ const applyFilter = () => {
     <!-- 검색 버튼 -->
     <button
       @click="applyFilter"
-      class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md"
+      class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md
+         hover:brightness-95 active:scale-95 active:brightness-90
+         transition transform shadow-sm hover:shadow-md"
     >
       검색
     </button>
