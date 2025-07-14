@@ -231,13 +231,207 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 
 ---
 ## <p id="2-6">2-6. 프로그램 사양서 (REST API 명세서)</p>
+[![API 명세서](https://img.shields.io/badge/REST_API-바로가기-green?style=for-the-badge)]()
+
 
 ---
 ## <p id="3"> 3. 🌸 Back & Front 테스트 결과</p>
 ## <p id="3-1">3-1. 백엔드 단위 테스트 결과서</p>
+[![백엔드 테스트 결과 보기](https://img.shields.io/badge/백엔드_테스트_HTML-보기-success?style=for-the-badge)](./Test%20Results%20-%20Tests_in_'be15fintomatokatchupbe'.html)
 
 ---
 ## <p id="3-2">3-2. 프론트엔드 UI/UX 단위 테스트 결과서</p>
+<details>
+<summary><strong>회원</strong></summary>
+<div>
+
+<h4>로그인 & 로그아웃</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/login_logout.gif" width="600"/>
+
+<h4>비밀번호 찾기</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/find_password.gif" width="600"/>
+
+<h4>비밀번호 변경</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/change_password.gif" width="600"/>
+
+<h4>개인정보 및 프로필사진 수정</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/edit_profile.gif" width="600"/>
+
+<h4>내 인플루언서 목록 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/influencer_list.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>인플루언서 관리</strong></summary>
+<div>
+
+<!-- 여기에 GIF 추가 가능 -->
+
+</div>
+</details>
+
+<details>
+<summary><strong>유튜브 대시보드</strong></summary>
+<div>
+
+<h4>유튜브 대시보드 1</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/youtube_dashboard_1.gif" width="600"/>
+
+<h4>유튜브 대시보드 2</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/youtube_dashboard_2.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>인스타그램 대시보드</strong></summary>
+<div>
+
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/instagram_dashboard.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>파이프라인</strong></summary>
+<div>
+
+<h4>수정</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/pipeline_edit.gif" width="600"/>
+
+<h4>삭제</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/pipeline_delete.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>전자 계약서</strong></summary>
+<div>
+
+<h4>계약서 등록</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/contract_register.gif" width="600"/>
+
+<h4>템플릿 등록</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/contract_template_register.gif" width="600"/>
+
+<h4>템플릿 목록 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/contract_template_list.gif" width="600"/>
+
+<h4>계약서 다운로드</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/contract_download.gif" width="600"/>
+
+<h4>이메일 전송</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/contract_email_send.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>알림</strong></summary>
+<div>
+
+<h4>전체 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/notification_list.gif" width="600"/>
+
+<h4>알림 확인</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/notification_read.gif" width="600"/>
+
+<h4>수신 개수 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/notification_count.gif" width="600"/>
+
+<h4>알림 삭제</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/notification_delete.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>고객 관리</strong></summary>
+<div>
+
+<h4>만족도 평가</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/satisfaction.gif" width="600"/>
+
+<h4>캠페인 컨텐츠 정보 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/campaign_content_info.gif" width="600"/>
+
+<h4>유입 분석 & 수익 요약</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/traffic_and_revenue.gif" width="600"/>
+
+<h4>검색 비율 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/search_ratio.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>이메일 시스템</strong></summary>
+<div>
+
+<h4>만족도 평가 요청</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/satisfaction_request.gif" width="600"/>
+
+<h4>만족도 평가 조회</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/satisfaction_result.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>채팅</strong></summary>
+<div>
+
+<h4>채팅방 생성</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/chat_create.gif" width="600"/>
+
+<h4>채팅방 퇴장</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/chat_leave.gif" width="600"/>
+
+<h4>목록/읽지 않은 메시지/마지막 메시지</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/chat_list_summary.gif" width="600"/>
+
+<h4>메시지 전송</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/chat_send.gif" width="600"/>
+
+<h4>채팅방 검색</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/chat_search.gif" width="600"/>
+
+<h4>채팅방 초대</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/chat_invite.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>캘린더</strong></summary>
+<div>
+
+<h4>일정 조회 (개인/파이프라인)</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/calendar_view.gif" width="600"/>
+
+<h4>일정 등록</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/calendar_add.gif" width="600"/>
+
+<h4>일정 수정</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/calendar_edit.gif" width="600"/>
+
+<h4>일정 삭제</h4>
+<img src="https://github.com/be15-fin-tomato/KATCHUP/raw/main/assets/gifs/calendar_delete.gif" width="600"/>
+
+</div>
+</details>
+
+<details>
+<summary><strong>메인 대시보드</strong></summary>
+<div>
+
+<!-- 대시보드 시연 GIF 있으면 여기에 추가 -->
+
+</div>
+</details>
 
 ---
 ## <p id="3-3">3-3. git 형상관리</p>
@@ -255,14 +449,108 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 ---
 ## <p id="6"> 6. 🤝 팀원 회고</p>
 
-| 이름  | 회고 |
-|:---:|-|
-| 박장우 | |
-| 박준서 | |
-| 오유경 | |
-| 윤채영 | |
-| 이승재 | |
-| 조현승 | |
+---
+## <p> 박장우 </p>
+### 이번 프로젝트에서 맡은 역할
+- 역할 입력
+- 역할 입력
+
+### 잘한 점
+- 잘한 점 입력
+- 잘한 점 입력
+
+### 아쉬운 점
+- 아쉬운 점 입력
+- 아쉬운 점 입력
+
+### 배운 점
+- 배운 점 입력
+- 배운 점 입력
+
+## <p> 박준서 </p>
+### 이번 프로젝트에서 맡은 역할
+- 역할 입력
+- 역할 입력
+
+### 잘한 점
+- 잘한 점 입력
+- 잘한 점 입력
+
+### 아쉬운 점
+- 아쉬운 점 입력
+- 아쉬운 점 입력
+
+### 배운 점
+- 배운 점 입력
+- 배운 점 입력
+
+## <p> 오유경 </p>
+### 이번 프로젝트에서 맡은 역할
+- 역할 입력
+- 역할 입력
+
+### 잘한 점
+- 잘한 점 입력
+- 잘한 점 입력
+
+### 아쉬운 점
+- 아쉬운 점 입력
+- 아쉬운 점 입력
+
+### 배운 점
+- 배운 점 입력
+- 배운 점 입력
+
+## <p> 윤채영 </p>
+### 이번 프로젝트에서 맡은 역할
+- 역할 입력
+- 역할 입력
+
+### 잘한 점
+- 잘한 점 입력
+- 잘한 점 입력
+
+### 아쉬운 점
+- 아쉬운 점 입력
+- 아쉬운 점 입력
+
+### 배운 점
+- 배운 점 입력
+- 배운 점 입력
+
+## <p> 이승재 </p>
+### 이번 프로젝트에서 맡은 역할
+- 역할 입력
+- 역할 입력
+
+### 잘한 점
+- 잘한 점 입력
+- 잘한 점 입력
+
+### 아쉬운 점
+- 아쉬운 점 입력
+- 아쉬운 점 입력
+
+### 배운 점
+- 배운 점 입력
+- 배운 점 입력
+
+## <p> 조현승 </p>
+### 이번 프로젝트에서 맡은 역할
+- 역할 입력
+- 역할 입력
+
+### 잘한 점
+- 잘한 점 입력
+- 잘한 점 입력
+
+### 아쉬운 점
+- 아쉬운 점 입력
+- 아쉬운 점 입력
+
+### 배운 점
+- 배운 점 입력
+- 배운 점 입력
 
 ---
 <div align="center">
