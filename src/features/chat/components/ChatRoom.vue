@@ -217,7 +217,6 @@ const connectWebSocket = () => {
           scrollToBottom();
         });
       })
-      toast.success('채팅방에 연결되었습니다.'); // 연결 성공 Toast
     },
     onStompError: (frame) => {
       console.error('STOMP 오류 발생:', frame)
