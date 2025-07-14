@@ -264,8 +264,14 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 ---
 
 ## <p id="2-6">2-6. 프로그램 사양서 (REST API 명세서)</p>
+<details>
+<summary>📄 API 명세서 보기</summary>
 
-[![API 명세서](https://img.shields.io/badge/REST_API-바로가기-green?style=for-the-badge)]()
+<br>
+
+<img width="2994" height="16384" alt="image" src="https://github.com/user-attachments/assets/da78bb3c-a3ec-4169-a67c-16e6d4873894" />
+
+</details>
 
 ---
 
