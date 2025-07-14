@@ -1,12 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Filtering from '@/features/user/components/Filtering.vue';
 import EmailCard from '@/features/user/components/EmailCard.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
 import { fetchSatisfactionList } from '@/features/user/api';
 
 const currentPage = ref(1);
-const pageSize = 6;
+const pageSize = 10;
 const totalPages = ref(0);
 const totalCount = ref(0);
 const emailList = ref([]);
@@ -42,9 +42,14 @@ const handleSearch = (filters) => {
   loadEmailList();
 };
 
+watch(currentPage, () => {
+  loadEmailList();
+});
+
 onMounted(() => {
   loadEmailList();
 });
+
 </script>
 
 <template>
@@ -84,12 +89,8 @@ onMounted(() => {
 
       <div class="flex justify-center mt-8">
         <PagingBar
+          v-model="currentPage"
           :totalPages="totalPages"
-          :currentPage="currentPage"
-          @update:currentPage="(val) => {
-            currentPage.value = val;
-            loadEmailList();
-          }"
         />
       </div>
     </div>
