@@ -264,6 +264,7 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 ---
 
 ## <p id="2-6">2-6. 프로그램 사양서 (REST API 명세서)</p>
+
 <details>
 <summary>📄 API 명세서 보기</summary>
 
@@ -272,7 +273,6 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 <img alt="api 명세서" src="https://github.com/user-attachments/assets/55805390-7bee-47ea-ac49-cb4b20001051" />
 
 </details>
----
 
 ## <p id="3"> 3. 🌸 Back & Front 테스트 결과</p>
 
