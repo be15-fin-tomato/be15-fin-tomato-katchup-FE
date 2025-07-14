@@ -1,78 +1,3 @@
-<template>
-  <div class="w-full min-h-screen bg-background flex font-sans">
-    <InfluencerManagementFilter
-      @apply-filters="handleApplyFilters"
-    />
-
-    <div class="container">
-      <div class="page-header">
-        <div class="page-title">
-          인플루언서 관리
-          <span class="cnt-search"> (검색결과: {{ totalCount }}건) </span>
-        </div>
-        <div class="flex gap-2 items-center">
-          <button class="btn-create" @click="openModal">등록</button>
-        </div>
-      </div>
-
-      <div class="blue-line"></div>
-
-      <div class="px-10">
-        <div v-if="isLoading" class="text-center py-10 text-gray-500">
-          데이터를 불러오는 중입니다...
-        </div>
-        <div v-else-if="influencers.length === 0" class="text-center py-10 text-gray-500">
-          검색된 인플루언서가 없습니다.
-        </div>
-        <div v-else class="grid grid-cols-2 gap-8">
-          <InfluencerManagementCard
-            v-for="card in influencers"
-            :key="card.id"
-            :id="card.id"
-            :name="card.name"
-            :realName="card.realName"
-            :subscribers="card.subscribers"
-            :instagram="card.instagram"
-            :instaFollowers="card.instaFollowers"
-            :tags="card.tags"
-            :ownerName="card.ownerName"
-            :thumbnail="card.thumbnail"
-            :_originalData="card._originalData"
-            @edit="openModalWithData"
-            @delete="deleteInfluencer"
-          />
-        </div>
-      </div>
-
-      <InfluencerFormModal
-        v-if="isModalOpen"
-        :initialData="selectedInfluencer"
-        @close="closeModal"
-        @save="saveInfluencer"
-      />
-
-      <YoutubeConnectIdModal
-        v-if="isYoutubeConnectIdModalOpen"
-        @close="isYoutubeConnectIdModalOpen = false"
-        @confirm="handleInfluencerIdConfirmed"
-      />
-
-      <InstagramConnectModal
-        v-if="isInstagramConnectModalOpen"
-        @close="isInstagramConnectModalOpen = false"
-        @confirm="handleInstagramIdConfirmed"
-        :influencerId="currentInfluencerIdForInstagram"
-      />
-
-      <div v-if="totalPages > 1 && !isLoading" class="flex justify-center mt-8">
-        <PagingBar
-          :totalPages="totalPages"
-          :currentPage="currentPageOneBased" @update:currentPage="updateCurrentPageFromPagingBar" />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -83,7 +8,6 @@ import InfluencerManagementCard from '@/components/common/InfluencerManagementCa
 import PagingBar from '@/components/common/PagingBar.vue';
 import YoutubeConnectIdModal from '@/features/influencer/components/YoutubeConnectModal.vue';
 import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
-import { Icon } from '@iconify/vue';
 
 const influencers = ref([]);
 const isModalOpen = ref(false);
@@ -264,3 +188,78 @@ const handleInstagramIdConfirmed = (id) => {
   alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
 };
 </script>
+
+<template>
+  <div class="w-full min-h-screen bg-background flex font-sans">
+    <InfluencerManagementFilter
+      @apply-filters="handleApplyFilters"
+    />
+
+    <div class="container">
+      <div class="page-header">
+        <div class="page-title">
+          인플루언서 관리
+          <span class="cnt-search"> (검색결과: {{ totalCount }}건) </span>
+        </div>
+        <div class="flex gap-2 items-center">
+          <button class="btn-create" @click="openModal">등록</button>
+        </div>
+      </div>
+
+      <div class="blue-line"></div>
+
+      <div class="px-10">
+        <div v-if="isLoading" class="text-center py-10 text-gray-500">
+          데이터를 불러오는 중입니다...
+        </div>
+        <div v-else-if="influencers.length === 0" class="text-center py-10 text-gray-500">
+          검색된 인플루언서가 없습니다.
+        </div>
+        <div v-else class="grid grid-cols-2 gap-8">
+          <InfluencerManagementCard
+            v-for="card in influencers"
+            :key="card.id"
+            :id="card.id"
+            :name="card.name"
+            :realName="card.realName"
+            :subscribers="card.subscribers"
+            :instagram="card.instagram"
+            :instaFollowers="card.instaFollowers"
+            :tags="card.tags"
+            :ownerName="card.ownerName"
+            :thumbnail="card.thumbnail"
+            :_originalData="card._originalData"
+            @edit="openModalWithData"
+            @delete="deleteInfluencer"
+          />
+        </div>
+      </div>
+
+      <InfluencerFormModal
+        v-if="isModalOpen"
+        :initialData="selectedInfluencer"
+        @close="closeModal"
+        @save="saveInfluencer"
+      />
+
+      <YoutubeConnectIdModal
+        v-if="isYoutubeConnectIdModalOpen"
+        @close="isYoutubeConnectIdModalOpen = false"
+        @confirm="handleInfluencerIdConfirmed"
+      />
+
+      <InstagramConnectModal
+        v-if="isInstagramConnectModalOpen"
+        @close="isInstagramConnectModalOpen = false"
+        @confirm="handleInstagramIdConfirmed"
+        :influencerId="currentInfluencerIdForInstagram"
+      />
+
+      <div v-if="totalPages > 1 && !isLoading" class="flex justify-center mt-8">
+        <PagingBar
+          :totalPages="totalPages"
+          :currentPage="currentPageOneBased" @update:currentPage="updateCurrentPageFromPagingBar" />
+      </div>
+    </div>
+  </div>
+</template>
