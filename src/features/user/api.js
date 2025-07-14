@@ -81,25 +81,20 @@ export const deleteAllNotifications = async () => {
 
 
 /* 알림 SSE 구독 */
-export const subscribeNotificationSse = ({ onMessage, onConnect, onError }) => {
-  console.log('SSE 연결 시도');
-
+export const subscribeNotificationSse = ({ onMessage, onConnect }) => {
   const eventSource = new EventSourcePolyfill(`${import.meta.env.VITE_API_BASE_URL}/sse/subscribe`, {
     withCredentials: true
   });
 
   eventSource.onopen = (event) => {
-    console.log('SSE 연결됨', event);
     if (typeof onConnect === 'function') onConnect(event);
   };
 
   eventSource.addEventListener('connect', (event) => {
-    console.log('서버 초기 연결 메시지 수신', event.data);
     if (typeof onConnect === 'function') onConnect(event.data);
   });
 
   eventSource.addEventListener('new-notification', (event) => {
-    console.log('알림 이벤트 수신:', event.data);
     try {
       const data = JSON.parse(event.data);
       if (typeof onMessage === 'function') onMessage(data);
@@ -107,13 +102,6 @@ export const subscribeNotificationSse = ({ onMessage, onConnect, onError }) => {
       console.error('알림 파싱 실패:', e, event.data);
     }
   });
-
-  eventSource.onerror = (error) => {
-    console.error('SSE 오류 발생:', error);
-    eventSource.close();
-    if (typeof onError === 'function') onError(error);
-  };
-
   return eventSource;
 };
 

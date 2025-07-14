@@ -164,28 +164,6 @@ const startSse = () => {
       });
       unreadCount.value++;
     },
-
-    onConnect: (msg) => {
-      console.log('SSE 연결됨: ', msg);
-    },
-
-    onError: (err) => {
-      console.error('SSE 연결 끊김: ', err);
-
-      if (sseSource) {
-        sseSource.close();
-        sseSource = null;
-      }
-
-      // 재연결 시도 (3초 후)
-      if (!reconnectTimeout) {
-        reconnectTimeout = setTimeout(() => {
-          console.log('SSE 재연결 시도...');
-          startSse();
-          reconnectTimeout = null;
-        }, 3000); // 3초 후 재연결
-      }
-    }
   });
 };
 
