@@ -67,7 +67,7 @@ onMounted(fetchClients)
       <div class="page-header">
         <div class="page-title">
           고객사 목록
-          <span class="cnt-search text-gray-500">
+          <span class="cnt-search">
             (검색 결과: {{ totalCount }}건)
           </span>
         </div>
