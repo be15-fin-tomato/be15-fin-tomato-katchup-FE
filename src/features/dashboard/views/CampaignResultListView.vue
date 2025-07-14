@@ -30,7 +30,7 @@
           데이터를 불러오는 중입니다...
         </p>
       </template>
-      <template v-else-if="campaignResultList.length === 0">
+      <template v-else-if="campaignResultList.length === 0 && !isLoading">
         <p class="col-span-2 text-center text-gray-dark py-10">데이터가 없습니다.</p>
       </template>
       <template v-else>
@@ -123,17 +123,15 @@ const fetchCampaignResultList = async () => {
     };
 
     const apiResponse = await getCampaignResultList(params);
-    campaignResultList.value = apiResponse.data || [];
-    total.value = apiResponse.total || 0;
 
-    console.log('백엔드에서 가져온 캠페인 결과 (프론트엔드):', campaignResultList.value);
-    console.log('총 결과 개수 (프론트엔드):', total.value);
+    campaignResultList.value = apiResponse.campaignList || [];
+    total.value = apiResponse.pagination.totalCount || 0;
+
 
     if (campaignResultList.value.length === 0 && campaignNameSearchQuery.value) {
       toast.info('검색 결과가 없습니다.');
     }
   } catch (error) {
-    console.error('캠페인 결과를 가져오는 중 오류 발생:', error);
     campaignResultList.value = [];
     total.value = 0;
     toast.error('캠페인 목록을 불러오는 데 실패했습니다.');
