@@ -37,9 +37,9 @@ const applyFilter = () => {
         class="appearance-none w-full border border-gray-medium rounded-md p-2 mb-3 leading-tight focus:outline-none"
       >
         <option :value="null">고객사 상태</option>
-        <option :value="1">진행중</option>
-        <option :value="2">보류</option>
-        <option :value="3">거절</option>
+        <option :value="1">잠재</option>
+        <option :value="2">기존</option>
+        <option :value="3">신규</option>
       </select>
       <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
         <i class="bi bi-chevron-down text-black"></i>
