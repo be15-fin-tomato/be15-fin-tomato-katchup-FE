@@ -329,7 +329,7 @@ watch(isAddingEmployee, (val) => {
             </p>
           </div>
             <div class="flex gap-2">
-              <button class="btn-icon" v-if="!isEditing" @click="router.push('/contract/template')">
+              <button class="btn-icon" v-if="!isEditing" @click="router.push({ path: '/contract/template', query: { recipientEmail: employee.email, recipientName: employee.name } })">
                 <Icon icon="material-symbols:mail-outline" width="20" height="20" />
                 MAIL
               </button>
