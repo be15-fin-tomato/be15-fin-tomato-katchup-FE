@@ -49,3 +49,8 @@ export const getCampaignsByClientCompany = async (clientCompanyId) => {
 export const getClientCompanyContracts = async (clientCompanyId) => {
   return await api.get(`/client-companies/success/${clientCompanyId}`);
 };
+
+// 커뮤니케이션 이력 조회 API
+export const getClientCompanyCommunicationHistories = async (clientCompanyId) => {
+  return await api.get(`/client-companies/${clientCompanyId}/communication-histories`)
+}

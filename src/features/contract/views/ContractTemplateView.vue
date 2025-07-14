@@ -167,8 +167,8 @@
         :title="selectedSmall"
         :initialContent="selectedSmall?.content"
         :initialFile="selectedSmall?.file"
-        :name="null"
-        :email="null"
+        :name="initialRecipientName"
+        :email="initialRecipientEmail"
       />
     </div>
   </div>
@@ -194,11 +194,13 @@ import { Icon } from '@iconify/vue';
 import SmallTemplateModal from '@/features/contract/components/SmallTemplateModal.vue';
 import SmallTemplateEditModal from '@/features/contract/components/SmallTemplateEditModal.vue';
 import SendEmail from '@/features/contract/components/SendEmail.vue';
+import { useRoute } from 'vue-router';
 import { fetchContractObjects, createContractObject,
   updateContractObject, deleteContractObject, fetchContractDetails,
   createContractDetail, updateContractDetail, deleteContractDetail
 } from '@/features/contract/api.js';
 
+const route = useRoute();
 
 const bigList = ref([]);
 
@@ -214,6 +216,9 @@ const editTarget = ref(null);
 
 const editingBigId = ref(null);
 const editBigName = ref('');
+
+const initialRecipientEmail = ref('');
+const initialRecipientName = ref('');
 
 async function fetchBigList() {
   try {
@@ -278,6 +283,12 @@ async function fetchSmallListAndDetails(objectId, detailId = null) {
 
 onMounted(() => {
   fetchBigList();
+  if (route.query.recipientEmail) {
+    initialRecipientEmail.value = route.query.recipientEmail;
+  }
+  if (route.query.recipientName) {
+    initialRecipientName.value = route.query.recipientName;
+  }
 });
 
 watch(selectedBig, (newVal) => {

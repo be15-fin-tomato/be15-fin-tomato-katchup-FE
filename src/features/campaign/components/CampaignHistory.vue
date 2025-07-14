@@ -26,8 +26,8 @@ const filters = [
   { label: '리스트업', value: 'listup', color: 'bg-pipeline-list-up' },
   { label: '제안', value: 'proposal', color: 'bg-pipeline-proposal' },
   { label: '견적', value: 'quotation', color: 'bg-pipeline-quotation' },
-  { label: '매출', value: 'sales', color: 'bg-orange-400' },
-  { label: '계약', value: 'contract', color: 'bg-blue-400' },
+  { label: '매출', value: 'sales', color: 'bg-pipeline-revenue' },
+  { label: '계약', value: 'contract', color: 'bg-pipeline-contract' },
 ];
 
 // stepType 한글 → 영문 필터 값

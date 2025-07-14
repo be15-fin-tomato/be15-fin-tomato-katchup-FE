@@ -34,7 +34,9 @@ export const structuredForm = (rawForm, fileList = []) => {
         // 인플루언서 (다중 검색 시 사용)
         influencer: rawForm.influencerList.map((i) => ({
             id: i.influencerId,
-            name: i.influencerName,
+            name: i.influencerName ? i.influencerName : i.name,
+            strength: i.strength ?? '',
+            note: i.notes ?? '',
         })),
 
         influencerContents: rawForm.influencerList.map((i) => {

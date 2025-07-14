@@ -30,7 +30,12 @@ const modalState = computed({
             >
                 <div class="flex items-center gap-3">
                     <img
-                        :src="influencer.youtube?.thumbnailUrl"
+                        :src="
+                            influencer.youtube?.thumbnailUrl
+                                ? influencer.youtube?.thumbnailUrl
+                                : '/tomato.png'
+                        "
+                        @error="(e) => (e.target.src = '/tomato.png')"
                         alt="profile"
                         class="w-10 h-10 rounded-full object-cover"
                     />
