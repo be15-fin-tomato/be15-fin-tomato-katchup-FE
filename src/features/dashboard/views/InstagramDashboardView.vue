@@ -10,7 +10,7 @@ import PopularPosts from '@/features/dashboard/components/PopularPosts.vue'
 import {
   fetchInfluencerDetail,
   fetchInstagramInfo,
-  fetchSatisfaction,
+  fetchSatisfaction, fetchYoutubeInfo
 } from '@/features/dashboard/api.js';
 import { formatNumber } from '@/utils/fomatters.js';
 import PopularShortForms from '@/features/dashboard/components/PopularShortForms.vue';
@@ -27,21 +27,23 @@ const influencerId = route.query.id
 
 onMounted(async () => {
   try {
-    const [instagramRes, influencerRes, satisfactionRes] = await Promise.all([
+    const [instagramRes,youtubeRes, influencerRes, satisfactionRes] = await Promise.all([
       fetchInstagramInfo(influencerId),
+      fetchYoutubeInfo(influencerId),
       fetchInfluencerDetail(influencerId),
       fetchSatisfaction(influencerId),
     ])
     console.log(instagramRes)
 
-    const dashboardData = instagramRes?.data?.data;
+    const instagramData = instagramRes?.data?.data;
+    const youtubeData = youtubeRes?.data?.data;
     const influencerData = influencerRes
     const satisfactionData = satisfactionRes?.data?.data;
 
-    if (!dashboardData) {
-      if(influencerData?.youtube){
+    if (!instagramData) {
+      if(youtubeData){
         toast.success("인스타그램 데이터가 없어 유튜브 대시보드로 이동합니다.")
-        router.push(`/influencer/dashboard/youtube?id=${influencerId}`)
+        router.replace(`/influencer/dashboard/youtube?id=${influencerId}`)
       } else {
         toast.warning('계정이 모두 연결되어 있지 않습니다.')
         router.replace(`/influencer/list`)
@@ -49,7 +51,7 @@ onMounted(async () => {
       return;
     }
 
-    dashboard.value = dashboardData;
+    dashboard.value = instagramData;
     influencer.value = influencerData;
     satisfaction.value = satisfactionData ?? 0;
 
