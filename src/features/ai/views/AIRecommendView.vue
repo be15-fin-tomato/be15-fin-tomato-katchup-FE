@@ -173,10 +173,15 @@
                                         <td>{{ item.productName }}</td>
                                         <td>
                                             <button
-                                                class="bg-blue-100 text-blue-600 text-xs px-3 py-1 rounded hover:bg-blue-200"
+                                                class="btn-recommend"
                                                 @click="
-                                                    getRecommendationsByCampaignId(item.campaignId)
+                                                    selectedCampaignId = item.campaignId;
+                                                    getRecommendationsByCampaignId(item.campaignId);
                                                 "
+                                                :disabled="recommendLoading"
+                                                :class="{
+                                                    'opacity-50 cursor-not-allowed': isLoading,
+                                                }"
                                             >
                                                 AI 추천 받기
                                             </button>
@@ -197,7 +202,10 @@
                     </button>
 
                     <AIInfluencerCard
-                        :influencers="filteredAiInfluencers"
+                        :influencers="recommendedInfluencerList"
+                        :isLoading="recommendLoading"
+                        v-model:filterOptions="filterOptions"
+                        :getRecommendationsByCampaignId="getRecommendationsByCampaignId"
                         @close="showRecommendation = false"
                         @add-influencer="addInfluencer"
                     />
@@ -315,9 +323,14 @@ import AIInfluencerCard from '../components/AIInfluencerCard.vue';
 import { TAG_COLOR_MAP, TAGS } from '@/constants/tags';
 import AddToListupModal from '@/features/ai/components/AddToListupModal.vue';
 import { useRoute } from 'vue-router';
-import { fetchCampaignList, fetchListupDetail } from '@/features/ai/api.js';
+import {
+    fetchCampaignList,
+    fetchListupDetail,
+    fetchRecommendInfluencerList,
+} from '@/features/ai/api.js';
 import InfluencerCategory from '@/features/influencer/components/InfluencerCategory.vue';
 import { fetchCategoryList, fetchInfluencerList } from '@/features/influencer/api.js';
+import { useToast } from 'vue-toastification';
 
 const route = useRoute();
 
@@ -327,17 +340,106 @@ const filters = reactive({
     name: '',
     company: '',
 });
+
+const filterOptions = reactive([
+    {
+        label: '활성도가 높아요',
+        checked: true,
+        level: '75% 이상',
+        levels: ['25% 이상', '50% 이상', '75% 이상'],
+    },
+    {
+        label: '알고리즘 스코어가 높아요',
+        checked: false,
+        level: '75% 이상',
+        levels: ['25% 이상', '50% 이상', '75% 이상'],
+    },
+    {
+        label: '카테고리가 일치해요',
+        checked: false,
+    },
+    {
+        label: '선호 성별이 일치해요',
+        level: '남자',
+        levels: ['남자', '여자'],
+        checked: false,
+    },
+    {
+        label: '선호 연령이 일치해요',
+        level: '18 ~ 24',
+        levels: ['13 ~ 17', '18 ~ 24', '25 ~ 34', '25 ~ 44', '45 ~ 54', '55 ~ 64', '65이상'],
+        checked: false,
+    },
+    {
+        label: '광고주 만족도가 높아요',
+        checked: true,
+        level: '50% 이상',
+        levels: ['25% 이상', '50% 이상', '75% 이상'],
+    },
+    {
+        label: '인플루언서 구독자/팔로워 수',
+        checked: false,
+        level: '1천 이상',
+        levels: ['500 이상', '1천 이상', '1만 이상', '10만 이상', '100만 이상', '200만 이상'],
+    },
+]);
+const toast = useToast();
+
+function mapFiltersToRequest(filterOptions) {
+    const mapLevel = (level) => {
+        if (!level) return null;
+        if (level.includes('25')) return 25;
+        if (level.includes('50')) return 50;
+        if (level.includes('75')) return 75;
+        if (level.includes('500')) return 500;
+        if (level.includes('1천')) return 1000;
+        if (level.includes('1만')) return 10000;
+        if (level.includes('10만')) return 100000;
+        if (level.includes('100만')) return 1000000;
+        if (level.includes('200만')) return 2000000;
+        return null;
+    };
+
+    const mapGender = (label) => {
+        if (label === '남자') return 1;
+        if (label === '여자') return 2;
+        return null;
+    };
+
+    const mapAge = (label) => {
+        if (label === '13 ~ 17') return 1317;
+        if (label === '18 ~ 24') return 1824;
+        if (label === '25 ~ 34') return 2534;
+        if (label === '25 ~ 44') return 2544;
+        if (label === '45 ~ 54') return 4554;
+        if (label === '55 ~ 64') return 5564;
+        if (label === '65이상') return 65;
+        return null;
+    };
+
+    return {
+        engagement: filterOptions[0].checked ? mapLevel(filterOptions[0].level) : null,
+        algorithmScore: filterOptions[1].checked ? mapLevel(filterOptions[1].level) : null,
+        categories: !!filterOptions[2].checked,
+        preferredGender: filterOptions[3].checked ? mapGender(filterOptions[3].level) : null,
+        preferredAgeRange: filterOptions[4].checked ? mapAge(filterOptions[4].level) : null,
+        advertiserSatisfaction: filterOptions[5].checked ? mapLevel(filterOptions[5].level) : null,
+        followerCount: filterOptions[6].checked ? mapLevel(filterOptions[6].level) : null,
+    };
+}
 const selectedTags = ref([]);
 const campaignList = ref([]);
-const recommendedInfluencers = ref([]);
+const recommendedInfluencerList = ref([]);
 const addedInfluencers = ref([]);
 const showModal = ref(false);
 const searchQuery = ref('');
 const selectedCategory = ref('전체');
+const selectedCampaignId = ref(null);
 const influencerList = ref([]);
 const showRecommendation = ref(false);
 const campaignLoading = ref(false); // 캠페인 리스트 로딩
 const influencerLoading = ref(false); // 인플루언서 리스트 로딩
+const recommendLoading = ref(false); // AI 추천 로딩
 
 const categoryMap = {
     전체: 'ALL',
@@ -365,7 +467,6 @@ const editingCampaign = ref({
     name: '',
     title: '',
 });
-const editingListup = ref(null);
 
 const openSearchPopup = (targetObj, key, type, extendKey = null) => {
     if (extendKey && !targetObj[extendKey]) {
@@ -427,19 +528,6 @@ const formatCount = (value) => {
 
     return (num / 10000).toFixed(1).replace(/\.0$/, '') + '만'; // 소수점 첫째자리, .0 제거
 };
-
-const filteredAiInfluencers = computed(() => {
-    return recommendedInfluencers.value.filter((influencer) => {
-        const matchCategory =
-            selectedCategory.value === '전체' ||
-            influencer.categories?.includes(selectedCategory.value);
-        const matchSearch =
-            searchQuery.value === '' ||
-            influencer.name.includes(searchQuery.value) ||
-            influencer.username.includes(searchQuery.value);
-        return matchCategory && matchSearch;
-    });
-});
 
 async function loadInfluencers() {
     influencerLoading.value = true;
@@ -508,13 +596,19 @@ const removeInfluencer = (influencerId) => {
     addedInfluencers.value = addedInfluencers.value.filter((i) => i.influencerId !== influencerId);
 };
 
-const getRecommendationsByCampaignId = async (campaignId) => {
+const getRecommendationsByCampaignId = async () => {
     try {
-        const res = await axios.get(`/api/v1/ai/campaigns/${campaignId}/recommendations`);
-        recommendedInfluencers.value = res.data.data;
+        recommendLoading.value = true;
         showRecommendation.value = true;
+        const dto = mapFiltersToRequest(filterOptions);
+        const campaignId = selectedCampaignId.value;
+
+        const res = await fetchRecommendInfluencerList(campaignId, dto);
+        recommendedInfluencerList.value = res.data.data.influencerList;
     } catch (e) {
-        console.error('AI 추천 로딩 실패', e);
+        toast.error(e.response.data.message);
+    } finally {
+        recommendLoading.value = false;
     }
 };
 
