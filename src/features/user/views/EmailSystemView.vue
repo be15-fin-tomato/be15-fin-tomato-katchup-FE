@@ -42,7 +42,7 @@ const handleSearch = (filters) => {
   loadEmailList();
 };
 
-watch(currentPage, () => {
+watch(() => currentPage.value, () => {
   loadEmailList();
 });
 
@@ -89,8 +89,8 @@ onMounted(() => {
 
       <div class="flex justify-center mt-8">
         <PagingBar
-          v-model="currentPage"
           :totalPages="totalPages"
+          v-model:currentPage="currentPage"
         />
       </div>
     </div>

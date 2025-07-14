@@ -2,17 +2,17 @@
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
-  modelValue: Number,
+  currentPage: Number,
   totalPages: Number
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:currentPage']);
 
 
 const groupSize = 5
-const currentGroup = ref(Math.floor((props.modelValue - 1) / groupSize));
+const currentGroup = ref(Math.floor((props.currentPage - 1) / groupSize));
 
-watch(() => props.modelValue, (newPage) => {
+watch(() => props.currentPage, (newPage) => {
   currentGroup.value = Math.floor((newPage - 1) / groupSize);
 });
 
@@ -28,18 +28,18 @@ const pages = computed(() => {
 })
 
 const goToPage = (page) => {
-  if (page === props.modelValue) return;
-  emit('update:modelValue', page);
+  if (page === props.currentPage) return;
+  emit('update:currentPage', page);
 };
 
 const goToPrevGroup = () => {
   const prevStart = Math.max((currentGroup.value - 1) * groupSize + 1, 1)
-  emit('update:modelValue', prevStart)
+  emit('update:currentPage', prevStart)
 }
 
 const goToNextGroup = () => {
   const nextStart = (currentGroup.value + 1) * groupSize + 1
-  if (nextStart <= props.totalPages) emit('update:modelValue', nextStart)
+  if (nextStart <= props.totalPages) emit('update:currentPage', nextStart)
 }
 </script>
 
@@ -59,7 +59,7 @@ const goToNextGroup = () => {
       @click="goToPage(page)"
       :class="[
         'w-8 h-8 text-sm rounded border cursor-pointer transition-all',
-        page === props.modelValue
+        page === props.currentPage
           ? 'bg-[#0F1C61] text-white border-[#7C58E6]'
           : 'text-black border-gray-300 hover:bg-gray-100'
       ]"
