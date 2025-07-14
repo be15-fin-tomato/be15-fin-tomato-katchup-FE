@@ -156,7 +156,7 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 ### 💼 3. 파이프라인 및 영업 기회 관리
 
 - 제안서, 견적서, 계약서 등록 및 의견 관리
-- 전자계약서 PDF 업로드/전송
+- 계약서 PDF 업로드/전송
 
 ### 💰 4. 매출 및 문서 관리
 
@@ -348,7 +348,7 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 </details>
 
 <details>
-<summary><strong>전자 계약서</strong></summary>
+<summary><strong>계약서</strong></summary>
 <div>
 
 <h4>계약서 등록</h4>
