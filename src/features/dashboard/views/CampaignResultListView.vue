@@ -7,6 +7,8 @@
       </div>
     </div>
 
+    <div class="blue-line mb-6"></div>
+
     <div class="mb-6 flex justify-end">
       <input
         v-model="campaignNameSearchQuery"
@@ -21,7 +23,6 @@
         검색
       </button>
     </div>
-    <div class="blue-line"></div>
 
     <div class="grid grid-cols-2 gap-6">
       <template v-if="isLoading">
@@ -63,18 +64,19 @@ import Pagination from '@/components/common/PagingBar.vue';
 
 import { getCampaignResultList } from '@/features/dashboard/api.js';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 
 const campaignResultList = ref([]);
 const page = ref(1);
-const size = ref(10); // 프론트엔드에서 한 페이지당 보여줄 항목 수
+const size = ref(10);
 const total = ref(0);
 const isLoading = ref(true);
 
 const totalPages = computed(() => Math.ceil(total.value / size.value));
 
-// 캠페인명 검색어를 위한 ref 변수
 const campaignNameSearchQuery = ref('');
 
 const menuOpenId = ref(null);
@@ -85,7 +87,7 @@ const handlePageChange = async (newPage) => {
 };
 
 const handleSearch = () => {
-  page.value = 1; // 검색 버튼 클릭 시 항상 첫 페이지로 리셋
+  page.value = 1;
   fetchCampaignResultList();
 };
 
@@ -101,6 +103,9 @@ const handleDelete = (pipelineId) => {
     );
     total.value = campaignResultList.value.length;
     menuOpenId.value = null;
+    toast.success('항목이 성공적으로 삭제되었습니다.');
+  } else {
+    toast.info('삭제가 취소되었습니다.');
   }
 };
 
@@ -118,17 +123,20 @@ const fetchCampaignResultList = async () => {
     };
 
     const apiResponse = await getCampaignResultList(params);
-
-    // API 응답 구조가 { data: [캠페인 결과 목록], total: 총 개수 } 인지 확인
     campaignResultList.value = apiResponse.data || [];
-    total.value = apiResponse.total || 0; // 백엔드에서 받은 total 값을 사용
+    total.value = apiResponse.total || 0;
 
     console.log('백엔드에서 가져온 캠페인 결과 (프론트엔드):', campaignResultList.value);
     console.log('총 결과 개수 (프론트엔드):', total.value);
+
+    if (campaignResultList.value.length === 0 && campaignNameSearchQuery.value) {
+      toast.info('검색 결과가 없습니다.');
+    }
   } catch (error) {
     console.error('캠페인 결과를 가져오는 중 오류 발생:', error);
     campaignResultList.value = [];
     total.value = 0;
+    toast.error('캠페인 목록을 불러오는 데 실패했습니다.');
   } finally {
     isLoading.value = false;
   }

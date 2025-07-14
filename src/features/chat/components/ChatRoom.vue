@@ -86,6 +86,7 @@ import api from '@/plugin/axios.js'
 import { useAuthStore } from '@/stores/auth'
 import { fetchChatRoomDetail, inviteChatMembers, searchUser } from '@/features/chat/api'
 import InviteModal from '@/features/chat/components/InviteModal.vue'
+import { useToast } from 'vue-toastification'; // Toast import
 
 const props = defineProps({
   room: { type: Object, required: true },
@@ -110,6 +111,8 @@ const showInviteModal = ref(false)
 const allUsers = ref([])
 
 const memberList = ref(props.room.participants || [])
+
+const toast = useToast(); // Toast 인스턴스 생성
 
 const currentMemberIds = computed(() => {
   if (Array.isArray(memberList.value)) {
@@ -184,12 +187,17 @@ const fetchMessages = async () => {
     scrollToBottom();
   } catch (err) {
     console.error('채팅방 메시지 불러오기 실패:', err)
+    toast.error('채팅 메시지를 불러오는 데 실패했습니다.'); // Toast 메시지
   }
 }
 
 const connectWebSocket = () => {
   const token = authStore.accessToken
-  if (!token) return console.error('토큰 없음: WebSocket 연결 실패')
+  if (!token) {
+    console.error('토큰 없음: WebSocket 연결 실패');
+    toast.error('채팅 서버 연결에 필요한 인증 정보가 없습니다.'); // Toast 메시지
+    return;
+  }
 
   const socket = new SockJS(`/api/v1/ws?token=${token}`)
   const client = new Client({
@@ -209,9 +217,11 @@ const connectWebSocket = () => {
           scrollToBottom();
         });
       })
+      toast.success('채팅방에 연결되었습니다.'); // 연결 성공 Toast
     },
     onStompError: (frame) => {
       console.error('STOMP 오류 발생:', frame)
+      toast.error('채팅 서버 연결 중 오류가 발생했습니다.'); // 연결 오류 Toast
     },
   })
 
@@ -220,8 +230,14 @@ const connectWebSocket = () => {
 }
 
 const sendMessage = () => {
-  if (!newMessage.value.trim() && !attachedFile.value) return
-  if (!stompClient.value?.connected) return
+  if (!newMessage.value.trim() && !attachedFile.value) {
+    toast.warning('전송할 메시지나 파일을 선택해주세요.'); // Toast 메시지
+    return;
+  }
+  if (!stompClient.value?.connected) {
+    toast.error('채팅 서버에 연결되어 있지 않습니다. 잠시 후 다시 시도해주세요.'); // Toast 메시지
+    return;
+  }
 
   const messagePayload = {
     chatId: props.room.chatId,
@@ -246,7 +262,7 @@ const sendMessage = () => {
 const handleInvite = async (invitedIds) => {
   try {
     await inviteChatMembers(props.room.chatId, invitedIds)
-    alert('초대 완료!')
+    toast.success('멤버를 성공적으로 초대했습니다!');
     showInviteModal.value = false
 
     const newlyInvitedMembers = allUsers.value.filter(user => invitedIds.includes(user.id));
@@ -255,7 +271,7 @@ const handleInvite = async (invitedIds) => {
 
   } catch (e) {
     console.error('초대 실패:', e)
-    alert('초대 중 오류가 발생했습니다.')
+    toast.error('멤버 초대 중 오류가 발생했습니다.');
   }
 }
 
@@ -264,6 +280,14 @@ const triggerFileUpload = () => fileInput.value?.click()
 const handleFileChange = async (e) => {
   const file = e.target.files[0]
   if (!file) return
+
+  const MAX_FILE_SIZE_MB = 50;
+  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    toast.error(`파일 크기가 너무 큽니다. ${MAX_FILE_SIZE_MB}MB 이하의 파일만 업로드할 수 있습니다.`);
+    attachedFile.value = null;
+    fileInput.value.value = '';
+    return;
+  }
 
   attachedFile.value = file
   isUploading.value = true
@@ -280,10 +304,12 @@ const handleFileChange = async (e) => {
       },
     })
     isUploading.value = false
+    toast.success('파일 업로드 완료! 메시지와 함께 전송해주세요.'); // Toast 메시지
   } catch (err) {
     console.error('파일 업로드 실패:', err)
     isUploading.value = false
     attachedFile.value = null
+    toast.error('파일 업로드에 실패했습니다.'); // Toast 메시지
   }
 }
 
@@ -293,6 +319,7 @@ const loadAllUsers = async () => {
     allUsers.value = res.userList
   } catch (err) {
     console.error('사용자 목록 불러오기 실패:', err)
+    toast.error('사용자 목록을 불러오는 데 실패했습니다.'); // Toast 메시지
   }
 }
 
