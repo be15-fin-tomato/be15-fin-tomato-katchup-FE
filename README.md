@@ -269,10 +269,9 @@ MCN(Multi-Channel Network) 기업은 유튜브와 인스타그램 등 다양한 
 
 <br>
 
-<img width="2994" height="16384" alt="image" src="https://github.com/user-attachments/assets/da78bb3c-a3ec-4169-a67c-16e6d4873894" />
+<img alt="api 명세서" src="https://github.com/user-attachments/assets/55805390-7bee-47ea-ac49-cb4b20001051" />
 
 </details>
-
 ---
 
 ## <p id="3"> 3. 🌸 Back & Front 테스트 결과</p>
