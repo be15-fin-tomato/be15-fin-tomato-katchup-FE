@@ -146,6 +146,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { exitChatRoom, fetchChatRoomDetail, createChatRoom, searchUser } from '@/features/chat/api'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({
   chatRooms: {
@@ -172,6 +173,8 @@ const showTooltip = ref(false);
 const tooltipContent = ref('');
 const tooltipStyle = ref({});
 
+const toast = useToast();
+
 watch(memberSearch, async (newKeyword) => {
   try {
     const result = await searchUser(newKeyword);
@@ -179,6 +182,7 @@ watch(memberSearch, async (newKeyword) => {
   } catch (error) {
     console.error('사용자 검색 실패:', error);
     allSearchUsers.value = [];
+    toast.error('사용자 검색에 실패했습니다.');
   }
 }, { immediate: true });
 
@@ -214,7 +218,7 @@ const closeCreateModal = () => {
 
 const handleCreate = async () => {
   if (selectedMembers.value.length === 0) {
-    alert('채팅방에 참여할 멤버를 한 명 이상 선택해주세요.');
+    toast.warning('채팅방에 참여할 멤버를 한 명 이상 선택해주세요.');
     return;
   }
 
@@ -227,13 +231,14 @@ const handleCreate = async () => {
   try {
     const newChatRoom = await createChatRoom(newRoomName.value, participantIds);
     console.log('채팅방 생성 성공:', newChatRoom);
+    toast.success('채팅방이 성공적으로 생성되었습니다!');
 
     closeCreateModal();
     emit('chat-rooms-changed');
 
   } catch (error) {
     console.error('채팅방 생성 중 오류 발생:', error);
-    alert('채팅방 생성에 실패했습니다.');
+    toast.error('채팅방 생성에 실패했습니다.');
   }
 }
 
@@ -248,16 +253,19 @@ const leaveRoom = async () => {
 
   if (!userId) {
     console.warn('로그인 정보가 없어 채팅방을 나갈 수 없습니다.');
+    toast.error('로그인 정보가 없어 채팅방을 나갈 수 없습니다.');
     return;
   }
 
   try {
     await exitChatRoom(selectedRoomToLeave.value.id, userId);
     selectedRoomToLeave.value = null;
+    toast.info('채팅방을 나갔습니다.');
 
     emit('chat-rooms-changed');
   } catch (error) {
-    console.error('채팅방 나가기 실패 (UI alert 없음):', error);
+    console.error('채팅방 나가기 실패:', error);
+    toast.error('채팅방 나가기에 실패했습니다.');
     throw error;
   }
 }
@@ -288,7 +296,10 @@ const handleOpenRoom = async (chatId) => {
     emit('room-opened', chatId);
 
     const chatRoomMeta = props.chatRooms.find(room => room.id === chatId);
-    if (!roomDetail || !roomDetail.messages || !chatRoomMeta) return;
+    if (!roomDetail || !roomDetail.messages || !chatRoomMeta) {
+      toast.error('채팅방 정보를 불러오는데 실패했습니다.');
+      return;
+    }
 
     emit('open-room', {
       chatId: roomDetail.chatId,
@@ -299,6 +310,7 @@ const handleOpenRoom = async (chatId) => {
 
   } catch (e) {
     console.error('❌ 채팅방 열기 실패:', e);
+    toast.error('채팅방을 여는 데 실패했습니다.');
   }
 }
 
@@ -310,15 +322,14 @@ const handleMouseEnter = (event, roomId, content) => {
   showTooltip.value = true;
 
   nextTick(() => {
-    const tooltipElement = document.querySelector('.fixed.px-4.py-2.bg-gray-100'); // 변경된 클래스 이름으로 선택
+    const tooltipElement = document.querySelector('.fixed.px-4.py-2.bg-gray-100');
     if (tooltipElement) {
       const tooltipWidth = tooltipElement.offsetWidth;
       const tooltipHeight = tooltipElement.offsetHeight;
 
-      // 툴팁 위치 계산 (화면 상단으로 배치)
       tooltipStyle.value = {
-        left: `${rect.left + rect.width / 2 - tooltipWidth / 2}px`, // 요소 중앙에 툴팁 중앙 맞추기
-        top: `${rect.top - tooltipHeight - 8}px`, // 요소 위쪽으로 툴팁 배치 (8px는 마진)
+        left: `${rect.left + rect.width / 2 - tooltipWidth / 2}px`,
+        top: `${rect.top - tooltipHeight - 8}px`,
       };
     }
   });
