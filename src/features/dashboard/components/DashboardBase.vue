@@ -11,55 +11,25 @@ import FollowerChart from '@/features/dashboard/components/chart/FollowerChart.v
 import DashboardSummary from '@/features/dashboard/components/DashboardSummary.vue';
 
 const props = defineProps({
-    platform: String,
-    data: Object,
-    satisfaction: Number,
+  platform: {
+    type: String,
+    required: true
+  },
+  data: {
+    type: Object,
+    default: () => ({})
+  },
+  summaryData: {
+    type: Object,
+    default: () => ({})
+  },
+  satisfaction: {
+    type: Number,
+    default: 0
+  },
 });
 
-const emit = defineEmits(['switch'])
-
-const summaryData = computed(() => {
-    if (!props.data) {
-        return { shorts: 0, views: '0만', comments: '0개', likes: '0만' };
-    }
-
-    if (props.platform === 'instagram') {
-        const s = props.data?.reelsSummary ?? {
-            count: 0,
-            avgViews: 0,
-            avgComments: 0,
-            avgLikes: 0,
-        };
-        const p = props.data?.popularPosts?.length ?? 0;
-
-        return {
-            shorts: s.count + p,
-            views: `${(s.avgViews / 10000).toFixed(1)}만`,
-            comments: `${s.avgComments}개`,
-            likes: `${(s.avgLikes / 10000).toFixed(1)}만`,
-        };
-    } else {
-        const s = props.data?.shortsSummary ?? {
-            count: 0,
-            averageViewCount: 0,
-            commentCount: 0,
-            likeCount: 0,
-        };
-        const v = props.data?.videosSummary ?? {
-            videoCount: 0,
-            averageViewCount: 0,
-            commentCount: 0,
-            likeCount: 0,
-        };
-
-        return {
-            shorts: s.count + v.videoCount,
-            views: `${((s.averageViewCount + v.averageViewCount) / 10000).toFixed(1)}만`,
-            comments: `${s.commentCount + v.commentCount}개`,
-            likes: `${((s.likeCount + v.likeCount) / 10000).toFixed(1)}만`,
-        };
-    }
-});
+const emit = defineEmits(['switch']);
 
 const satisfactionIcon = computed(() => {
     if (props.satisfaction <= 50) {
@@ -80,6 +50,43 @@ const satisfactionColorClass = computed(() => {
     return 'text-green-500';
   }
 })
+
+const averageChartData = computed(() => ({
+  daily: props.data?.dailyAvgViews ?? 0,
+  monthly: props.data?.monthlyAvgViews ?? 0,
+}));
+
+const ageChartData = computed(() => ({
+  age1317: props.data?.age1317 ?? 0,
+  age1824: props.data?.age1824 ?? 0,
+  age2534: props.data?.age2534 ?? 0,
+  age3544: props.data?.age3544 ?? 0,
+  age4554: props.data?.age4554 ?? 0,
+  age5564: props.data?.age5564 ?? 0,
+  age65plus: props.data?.age65plus ?? 0,
+}));
+
+const genderChartData = computed(() => ({
+  male: props.data?.genderMale ?? 0,
+  female: props.data?.genderFemale ?? 0
+}));
+
+const reachChartData = computed(() => {
+  if (props.platform === 'instagram') {
+    return {
+      reach: props.data?.reach ?? 0,
+      followerRate: props.data?.followerRatio ?? 0,
+      nonFollowerRate: props.data?.nonFollowerRatio ?? 0
+    };
+  } else if (props.platform === 'youtube') {
+    return {
+      reach: props.data?.impressions ?? 0,
+      followerRate: props.data?.subscribedRatio ?? 0,
+      nonFollowerRate: props.data?.notSubscribedRatio ?? 0
+    };
+  }
+  return { reach: 0, followerRate: 0, nonFollowerRate: 0 };
+});
 </script>
 
 <template>
@@ -108,16 +115,16 @@ const satisfactionColorClass = computed(() => {
             </button>
         </div>
 
-        <DashboardSummary :platform="platform" :data="summaryData" />
+        <DashboardSummary :platform="platform" :data="props.summaryData" />
 
         <div class="flex gap-8">
             <AverageChart
-                :platform="platform"
-                :daily="data.dailyAverageViews"
-                :monthly="data.monthlyAverageViews"
-                class="w-1/3"
+              :platform="platform"
+              :daily="averageChartData.daily"
+              :monthly="averageChartData.monthly"
+              class="w-1/3"
             />
-            <AlgorithmChart :platform="platform" :data="data" class="w-1/3" />
+            <AlgorithmChart :platform="platform" :data="props.data" class="w-1/3" />
             <div class="dashboard-section w-1/3">
                 <div class="flex items-center gap-1">
                     <h3 class="font-bold text-gray-dark">평균 만족도</h3>
@@ -135,29 +142,38 @@ const satisfactionColorClass = computed(() => {
                 </div>
                 <div class="flex flex-col justify-center items-center mt-10 gap-5">
                   <Icon :icon="satisfactionIcon" :class="`w-36 h-36 ${satisfactionColorClass}`" />
-                  <p class="text-5xl font-extrabold">{{ satisfaction }}</p>
+                  <p class="text-5xl font-extrabold">{{ props.satisfaction }}</p>
                 </div>
             </div>
         </div>
 
         <div class="flex gap-8">
-            <AgeChart :platform="platform" :data="data.demographics.ageGender" class="w-[70%]" />
-            <GenderChart :platform="platform" :data="data.demographics.ageGender" class="w-[30%]" />
+          <AgeChart
+            :platform="platform"
+            :data="ageChartData"
+            class="w-2/3"
+          />
+          <GenderChart
+            :platform="platform"
+            :data="genderChartData"
+            class="w-1/3"
+          />
         </div>
 
         <div class="flex gap-8">
             <FollowerChart
                 :platform="platform"
-                :data="platform === 'instagram' ? data.followersTrend : data.subscribersTrend"
+                :data="props.data"
                 class="w-[70%]"
             />
             <ReachChart
-              :platform="platform"
-              :reach="data.reach"
-              :followerRate="platform === 'instagram' ? data.followerReachRate : data.subscriberRate"
-              :nonFollowerRate="platform === 'instagram' ? data.nonFollowerReachRate : data.nonSubscriberRate"
-              class="w-[30%]"
+                :platform="platform"
+                :reach="reachChartData.reach"
+                :followerRate="reachChartData.followerRate"
+                :nonFollowerRate="reachChartData.nonFollowerRate"
+                class="w-[30%]"
             />
+
         </div>
     </div>
 </template>

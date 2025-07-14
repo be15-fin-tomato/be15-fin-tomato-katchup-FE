@@ -39,3 +39,18 @@ export const getClientCompanyUsers = async (clientCompanyId) => {
 export const deleteClientManager = async (clientManagerId) => {
   return await api.delete(`/client-managers/${clientManagerId}`);
 };
+
+// 고객사 ID 기준 캠페인 목록 조회 API
+export const getCampaignsByClientCompany = async (clientCompanyId) => {
+  return await api.get(`/campaign/by-client-company/${clientCompanyId}`);
+};
+
+// 완료된 계약서 목록 조회 API
+export const getClientCompanyContracts = async (clientCompanyId) => {
+  return await api.get(`/client-companies/success/${clientCompanyId}`);
+};
+
+// 커뮤니케이션 이력 조회 API
+export const getClientCompanyCommunicationHistories = async (clientCompanyId) => {
+  return await api.get(`/client-companies/${clientCompanyId}/communication-histories`)
+}

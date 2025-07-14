@@ -69,7 +69,7 @@ const groups = [
         fields: [
             {
                 key: 'campaign',
-                label: '해당 파이프라인',
+                label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'campaign',
                 essential: true,
@@ -217,17 +217,6 @@ const handleReferenceSelect = async (item) => {
         return;
     }
 
-    // 기존 값 초기화
-    // Object.keys(form).forEach((key) => {
-    //     if (Array.isArray(form[key])) {
-    //         form[key] = [];
-    //     } else if (typeof form[key] === 'object' && form[key] !== null) {
-    //         form[key] = {};
-    //     } else {
-    //         form[key] = '';
-    //     }
-    // });
-
     const res = await getContractDetail(item.pipelineId);
     const resForm = res.data.data.form;
 
@@ -316,10 +305,10 @@ const save = async () => {
 
         await updateRevenueDetail(formData);
         toast.success('매출이 수정되었습니다.');
-        await fetchRevenueDetail();
     } catch (e) {
         toast.error(e?.response?.data?.message);
     }
+    await fetchRevenueDetail();
     isEditing.value = false;
 };
 

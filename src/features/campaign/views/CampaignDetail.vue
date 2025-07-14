@@ -1,25 +1,34 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getCampaignDetail, updateCampaign, deleteCampaign } from '@/features/campaign/api.js'; // ✅ 수정
-import { useToast } from 'vue-toastification'; // ✅ 알림용
+import { getCampaignDetail, updateCampaign, deleteCampaign } from '@/features/campaign/api.js';
+import { useToast } from 'vue-toastification';
 import { Icon } from '@iconify/vue';
 
 import CampaignForm from '@/features/campaign/components/CampaignForm.vue';
 import PipelineDiagram from '@/features/campaign/components/PipelineDiagram.vue';
 import CampaignHistory from '@/features/campaign/components/CampaignHistory.vue';
 
+const campaignFormRef = ref(null);
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 const campaignDetail = ref(null);
 const campaignHistory = ref([]);
-const form = reactive({});
+const form = ref({});
 const isEditing = ref(false);
 
-// form 초기화 함수
+watch(
+  () => form.value.clientCompany?.id,
+  (newId, oldId) => {
+    if (isEditing.value && newId !== oldId) {
+      form.value.clientManager = null;
+    }
+  }
+);
+
 function initializeForm(detail) {
-  Object.assign(form, {
+  Object.assign(form.value, {
     title: detail.campaignName,
     status: detail.campaignStatusId,
     clientCompany: {
@@ -37,6 +46,7 @@ function initializeForm(detail) {
     pipelineId: detail.pipelineId,
     createdAt: detail.createdAt,
     category: detail.categoryList?.[0] || null,
+    categoryList: detail.categoryList || [],
     userList: detail.userList || [],
     awarenessPath: detail.awarenessPath,
     productName: detail.productName,
@@ -52,7 +62,6 @@ function formatToDash(dateStr) {
   return dateStr.replace(/\./g, '-');
 }
 
-// 캠페인 상세 + 타임라인 조회
 const fetchCampaignDetail = async () => {
   const res = await getCampaignDetail(route.params.campaignId);
   const data = res.data.data;
@@ -60,23 +69,13 @@ const fetchCampaignDetail = async () => {
   campaignDetail.value = data.campaignDetail;
   campaignHistory.value = data.timeline;
 
-  // 파이프라인 단계 구성
   const stepMap = {
-    1: '기획 인지',
-    2: '리스트업',
-    3: '제안',
-    4: '견적',
-    5: '제작',
-    6: '계약',
-    7: '매출',
+    1: '기회인지', 2: '리스트업', 3: '제안', 4: '견적', 5: '제작', 6: '계약', 7: '매출', 8:'사후관리',
   };
-
-  const stepOrder = [1, 2, 3, 4, 5, 6, 7];
-
+  const stepOrder = [1, 2, 3, 4, 5, 6, 7, 8];
   const presentedList = data.timeline
     .filter(item => item.presentedAt !== null)
     .sort((a, b) => new Date(b.presentedAt) - new Date(a.presentedAt));
-
   const currentStep = presentedList[0]?.pipelineStepId ?? null;
 
   const stepStatus = stepOrder.map(stepId => {
@@ -85,15 +84,11 @@ const fetchCampaignDetail = async () => {
       pipelineStepId: stepId,
       stepType: stepMap[stepId],
       done: matched?.presentedAt != null,
-      startedAt: matched?.startedAt || null,
+      createdAt: matched?.createdAt || null,
     };
   });
 
-  campaignDetail.value.pipeLine = {
-    stepStatus,
-    currentStep,
-  };
-
+  campaignDetail.value.pipeLine = { stepStatus, currentStep };
   initializeForm(campaignDetail.value);
 };
 
@@ -101,28 +96,39 @@ onMounted(() => {
   fetchCampaignDetail();
 });
 
-// 저장
 const save = async () => {
+  console.log('[save] 저장 시도');
+  if (!campaignFormRef.value) {
+    console.error('폼이 없습니다.');
+    return;
+  }
+
+  const validatedForm = campaignFormRef.value.submit();
+  console.log('[save] submit 반환값:', validatedForm); // null이면 유효성 실패
+
+  if (!validatedForm) {
+    console.warn('[save] 유효성 검사 실패');
+    return;
+  }
+
   try {
     const payload = {
       campaignId: route.params.campaignId,
-      campaignName: form.title,
-      campaignStatusId: form.status,
-      clientCompanyId: form.clientCompany?.id,
-      clientManagerId: form.clientManager?.id,
-      startedAt: formatToDash(form.startedAt),
-      endedAt: formatToDash(form.endedAt),
-      awarenessPath: form.awarenessPath,
-      productName: form.productName,
-      productPrice: form.productPrice,
-      expectedRevenue: form.expectedRevenue,
-      expectedProfitMargin: form.expectedProfitMargin,
-      notes: form.notes,
-      userList: form.userList.map(u => u.id),
-      categoryList: form.category ? [form.category] : [],
+      campaignName: validatedForm.title,
+      campaignStatusId: validatedForm.status,
+      clientCompanyId: validatedForm.clientCompany?.id,
+      clientManagerId: validatedForm.clientManager?.id,
+      startedAt: formatToDash(validatedForm.startedAt),
+      endedAt: formatToDash(validatedForm.endedAt),
+      awarenessPath: validatedForm.awarenessPath,
+      productName: validatedForm.productName,
+      productPrice: validatedForm.productPrice,
+      expectedRevenue: validatedForm.expectedRevenue,
+      expectedProfitMargin: validatedForm.expectedProfitMargin,
+      notes: validatedForm.notes,
+      userList: validatedForm.userList.map(u => u.id),
+      categoryList: validatedForm.categoryList ?? [],
     };
-    console.log('clientCompany:', form.clientCompany);
-    console.log('clientManager:', form.clientManager);
 
     await updateCampaign(payload);
     toast.success('캠페인이 수정되었습니다.');
@@ -133,10 +139,8 @@ const save = async () => {
   }
 };
 
-// 삭제
 const remove = async () => {
   if (!confirm('정말 삭제하시겠습니까?')) return;
-
   try {
     await deleteCampaign(route.params.campaignId);
     toast.success('캠페인이 삭제되었습니다.');
@@ -146,73 +150,16 @@ const remove = async () => {
   }
 };
 
-// 취소
-const cancel = () => {
+const cancel = async () => {
   initializeForm(campaignDetail.value);
   isEditing.value = false;
+  await fetchCampaignDetail();
 };
 
-// 필드 그룹 정의
-const groups = [
-  {
-    type: 'horizontal',
-    fields: [
-      { key: 'title', label: '캠페인명', type: 'input' },
-      {
-        key: 'status',
-        label: '진행 상태',
-        type: 'select',
-        options: [
-          { label: '취소', value: 1 },
-          { label: '진행중', value: 2 },
-          { label: '보류', value: 3 },
-          { label: '게시대기', value: 4 },
-          { label: '완료', value: 5 },
-        ],
-      },
-    ],
-  },
-  {
-    type: 'horizontal',
-    fields: [
-      { key: 'startDate', label: '시작일', inputType: 'date' },
-      { key: 'endDate', label: '종료일', inputType: 'date' },
-    ],
-  },
-  {
-    type: 'horizontal',
-    fields: [
-      {
-        key: 'clientCompany',
-        label: '고객사',
-        type: 'search-company',
-        searchType: 'company',
-      },
-      {
-        key: 'clientManager',
-        label: '광고담당자',
-        type: 'search-manager',
-        searchType: 'manager',
-      },
-    ],
-  },
-  {
-    type: 'horizontal',
-    fields: [
-      {
-        key: 'userList',
-        label: '고객사 담당자',
-        type: 'readonly',
-        getValue: (value) => value.map((u) => u.name).join(', '),
-      },
-    ],
-  },
-];
 </script>
 
 <template>
   <div class="container">
-    <!-- 헤더 -->
     <div class="page-header">
       <div class="page-title">캠페인 상세 정보</div>
       <div class="flex justify-end gap-2">
@@ -234,7 +181,6 @@ const groups = [
 
     <div class="blue-line"></div>
 
-    <!-- 파이프라인 진행상태 -->
     <div class="pipeline flex items-center w-full mb-4">
       <PipelineDiagram
         v-if="campaignDetail?.pipeLine"
@@ -242,14 +188,11 @@ const groups = [
       />
     </div>
 
-    <!-- 좌우 영역 -->
     <div class="flex">
-      <!-- 좌측: 입력 폼 -->
       <div class="w-1/2">
-        <CampaignForm v-model="form" :groups="groups" :isEditing="isEditing" />
+        <CampaignForm ref="campaignFormRef" v-model="form" :isEditing="isEditing" />
       </div>
 
-      <!-- 우측: 타임라인 -->
       <div class="w-1/2 bg-gray-50 p-4 rounded shadow">
         <CampaignHistory v-if="campaignHistory?.length" :campaignHistory="campaignHistory" />
       </div>

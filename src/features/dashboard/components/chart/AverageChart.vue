@@ -1,6 +1,7 @@
 <script setup>
 import ApexCharts from 'vue3-apexcharts'
 import { Icon } from '@iconify/vue'
+import { formatNumber } from '@/utils/fomatters.js';
 
 const props = defineProps({
   platform: String,
@@ -9,7 +10,7 @@ const props = defineProps({
 })
 
 const series = [{
-  data: [props.daily / 10000, props.monthly / 10000]
+  data: [props.daily, props.monthly]
 }]
 
 const categories = ['일 평균 조회 수', '월 평균 조회 수']
@@ -68,7 +69,7 @@ const getMonthlyTooltip = () => {
             },
             dataLabels: {
               enabled: true,
-              formatter: val => `${val.toFixed(0)}만`,
+              formatter: val =>  (formatNumber(val)),
               style: { fontSize: '20px', fontWeight: 'bold', colors: ['#5F38E9'] },
               offsetY: 140
             },

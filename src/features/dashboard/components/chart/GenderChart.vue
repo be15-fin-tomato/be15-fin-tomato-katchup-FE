@@ -1,22 +1,25 @@
 <script setup>
 import ApexCharts from 'vue3-apexcharts'
+import { computed } from 'vue';
 
 const props = defineProps({
   platform: String,
-  data: Array
+  data: Object
 })
 
-const totalMale = props.data.reduce((sum, item) => sum + item.male, 0)
-const totalFemale = props.data.reduce((sum, item) => sum + item.female, 0)
-const totalOther = props.data.reduce((sum, item) => sum + item.other, 0)
+const totalMale = computed(() => props.data.male ?? 0);
+const totalFemale = computed(() => props.data.female ?? 0);
+const totalOther = computed(() => props.data.other ?? 0);
 
-const series = [totalMale, totalFemale, totalOther]
-const labels = ['남성', '여성', '사용자 지정']
-const total = totalMale + totalFemale + totalOther
+const series = computed(() => [
+  totalMale.value,
+  totalFemale.value,
+  totalOther.value
+]);
 
-const chartTitle = props.platform === 'instagram' ? '팔로워 성별 비율' : '구독자 성별 비율'
-</script>
-
+const labels = ['남성', '여성', '사용자 지정'];
+const total = computed(() => totalMale.value + totalFemale.value + totalOther.value);
+const chartTitle = computed(() => props.platform === 'instagram' ? '팔로워 성별 비율' : '구독자 성별 비율');</script>
 <template>
   <div class="dashboard-section">
     <p class="dashboard-title">{{ chartTitle }}</p>
@@ -32,15 +35,7 @@ const chartTitle = props.platform === 'instagram' ? '팔로워 성별 비율' : 
             colors: ['#A2C9F4', '#F6A6B2', '#D9D9D9'],
             legend: { position: 'bottom' },
             dataLabels: { enabled: false },
-            tooltip: {
-              y: {
-                formatter: function (val) {
-                  const percent = (val / total * 100).toFixed(1);
-                  return `${val}명 (${percent}%)`;
-                }
-              }
-            },
-            stroke: { show: false }
+            stroke: { show: false },
           }"
         />
       </div>

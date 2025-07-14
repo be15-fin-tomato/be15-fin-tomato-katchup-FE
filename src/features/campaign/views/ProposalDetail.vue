@@ -6,13 +6,20 @@ import { Icon } from '@iconify/vue';
 import SalesForm from '@/features/campaign/components/SalesForm.vue';
 import ProposalAccordionItem from '@/features/campaign/components/ProposalAccordionItem.vue';
 import {
+    deleteIdea,
+    deleteProposal,
+    getIdea,
     getInfluencerDetail,
+    getListupDetail,
     getListupReference,
     getProposalDetail,
+    postIdea,
+    updateProposal,
 } from '@/features/campaign/api.js';
 import DetailReferenceList from '@/features/campaign/components/DetailReferenceList.vue';
 import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 import { useToast } from 'vue-toastification';
+import { structuredForm } from '@/features/campaign/utils/structedForm.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -22,15 +29,15 @@ const proposalForm = ref(null);
 const form = reactive({});
 const listUpReferences = ref([]);
 const accordionItems = ref([]);
-const isEditing = ref(true);
+const isEditing = ref(false);
 const route = useRoute();
 
 const groups = [
     {
         type: 'horizontal',
         fields: [
-            { key: 'title', label: '제목', type: 'input', essential: true },
-            { key: 'requestDate', label: '요청일', type: 'date', inputType: 'date' },
+            { key: 'name', label: '제목', type: 'input', essential: true },
+            { key: 'requestAt', label: '요청일', type: 'date', inputType: 'date' },
         ],
     },
     {
@@ -56,18 +63,19 @@ const groups = [
                 searchType: 'manager',
                 essential: true,
             },
-            { key: 'announcementDate', label: '발표일', type: 'input', inputType: 'date' },
+            { key: 'presentAt', label: '발표일', type: 'input', inputType: 'date' },
         ],
     },
     {
         type: 'horizontal',
         fields: [
             {
-                key: 'pipeline',
-                label: '해당 파이프라인',
+                key: 'campaign',
+                label: '캠페인',
                 type: 'search-pipeline',
                 searchType: 'pipeline',
                 essential: true,
+                extends: 'clientCompany',
             },
             {
                 key: 'username',
@@ -92,7 +100,12 @@ const groups = [
                 key: 'status',
                 label: '진행단계',
                 type: 'select',
-                options: ['승인요청', '진행중', '보류', '완료'],
+                options: [
+                    { value: 1, label: '승인요청' },
+                    { value: 2, label: '승인완료' },
+                    { value: 3, label: '보류/대기' },
+                    { value: 4, label: '승인거절' },
+                ],
                 essential: true,
             },
         ],
@@ -115,6 +128,23 @@ const toggle = (index) => {
     }
 };
 
+const handleReferenceSelect = async (item) => {
+    if (!isEditing.value) {
+        alert('수정 모드가 아닙니다!');
+        return;
+    }
+
+    const res = await getListupDetail(item.pipelineId);
+    const resForm = res.data.data.influencerList;
+    // form.influencer = resForm;
+    form.influencer = resForm.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+        strength: '',
+        notes: '',
+    }));
+};
+
 // 저장 및 취소
 const save = async () => {
     const requiredFields = [
@@ -127,16 +157,17 @@ const save = async () => {
         { key: 'status', label: '진행단계' },
     ];
     if (!validateRequiredFields(form, requiredFields, toast)) return;
-    const payload = {
-        ...form,
-        opinions: opinions.value,
-    };
+
+    const payload = buildProposalPayload(form, accordionItems.value);
 
     try {
         console.log('전송 데이터:', payload);
-        await router.push('/sales/proposal');
+        await updateProposal(payload);
+        toast.success('제안이 수정되었습니다.');
     } catch (e) {
-        console.error('저장 실패:', e);
+        toast.error(e.response.data.message);
+    } finally {
+        isEditing.value = false;
     }
 };
 
@@ -147,15 +178,131 @@ const cancel = () => {
 
 const fetchInfluencerDetail = async (ids) => {
     const res = await getInfluencerDetail(ids);
-    console.log('??', res);
-    return res.data.data;
+    return res.data.data.influencerDetail;
+};
+
+const AGE_LABELS = {
+    youtube: {
+        youtubeAge1317: '13-17',
+        youtubeAge1824: '18-24',
+        youtubeAge2534: '25-34',
+        youtubeAge3544: '35-44',
+        youtubeAge4554: '45-54',
+        youtubeAge5564: '55-64',
+        youtubeAge65Plus: '65+',
+    },
+    instagram: {
+        instagramAge1317: '13-17',
+        instagramAge1824: '18-24',
+        instagramAge2534: '25-34',
+        instagramAge3544: '35-44',
+        instagramAge4554: '45-54',
+        instagramAge5564: '55-64',
+        instagramAge65Plus: '65+',
+    },
+};
+
+const calculateAgeTop = (data, platform) => {
+    const ageMap = AGE_LABELS[platform];
+
+    const entries = Object.entries(ageMap)
+        .map(([key, label]) => ({
+            label,
+            rate: data[key],
+        }))
+        .filter((item) => item.rate !== null && item.rate !== undefined);
+
+    return entries.sort((a, b) => b.rate - a.rate).slice(0, 3);
+};
+
+const normalizeInfluencer = (raw) => {
+    return {
+        influencerId: raw.influencerId,
+        name: raw.youtubeName || raw.instagramName || '이름 없음',
+        imageUrl: raw.imageUrl,
+        strength: raw.strength || '',
+        note: raw.note || '',
+        campaignHistory: raw.campaignRecord || [],
+        platform: {
+            youtube: {
+                subscribers: raw.subscriber,
+                averageView: raw.youtubeAvgViews,
+                averageLike: raw.youtubeAvgLikes,
+                averageComment: raw.youtubeAvgComments,
+                category: null,
+                ageTop1: calculateAgeTop(raw, 'youtube')[0] ?? null,
+                ageTop2: calculateAgeTop(raw, 'youtube')[1] ?? null,
+                ageTop3: calculateAgeTop(raw, 'youtube')[2] ?? null,
+                genderTop1:
+                    raw.youtubeGenderMale !== null
+                        ? { label: '남성', rate: raw.youtubeGenderMale }
+                        : null,
+                genderTop2:
+                    raw.youtubeGenderFemale !== null
+                        ? { label: '여성', rate: raw.youtubeGenderFemale }
+                        : null,
+            },
+            instagram: {
+                averageView: raw.instagramAvgViews,
+                averageLike: raw.instagramAvgLikes,
+                averageComment: raw.instagramAvgComments,
+                followers: raw.follower,
+                category: null,
+                ageTop1: calculateAgeTop(raw, 'instagram')[0] ?? null,
+                ageTop2: calculateAgeTop(raw, 'instagram')[1] ?? null,
+                ageTop3: calculateAgeTop(raw, 'instagram')[2] ?? null,
+                genderTop1:
+                    raw.instagramGenderMale !== null
+                        ? { label: '남성', rate: raw.instagramGenderMale }
+                        : null,
+                genderTop2:
+                    raw.instagramGenderFemale !== null
+                        ? { label: '여성', rate: raw.instagramGenderFemale }
+                        : null,
+            },
+        },
+    };
+};
+
+const buildProposalPayload = (form, accordionItems) => {
+    console.log(route.params.proposalId);
+    return {
+        pipelineId: route.params.proposalId,
+        campaignId: form.campaign?.id,
+        campaignName: form.campaign?.name,
+        pipelineStatusId: form.status,
+        clientCompanyId: form.clientCompany?.id,
+        clientManagerId: form.clientManager?.id,
+        userId: form.username?.map((u) => u.id) ?? [],
+        name: form.name,
+        requestAt: form.requestAt,
+        startedAt: form.startedAt,
+        endedAt: form.endedAt,
+        presentedAt: form.presentAt,
+        content: form.content,
+        notes: form.notes,
+        influencerList: accordionItems.map((item) => {
+            const inf = item.influencer;
+            return {
+                influencerId: inf.influencerId,
+                strength: inf.strength ?? '',
+                notes: inf.note ?? '',
+            };
+        }),
+    };
 };
 
 const fetchProposalDetail = async () => {
     try {
         const res = await getProposalDetail(route.params.proposalId);
-        proposalForm.value = res.data.data;
-        Object.assign(form, res.data.data);
+        const rawForm = res.data.data.form;
+
+        const parsedForm = structuredForm(rawForm);
+        proposalForm.value = parsedForm;
+        Object.assign(form, parsedForm);
+
+        listUpReferences.value = res.data.data.referenceList ?? [];
+        opinions.value = res.data.data.ideaList ?? [];
     } catch (e) {
         console.log(e);
     }
@@ -173,18 +320,33 @@ watch(
         if (influencers[0] && !influencers[0].platform) {
             const ids = influencers.map((i) => i.id);
             try {
-                const res = await fetchInfluencerDetail(ids); // API 요청
-                console.log(res);
-                form.influencer = res; // form에 상세 정보로 재할당
-                return; // 이후 watch가 다시 트리거됨
+                const res = await fetchInfluencerDetail(ids);
+                const detailed = Array.isArray(res)
+                    ? res.map(normalizeInfluencer)
+                    : [normalizeInfluencer(res)];
+
+                // 👉 form.influencer의 strength/note 병합
+                const enriched = detailed.map((inf) => {
+                    const origin = influencers.find((i) => i.id === inf.influencerId);
+                    return {
+                        ...inf,
+                        strength: origin?.strength ?? '',
+                        note: origin?.note ?? '',
+                    };
+                });
+
+                accordionItems.value = enriched.map((inf, idx) => ({
+                    title: `${idx + 1}. ${inf.name}`,
+                    component: ProposalAccordionItem,
+                    influencer: inf,
+                }));
+                openIndexes.value = enriched.map((_, i) => i);
             } catch (e) {
                 console.error('인플루언서 상세 fetch 실패:', e);
-                return;
             }
         }
 
         if (influencers[0] && influencers[0].platform) {
-            console.log('!!!!');
             accordionItems.value = influencers.map((inf, idx) => ({
                 title: `${idx + 1}. ${inf.name}`,
                 component: ProposalAccordionItem,
@@ -197,18 +359,41 @@ watch(
 );
 
 // 의견 등록
-const handleSubmit = (newComment) => {
-    opinions.value.push({
-        id: Date.now(),
-        author: '나',
-        content: newComment,
-        createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    });
+const handleSubmit = async (newComment) => {
+    try {
+        await postIdea({ pipeline: route.params.proposalId, content: newComment });
+        await fetchOpinion();
+        toast.success('의견이 등록되었습니다.');
+    } catch (e) {
+        toast.error(e.data.message);
+    }
+};
+
+const fetchOpinion = async () => {
+    const res = await getIdea(route.params.proposalId);
+
+    opinions.value = res.data.data.response;
 };
 
 // 의견 삭제
-const handleDelete = (id) => {
-    opinions.value = opinions.value.filter((opinion) => opinion.id !== id);
+const handleDelete = async (id) => {
+    try {
+        await deleteIdea(id);
+        await fetchOpinion();
+        toast.success('의견이 삭제되었습니다.');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
+};
+
+const remove = async () => {
+    try {
+        await deleteProposal(route.params.proposalId);
+        toast.success('제안이 삭제되었습니다.');
+        await router.replace('/sales/proposal');
+    } catch (e) {
+        toast.error(e.response.data.message);
+    }
 };
 
 onMounted(async () => {
@@ -217,6 +402,18 @@ onMounted(async () => {
     // await fetchProposalDetail();
     await Promise.all([fetchProposalDetail()]);
 });
+
+watch(
+    () => form.campaign?.id,
+    async (newVal) => {
+        if (newVal) {
+            const res = await getListupReference(newVal);
+            listUpReferences.value = res.data.data.referenceList;
+        } else {
+            listUpReferences.value = []; // campaignId 없으면 초기화
+        }
+    },
+);
 </script>
 
 <template>
@@ -231,13 +428,19 @@ onMounted(async () => {
                 <div class="page-header">
                     <div class="page-title">제안</div>
                     <div class="flex justify-end gap-2">
-                        <button class="btn-create" @click="save">저장</button>
+                        <button class="btn-delete" @click="isEditing ? cancel() : remove()">
+                            {{ isEditing ? '취소' : '삭제' }}
+                        </button>
+
+                        <button class="btn-create" @click="isEditing ? save() : (isEditing = true)">
+                            {{ isEditing ? '저장' : '수정' }}
+                        </button>
                         <Icon
                             icon="material-symbols:lists-rounded"
                             width="32"
                             height="32"
                             class="text-btn-gray"
-                            @click="router.push('/sales/revenue')"
+                            @click="router.push('/sales/proposal')"
                         />
                     </div>
                 </div>

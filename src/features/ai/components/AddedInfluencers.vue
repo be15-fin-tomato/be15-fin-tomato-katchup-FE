@@ -30,23 +30,33 @@ const modalState = computed({
             >
                 <div class="flex items-center gap-3">
                     <img
-                        :src="influencer.imageUrl"
+                        :src="
+                            influencer.youtube?.thumbnailUrl
+                                ? influencer.youtube?.thumbnailUrl
+                                : '/tomato.png'
+                        "
+                        @error="(e) => (e.target.src = '/tomato.png')"
                         alt="profile"
                         class="w-10 h-10 rounded-full object-cover"
                     />
                     <div class="flex flex-col">
-                        <span class="text-sm font-semibold">{{ influencer.name }}</span>
-                        <div class="flex items-center gap-1 mt-1">
-                            <Icon icon="logos:youtube-icon" width="16" height="16" />
-                            <Icon icon="skill-icons:instagram" width="16" height="16" />
-                        </div>
+                        <span class="text-sm font-semibold">
+                            {{ influencer.name }}
+                        </span>
+                        <span class="text-sm font-semibold text-gray-500">
+                            {{
+                                influencer.youtube?.name ||
+                                influencer.instagram?.name ||
+                                '해당 없음'
+                            }}
+                        </span>
                     </div>
                 </div>
                 <Icon
                     icon="iconamoon:close-bold"
                     class="cursor-pointer text-gray-400 hover:text-red-500"
                     width="20"
-                    @click="$emit('remove', influencer.id)"
+                    @click="$emit('remove', influencer.influencerId)"
                 />
             </div>
         </div>

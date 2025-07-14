@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
+import { formatNumber } from '@/utils/fomatters.js';
 
 const props = defineProps({
   platform: {
@@ -18,19 +19,19 @@ const summary = computed(() => {
     return {
       avgViews: 0, avgLikes: 0, avgComments: 0,
       averageViewCount: 0, likeCount: 0, commentCount: 0,
-      count: 0
+      totalVideos: 0,
     }
   }
   return props.platform === 'instagram'
-    ? (props.data.reelsSummary ?? { avgViews: 0, avgLikes: 0, avgComments: 0, count: 0 })
-    : (props.data.shortsSummary ?? { averageViewCount: 0, likeCount: 0, commentCount: 0, count: 0 })
+    ? (props.data.reelsSummary ?? { avgViews: 0, avgLikes: 0, avgComments: 0, totalVideos: 0 })
+    : (props.data.shortsSummary ?? { averageViewCount: 0, likeCount: 0, commentCount: 0, totalVideos: 0 })
 })
 
 const followers = computed(() => {
   if (!props.data) return 1
   return props.platform === 'instagram'
     ? (props.data.instagram?.followers ?? 1)
-    : (parseInt(props.data.channel?.subscriberCount ?? '1'))
+    : (parseInt(props.data.subscriberCount ?? props.data.channel?.subscriberCount ?? '1'))
 })
 
 const safeDivide = (a, b) => (!b || isNaN(b)) ? 0 : a / b
@@ -39,15 +40,14 @@ const scoreData = computed(() => {
   const s = summary.value
   const f = followers.value
 
-  const avgViews = s.avgViews ?? s.averageViewCount ?? 0
-  const avgLikes = s.avgLikes ?? s.likeCount ?? 0
-  const avgComments = s.avgComments ?? s.commentCount ?? 0
-  const count = s.count ?? 0
+  const avgViews = props.platform === 'instagram' ? (s.avgViews ?? 0) : (s.averageViewCount ?? 0)
+  const avgLikes = props.platform === 'instagram' ? (s.avgLikes ?? 0) : (s.likeCount ?? 0)
+  const avgComments = props.platform === 'instagram' ? (s.avgComments ?? 0) : (s.commentCount ?? 0)
+  const totalVideos = props.platform === 'instagram' ? (s.totalVideos ?? 0) : (props.data.totalVideos ?? 0)
 
   const algorithmScore = Math.min(safeDivide(avgViews, f) * 10, 100)
   const engagement = Math.min(safeDivide(avgLikes + avgComments, avgViews) * 100, 100)
-  const activeness = Math.min(safeDivide(count, 30) * 100, 100)
-
+  const activeness = Math.min(safeDivide(totalVideos, 30) * 100, 100)
   return [
     { label: '알고리즘 스코어', value: algorithmScore },
     { label: '참여도', value: engagement },
@@ -67,11 +67,6 @@ const getActiveLevel = percent => thresholds.filter(t => percent > t).length
 const getSegmentColor = (segment, percent) => {
   const level = getActiveLevel(percent)
   return segment <= level + 1 ? barColors[segment - 1] : '#EAEAEA'
-}
-
-// 소수점 처리
-const formatValue = (value) => {
-  return (value % 1 === 0) ? value.toFixed(0) : value.toFixed(1)
 }
 </script>
 
@@ -102,7 +97,7 @@ const formatValue = (value) => {
       </div>
 
       <div class="flex justify-end">
-        <div class="text-black font-semibold">{{ formatValue(score.value) }}</div>
+        <div class="text-black font-semibold">{{ formatNumber(score.value) }}</div>
       </div>
     </div>
   </div>

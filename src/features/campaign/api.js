@@ -12,8 +12,9 @@ export const getCampaignList = async (page, size, filtering) => {
     });
 };
 
+/* 캠페인 등록 */
 export const createCampaign = async (campaignInfo) => {
-    return await api.post('/campaign', campaignInfo);
+    return api.post('/campaign/chance', campaignInfo);
 };
 
 /* 캠페인 상세 조회 */
@@ -23,11 +24,11 @@ export const getCampaignDetail = async (campaignId) => {
 
 /* 캠페인 수정 */
 export const updateCampaign = (data) => {
-  return api.put('/campaign/chance/update', data);
+    return api.put('/campaign/chance/update', data);
 };
 /* 캠페인 삭제 */
 export const deleteCampaign = (campaignId) => {
-  return api.delete(`/campaign/${campaignId}`);
+    return api.delete(`/campaign/${campaignId}`);
 };
 
 export const getProposalList = async (page, size, filters = {}) => {
@@ -35,6 +36,18 @@ export const getProposalList = async (page, size, filters = {}) => {
         params: { page, size, ...filters },
         paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
     });
+};
+
+export const updateProposal = async (payload) => {
+    return await api.put('/campaign/proposal', payload);
+};
+
+export const deleteProposal = async (proposalId) => {
+    return await api.delete(`/campaign/proposal/${proposalId}`);
+};
+
+export const createProposal = async (payload) => {
+    return await api.post('/campaign/proposal', payload);
 };
 
 export const getProposalDetail = async (proposalId) => {
@@ -47,12 +60,20 @@ export const getListUpList = async (page, size, filters = {}) => {
     });
 };
 
+export const createListup = async (payload) => {
+    return await api.post(`/campaign/listup`, payload);
+};
+
 export const getListupDetail = async (pipelineId) => {
     return await api.get(`/campaign/listup/${pipelineId}`);
 };
 
 export const deleteListup = async (listupId) => {
     return await api.delete(`/campaign/listup/${listupId}`);
+};
+
+export const updateListup = async (payload) => {
+    return await api.put('/campaign/listup', payload);
 };
 
 /* 견적 목록*/
@@ -176,12 +197,20 @@ export const getPipeline = async (clientCompanyId, keyword) => {
     });
 };
 
-export const getListupReference = async () => {
-    return await api.get('/listup/reference');
+export const getListupReference = async (campaignId = null) => {
+    const params = {};
+    if (campaignId !== null) {
+        params.campaignId = campaignId;
+    }
+    return await api.get('/campaign/listup/reference', { params });
 };
 
-export const getProposalReference = async () => {
-    return await api.get('/proposal/reference');
+export const getProposalReference = async (campaignId = null) => {
+    const params = {};
+    if (campaignId !== null) {
+        params.campaignId = campaignId;
+    }
+    return await api.get('/campaign/proposal/reference', { params });
 };
 
 export const getQuotationReference = async (campaignId = null) => {
@@ -202,8 +231,11 @@ export const getContractReference = async (campaignId = null) => {
     return await api.get('/campaign/contract/reference', { params });
 };
 
-export const getInfluencerDetail = async (ids) => {
-    return await api.post('influencer/detail', ids);
+export const getInfluencerDetail = async (id) => {
+    return await api.get('influencer/proposal', {
+        params: { id },
+        paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
+    });
 };
 
 export const postIdea = async (data) => {

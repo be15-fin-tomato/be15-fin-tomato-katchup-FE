@@ -1,6 +1,11 @@
 <script setup>
 import { reactive, ref, watch, nextTick, toRaw } from 'vue';
 import { Icon } from '@iconify/vue';
+import { useToast } from 'vue-toastification';
+import { useRouter } from 'vue-router';
+
+const toast = useToast();
+const router = useRouter();
 
 const props = defineProps({
   isEditing: { type: Boolean, default: false },
@@ -160,15 +165,15 @@ const openPostcodeSearch = () => {
 // 사원 추가/수정
 const addEmployee = () => {
   if (!newEmployee.name.trim()) {
-    alert('이름은 필수입니다.');
+    toast.error('이름은 필수입니다.');
     return;
   }
   if (!newEmployee.phone.trim()) {
-    alert('휴대폰번호는 필수입니다.');
+    toast.error('휴대폰번호는 필수입니다.');
     return;
   }
   if (!newEmployee.email.trim()) {
-    alert('이메일은 필수입니다.');
+    toast.error('이메일은 필수입니다.');
     return;
   }
 
@@ -324,20 +329,20 @@ watch(isAddingEmployee, (val) => {
             </p>
           </div>
             <div class="flex gap-2">
-                <button class="btn-icon">
-                    <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-                    MAIL
+              <button class="btn-icon" v-if="!isEditing" @click="router.push({ path: '/contract/template', query: { recipientEmail: employee.email, recipientName: employee.name } })">
+                <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                MAIL
+              </button>
+              <template v-if="isEditing">
+                <button class="btn-icon" @click="editEmployee(index)">
+                  <Icon icon="lucide:edit" width="20" height="20" />
+                  수정
                 </button>
-                <template v-if="isEditing">
-                    <button class="btn-icon" @click="editEmployee(index)">
-                        <Icon icon="lucide:edit" width="20" height="20" />
-                        수정
-                    </button>
-                    <button class="btn-icon" @click="deleteEmployee(index)">
-                        <Icon icon="gg:trash" width="20" height="20" />
-                        삭제
-                    </button>
-                </template>
+                <button class="btn-icon" @click="deleteEmployee(index)">
+                  <Icon icon="gg:trash" width="20" height="20" />
+                  삭제
+                </button>
+              </template>
             </div>
         </div>
       </div>
