@@ -264,7 +264,7 @@ const handleDeleteCompany = async () => {
           <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
           <td class="px-4 whitespace-nowrap">
             <RouterLink
-              :to="`/dashboard/campaign-result?id=${c.campaignId}`"
+              :to="`/campaign/dashboard/${c.pipelineInfluencerId}`"
               class="text-primary underline hover:font-medium"
             >
               보러가기
