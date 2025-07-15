@@ -22,18 +22,18 @@ const toast = useToast()
 
 const dashboard = ref(null)
 const influencer = ref(null)
-const satisfaction = ref(0)
+const satisfaction = ref(null)
 const topVideos = ref([])
 const influencerId = route.query.id
 
 onMounted(async () => {
   try {
     const [youtubeRes, instagramRes, influencerRes, satisfactionRes, topVideoRes] = await Promise.all([
-      fetchYoutubeInfo(influencerId),    // YouTube 대시보드 데이터
+      fetchYoutubeInfo(influencerId),
       fetchInstagramInfo(influencerId),
-      fetchInfluencerDetail(influencerId), // 인플루언서 프로필 정보
-      fetchSatisfaction(influencerId), // 인플루언서 평균 만족도
-      fetchTopVideos(influencerId), // 인플루언서 인기 동영상
+      fetchInfluencerDetail(influencerId),
+      fetchSatisfaction(influencerId),
+      fetchTopVideos(influencerId),
     ])
 
     const youtubeRawData = youtubeRes?.data?.data?.[0];
@@ -88,14 +88,15 @@ onMounted(async () => {
     };
 
     influencer.value = influencerData;
-    satisfaction.value = satisfactionData ?? 0;
+    satisfaction.value = satisfactionData;
     topVideos.value = topVideoListData;
+    console.info(satisfaction.value);
 
   } catch (err) {
     toast.error('데이터를 불러오지 못했습니다.');
     console.error('💥 YouTube Dashboard Error:', err);
     dashboard.value = null;
-    satisfaction.value = 0;
+    satisfaction.value = null;
     topVideos.value = [];
   }
 });
