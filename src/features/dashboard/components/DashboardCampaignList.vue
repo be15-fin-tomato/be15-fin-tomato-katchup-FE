@@ -32,7 +32,6 @@ onMounted(async () => {
     } else {
       campaignList.value = [];
       selectedId.value = null;
-      toast.info('진행 완료된 캠페인이 없습니다.');
     }
   } catch (error) {
     console.error('💥 캠페인 리스트 로드 오류:', error);
@@ -101,7 +100,10 @@ const goToCampaignDashboard = () => {
 <template>
   <div class="dashboard-section">
     <h2 class="dashboard-title">진행 캠페인</h2>
-    <div class="flex border border-gray-medium rounded-xl overflow-hidden min-h-[200px]">
+    <div
+      v-if="campaignList.length > 0"
+      class="flex border border-gray-medium rounded-xl overflow-hidden min-h-[200px]"
+    >
       <!-- 캠페인 리스트 -->
       <div class="w-1/3 border-r border-gray-medium p-4 flex flex-col gap-2">
         <button
@@ -169,6 +171,9 @@ const goToCampaignDashboard = () => {
       <div v-else class="flex-1 flex items-center justify-center text-gray-dark">
         진행 완료된 캠페인이 없습니다.
       </div>
+    </div>
+    <div v-else class="text-gray-medium">
+      진행 완료된 캠페인이 없습니다.
     </div>
   </div>
 </template>
