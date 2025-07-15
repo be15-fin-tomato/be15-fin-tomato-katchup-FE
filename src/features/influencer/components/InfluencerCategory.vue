@@ -1,6 +1,4 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-
 const props = defineProps({
     categories: {
         type: Array,
