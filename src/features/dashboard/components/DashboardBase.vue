@@ -9,6 +9,7 @@ import AgeChart from '@/features/dashboard/components/chart/AgeChart.vue';
 import GenderChart from '@/features/dashboard/components/chart/GenderChart.vue';
 import FollowerChart from '@/features/dashboard/components/chart/FollowerChart.vue';
 import DashboardSummary from '@/features/dashboard/components/DashboardSummary.vue';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   platform: {
@@ -30,6 +31,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['switch']);
+
+const router = useRouter();
 
 const satisfactionIcon = computed(() => {
     if (props.satisfaction <= 50) {
@@ -80,13 +83,17 @@ const reachChartData = computed(() => {
     };
   } else if (props.platform === 'youtube') {
     return {
-      reach: props.data?.impressions ?? 0,
+      reach: (props.data?.monthlyAvgViews) * 6 ?? 0,
       followerRate: props.data?.subscribedRatio ?? 0,
       nonFollowerRate: props.data?.notSubscribedRatio ?? 0
     };
   }
   return { reach: 0, followerRate: 0, nonFollowerRate: 0 };
 });
+
+const goToEmailSystem = () => {
+  router.push(`/management/email`);
+};
 </script>
 
 <template>
@@ -140,9 +147,17 @@ const reachChartData = computed(() => {
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center items-center mt-10 gap-5">
-                  <Icon :icon="satisfactionIcon" :class="`w-36 h-36 ${satisfactionColorClass}`" />
-                  <p class="text-5xl font-extrabold">{{ props.satisfaction }}</p>
+                <div v-if="props.satisfaction.count > 0" class="flex flex-col justify-center items-center mt-10 gap-5">
+                    <Icon :icon="satisfactionIcon" :class="`w-36 h-36 ${satisfactionColorClass}`" />
+                    <p class="text-5xl font-extrabold">{{ props.satisfaction.satisfaction }}</p>
+                </div>
+                <div v-else class="flex flex-col justify-center items-center gap-5">
+                    <Icon icon="nonicons:not-found-16" class="w-24 h-24 mt-20 text-gray-dark" />
+                    <p class="text-gray-dark">제출된 만족도 조사가 없습니다.</p>
+                    <button @click="goToEmailSystem" class="btn-create flex items-center gap-2">
+                        만족도 요청
+                        <Icon icon="line-md:arrow-right" class="w-5 h-5" />
+                    </button>
                 </div>
             </div>
         </div>
