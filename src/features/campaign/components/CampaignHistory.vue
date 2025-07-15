@@ -222,28 +222,52 @@ const formatPrice = (price) => {
         class="flex items-center relative w-full"
       >
         <div class="absolute left-6 top-0 bottom-0 w-px bg-gray-300 z-0"></div>
+        <!-- 아이콘 원 -->
         <div class="relative z-10">
-          <div :class="['w-12 h-12 rounded-full flex items-center justify-center mb-5', getStepColor(item.stepType)]">
-            <Icon :icon="getStepIcon(item.stepType)" width="28" height="28" class="text-white" />
+          <div
+            :class="[
+          'w-12 h-12 rounded-full flex items-center justify-center mb-5',
+          getStepColor(item.stepType)
+        ]"
+          >
+            <Icon
+              :icon="getStepIcon(item.stepType)"
+              width="28"
+              height="28"
+              class="text-white"
+            />
           </div>
         </div>
-
+        <!-- 카드 -->
         <div
-          class="flex-1 min-w-0 bg-white rounded border border-gray-200 py-3 px-5 ml-6 z-10 mb-4"
-          @click="goToDetail(item)"
+          class="flex-1 min-w-0 rounded border border-gray-200 py-3 px-5 ml-6 z-10 mb-4"
+          :class="item.stepType === '기회인지'
+    ? 'bg-gray-50 opacity-70'
+    : 'bg-white hover:bg-gray-50 hover:shadow-md cursor-pointer transition-shadow duration-150'"
+          @click="item.stepType !== '기회인지' && goToDetail(item)"
         >
           <div class="flex justify-between mb-2">
             <div class="font-bold text-sm">{{ item.stepType }}</div>
             <div class="font-semibold text-sm">{{ formatDate(item.createdAt) }}</div>
           </div>
           <div class="text-sm font-semibold text-black truncate">{{ item.pipelineTitle }}</div>
-          <div v-if="item.clientCompanyName || item.managerName" class="text-sm font-medium text-gray-600">
-            {{ item.clientCompanyName }}<span v-if="item.managerName"> / {{ item.managerName }}</span>
+          <div
+            v-if="item.clientCompanyName || item.managerName"
+            class="text-sm font-medium text-gray-600"
+          >
+            {{ item.clientCompanyName }}
+            <span v-if="item.managerName"> / {{ item.managerName }}</span>
           </div>
-          <div v-if="formatPeriod(item.startedAt, item.endedAt)" class="text-sm font-medium text-gray-600">
+          <div
+            v-if="formatPeriod(item.startedAt, item.endedAt)"
+            class="text-sm font-medium text-gray-600"
+          >
             {{ formatPeriod(item.startedAt, item.endedAt) }}
           </div>
-          <div v-if="formatPrice(item.adPrice)" class="text-sm font-medium text-gray-600">
+          <div
+            v-if="formatPrice(item.adPrice)"
+            class="text-sm font-medium text-gray-600"
+          >
             {{ formatPrice(item.adPrice) }}
           </div>
         </div>
