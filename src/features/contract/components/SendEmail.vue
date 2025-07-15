@@ -43,8 +43,7 @@
         <QuillEditor
           :content="editorContent"
           @update:content="editorContent = $event"
-          :readonly="isSending"
-        />
+          :readonly="isSending" />
 
         <div class="flex items-center gap-2 mt-4">
           <button
@@ -118,7 +117,7 @@ const props = defineProps({
 });
 
 const editorContent = ref('');
-const emailTitle = ref(''); // 이메일 제목 필드 (v-model="emailTitle"에 바인딩)
+const emailTitle = ref('');
 
 const currentFieldKey = ref('');
 const form = ref({
@@ -131,6 +130,37 @@ const loadingFile = ref(false);
 const isSending = ref(false);
 
 const toast = useToast();
+
+// 파일 용량 계산 (바이트 단위)
+const getTotalFilesize = () => {
+  let totalSize = 0;
+  console.log('--- Checking attachedFiles for total size ---'); // 디버깅용 로그
+  attachedFiles.value.forEach((file, index) => {
+    console.log(`  Processing File ${index}:`, file); // 각 파일 객체 확인
+    if (file instanceof File) {
+      console.log(`    Type: Local File, Size: ${file.size} bytes`); // 로컬 파일 크기
+      totalSize += file.size;
+    } else if (file.isS3File && typeof file.size === 'number') {
+      console.log(`    Type: S3 File, Size: ${file.size} bytes`); // S3 파일 크기
+      totalSize += file.size;
+    } else {
+      console.log(`    Type: Unknown/Missing Size, File Object:`, file); // size 정보가 없거나 타입이 다른 경우
+    }
+  });
+  console.log('--- Finished checking attachedFiles --- Total:', totalSize, 'bytes'); // 최종 계산된 총 용량
+  return totalSize;
+};
+
+// 바이트를 읽기 쉬운 형식으로 변환 (KB, MB 등)
+const formatBytes = (bytes, decimals = 2) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
 
 watch(() => [props.name, props.email], ([newName, newEmail]) => {
   if (newEmail) {
@@ -161,12 +191,19 @@ watch(() => props.initialFile, async (newFile) => {
       );
 
       if (!isS3FileAlreadyAttached) {
+        // S3 파일 추가 시, 어떤 데이터가 들어오는지 콘솔에 찍어봅니다.
+        console.log('--- S3 File Watch Triggered ---');
+        console.log('newFile:', newFile);
+        console.log('newFile.size:', newFile.size, typeof newFile.size);
+        console.log('------------------------------');
+
         attachedFiles.value.push({
           name: newFile.originalName,
           originalName: newFile.originalName,
           fileId: newFile.fileId,
           program: newFile.program,
-          isS3File: true
+          isS3File: true,
+          size: newFile.size || 0 // S3 파일에도 size 정보가 있다면 사용, 없으면 0
         });
       }
     } catch (error) {
@@ -176,6 +213,7 @@ watch(() => props.initialFile, async (newFile) => {
       loadingFile.value = false;
     }
   } else {
+    // initialFile이 없는 경우 S3 파일이 아닌 항목만 남김
     attachedFiles.value = attachedFiles.value.filter(file => !file.isS3File);
   }
 }, { immediate: true });
@@ -208,6 +246,14 @@ const triggerFileInput = () => {
 const handleFilesChange = (event) => {
   const files = event.target.files;
   if (files && files.length > 0) {
+    // 로컬 파일 추가 시, 어떤 데이터가 들어오는지 콘솔에 찍어봅니다.
+    Array.from(files).forEach(file => {
+      console.log('--- Local File Added ---');
+      console.log('File Name:', file.name);
+      console.log('File Size (bytes):', file.size);
+      console.log('File Type:', file.type);
+      console.log('------------------------');
+    });
     attachedFiles.value = [...attachedFiles.value, ...Array.from(files)];
   }
   if (fileInput.value) {
@@ -245,7 +291,7 @@ const sendEmail = async () => {
   console.log("수신자 이메일:", form.value.email?.email);
   console.log("제목:", emailTitle.value);
   console.log("Quill Editor 내용 (HTML):", editorContent.value);
-  console.log("첨부 파일들:", attachedFiles.value);
+  console.log("첨부 파일들 (attachedFiles.value):", attachedFiles.value); // attachedFiles 전체 내용 확인
   console.log("-----------------------");
 
   if (!form.value.email?.email.trim()) {
@@ -261,6 +307,25 @@ const sendEmail = async () => {
     return;
   }
 
+  // --- 여기부터 용량 경고 메시지 로직 ---
+  const totalSize = getTotalFilesize();
+  console.log('Calculated total file size (before threshold check):', totalSize, 'bytes'); // 최종 계산된 총 용량 확인
+  console.log('Formatted total file size (before threshold check):', formatBytes(totalSize)); // 포맷된 용량 확인
+
+  const SIZE_THRESHOLD_BYTES = 5 * 1024 * 1024; // 5MB
+  console.log('Size threshold (5MB):', SIZE_THRESHOLD_BYTES, 'bytes'); // 임계값 확인
+
+  if (totalSize > SIZE_THRESHOLD_BYTES) {
+    console.log('Condition met: File size exceeds threshold. Displaying warning toast.'); // 조건 만족 시 메시지
+    toast.info(
+      `첨부 파일 총 용량(${formatBytes(totalSize)})이 커서 이메일 전송에 시간이 오래 걸릴 수 있습니다.`,
+      { timeout: 5000 } // 5초 후 자동으로 사라지게
+    );
+  } else {
+    console.log('Condition not met: File size is within threshold or no files attached. No warning toast.'); // 조건 불만족 시 메시지
+  }
+  // --- 용량 경고 메시지 로직 끝 ---
+
   isSending.value = true;
   const sendingToastId = toast.info('메일을 전송 중입니다...', { timeout: false, closeButton: false });
 
@@ -270,7 +335,7 @@ const sendEmail = async () => {
   attachedFiles.value.forEach(file => {
     if (file.isS3File && file.fileId) {
       fileIdToSend = file.fileId;
-    } else {
+    } else if (file instanceof File) {
       localFilesToUpload.push(file);
     }
   });
@@ -290,7 +355,7 @@ const sendEmail = async () => {
       toast.success('이메일이 성공적으로 전송되었습니다.');
       emailTitle.value = '';
       editorContent.value = '';
-      form.value.email = null; // 이름과 이메일 필드를 모두 초기화
+      form.value.email = null;
       attachedFiles.value = [];
       if (fileInput.value) {
         fileInput.value.value = '';
@@ -309,5 +374,4 @@ const sendEmail = async () => {
 </script>
 
 <style scoped>
-
 </style>
