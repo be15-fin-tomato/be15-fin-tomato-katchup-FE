@@ -163,30 +163,30 @@ const goToEmailSystem = () => {
         </div>
 
         <div class="flex gap-8">
-          <AgeChart
-            :platform="platform"
-            :data="ageChartData"
-            class="w-2/3"
-          />
-          <GenderChart
-            :platform="platform"
-            :data="genderChartData"
-            class="w-1/3"
-          />
+            <AgeChart
+              :platform="platform"
+              :data="ageChartData"
+              class="w-2/3"
+            />
+            <GenderChart
+              :platform="platform"
+              :data="genderChartData"
+              class="w-1/3"
+            />
         </div>
 
         <div class="flex gap-8">
             <FollowerChart
                 :platform="platform"
                 :data="props.data"
-                class="w-[70%]"
+                class="w-2/3"
             />
             <ReachChart
                 :platform="platform"
                 :reach="reachChartData.reach"
                 :followerRate="reachChartData.followerRate"
                 :nonFollowerRate="reachChartData.nonFollowerRate"
-                class="w-[30%]"
+                class="w-1/3"
             />
 
         </div>
