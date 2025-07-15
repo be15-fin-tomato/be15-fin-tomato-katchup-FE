@@ -57,14 +57,17 @@ const handleYoutubeConnect = async () => {
 };
 
 const handleYoutubeDisconnect = async () => {
-  try {
-    await disconnectYoutube(props.id);
-    toast.success('유튜브 연동이 성공적으로 해제되었습니다!');
-    console.log('YouTube 연동 해제 성공');
-  } catch (error) {
-    toast.error('유튜브 연동 해제에 실패했습니다. 다시 시도해주세요.');
-    console.error('YouTube 연동 해제 중 오류 발생:', error);
-  }
+    if (confirm('유튜브 연동을 정말로 해제하시겠습니까? 연동 해제 시 관련 데이터는 더 이상 업데이트되지 않습니다.')) {
+        try {
+            await disconnectYoutube(props.id);
+            toast.success('유튜브 연동이 성공적으로 해제되었습니다!');
+            console.log('YouTube 연동 해제 성공');
+            window.location.reload();
+        } catch (error) {
+            toast.error('유튜브 연동 해제에 실패했습니다. 다시 시도해주세요.');
+            console.error('YouTube 연동 해제 중 오류 발생:', error);
+        }
+    }
 };
 
 const handleInstagramConnect = async () => {
@@ -84,14 +87,16 @@ const handleInstagramConnect = async () => {
 };
 
 const handleInstagramDisconnect = async () => {
-  try {
-    await disconnectInstagram(props.id);
-    toast.success('인스타그램 연동이 성공적으로 해제되었습니다!');
-    console.log('인스타그램 연동 해제 성공');
-  } catch (error) {
-    toast.error('인스타그램 연동 해제에 실패했습니다. 다시 시도해주세요.');
-    console.error('인스타그램 연동 해제 중 오류 발생:', error);
-  }
+    if (confirm('인스타그램 연동을 정말로 해제하시겠습니까? 연동 해제 시 관련 데이터는 더 이상 업데이트되지 않습니다.')) {
+        try {
+            await disconnectInstagram(props.id);
+            toast.success('인스타그램 연동이 성공적으로 해제되었습니다!');
+            console.log('인스타그램 연동 해제 성공');
+        } catch (error) {
+            toast.error('인스타그램 연동 해제에 실패했습니다. 다시 시도해주세요.');
+            console.error('인스타그램 연동 해제 중 오류 발생:', error);
+        }
+    }
 };
 </script>
 
