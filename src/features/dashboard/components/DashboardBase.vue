@@ -25,8 +25,8 @@ const props = defineProps({
     default: () => ({})
   },
   satisfaction: {
-    type: Number,
-    default: 0
+    type: Object,
+    default: () => ({})
   },
 });
 
