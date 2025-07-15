@@ -10,6 +10,7 @@ const router = useRouter();
 
 const emp_number = ref('');
 const email = ref('');
+const loading = ref(false);
 
 const handleFindPassword = async () => {
   if (!emp_number.value || !email.value) {
@@ -17,9 +18,11 @@ const handleFindPassword = async () => {
     return;
   }
 
+  loading.value = true;
+
   try {
     await findPassword(emp_number.value, email.value);
-    toast.success('입력하신 이메일 주소로 임시 비밀번호가 발송되었습니다.');
+    toast.success('발급받은 새로운 임시 비밀번호를 입력해주세요.');
     router.push('/login');
     const domain = email.value.split('@')[1];
     window.open(`https://${domain}`, '_blank');
@@ -29,6 +32,8 @@ const handleFindPassword = async () => {
     } else {
       toast.error('비밀번호 찾기 요청 중 오류가 발생했습니다.');
     }
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -52,13 +57,16 @@ const backToLogin = () => {
                 <input v-model="emp_number" type="text" class="border border-[#D9D9D9] rounded-[10px] px-5 py-3 w-full" />
                 <label class="input-box-label text-click text-md pt-5.5 pb-1">이메일</label>
                 <input v-model="email" type="email" class="border border-[#D9D9D9] rounded-[10px] px-5 py-3 mb-6 w-full" />
-              <button class="btn-create w-full">
-                비밀번호 찾기
+              <button class="btn-create w-full" :disabled="loading">
+                {{ loading ? '요청중...' : '비밀번호 찾기'}}
               </button>
               <div class="mt-2">
                 <button class="btn-delete w-full"
-                        @click = "backToLogin">
-                  뒤로가기
+                        @click = "backToLogin"
+                        :disabled ="loading"
+                        type="button"
+                >
+                  {{ loading ? '뒤로가기' : '뒤로가기'}}
                 </button>
               </div>
             </form>
@@ -74,5 +82,9 @@ const backToLogin = () => {
     justify-content: center;
      align-items: center;
     height: 100vh;
+}
+.btn-create:disabled,.btn-delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>
