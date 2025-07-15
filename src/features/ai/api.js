@@ -19,3 +19,12 @@ export const fetchCampaignList = async (params) => {
         },
     });
 };
+
+export const fetchRecommendInfluencerList = async (campaignId, filters) => {
+    return await api.get(`/campaign/ai/recommend`, {
+        params: {
+            campaignId,
+            ...filters,
+        },
+    });
+};

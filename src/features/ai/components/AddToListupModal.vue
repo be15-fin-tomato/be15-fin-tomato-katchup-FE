@@ -44,7 +44,11 @@
                         @mouseleave="hidePopover"
                     >
                         <img
-                            :src="influencer.youtube?.thumbnailUrl"
+                            :src="
+                                influencer.youtube?.thumbnailUrl
+                                    ? influencer.youtube?.thumbnailUrl
+                                    : '/tomato.png'
+                            "
                             alt="프로필"
                             class="w-10 h-10 rounded-full object-cover"
                         />
