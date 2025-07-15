@@ -113,8 +113,9 @@ function toggleCategory(catId) {
 
       <div class="flex gap-4">
         <div class="flex-1">
-          <label class="input-form-label text-red-500">*</label>
-          <label class="input-form-label">고객사</label>
+          <label class="input-form-label">
+            고객사 <span class="text-red-500 ml-1">*</span>
+          </label>
           <div class="flex gap-2">
             <input
               type="text"
@@ -131,8 +132,9 @@ function toggleCategory(catId) {
           </div>
         </div>
         <div class="flex-1">
-          <label class="input-form-label text-red-500">*</label>
-          <label class="input-form-label">사원</label>
+          <label class="input-form-label">
+            사원 <span class="text-red-500 ml-1">*</span>
+          </label>
           <div class="flex gap-2">
             <input
               type="text"
@@ -151,8 +153,9 @@ function toggleCategory(catId) {
       </div>
 
       <div>
-        <label class="input-form-label text-red-500">*</label>
-        <label class="input-form-label">담당자</label>
+        <label class="input-form-label">
+          담당자 <span class="text-red-500 ml-1">*</span>
+        </label>
         <div class="flex gap-2">
           <input
             type="text"
@@ -170,13 +173,15 @@ function toggleCategory(catId) {
 
       <div class="flex gap-4">
         <div class="flex-1">
-          <label class="input-form-label text-red-500">*</label>
-          <label class="input-form-label">시작일</label>
+          <label class="input-form-label">
+            시작일 <span class="text-red-500 ml-1">*</span>
+          </label>
           <input type="date" v-model="props.form.requestDate" class="input-form-box" />
         </div>
         <div class="flex-1">
-          <label class="input-form-label text-red-500">*</label>
-          <label class="input-form-label">종료일</label>
+          <label class="input-form-label">
+            종료일 <span class="text-red-500 ml-1">*</span>
+          </label>
           <input type="date" v-model="props.form.announcementDate" class="input-form-box" />
         </div>
       </div>
@@ -192,8 +197,9 @@ function toggleCategory(catId) {
     <div class="flex flex-col gap-4 pl-4">
       <div class="flex gap-4">
         <div class="flex-1">
-          <label class="input-form-label text-red-500">*</label>
-          <label class="input-form-label">상품명</label>
+          <label class="input-form-label">
+            상품명 <span class="text-red-500 ml-1">*</span>
+          </label>
           <input type="text" v-model="props.form.productName" class="input-form-box" />
         </div>
         <div class="flex-1">
@@ -208,8 +214,9 @@ function toggleCategory(catId) {
       </div>
 
       <div>
-        <label class="input-form-label text-red-500">*</label>
-        <label class="input-form-label">카테고리</label>
+        <label class="input-form-label">
+          카테고리 <span class="text-red-500 ml-1">*</span>
+        </label>
         <div class="relative">
           <button
             class="input-form-box w-full text-left"
@@ -246,7 +253,6 @@ function toggleCategory(catId) {
       </div>
 
       <div>
-        <label class="input-form-label text-red-500">*</label>
         <label class="input-form-label">예상 매출</label>
         <input
           type="text"
@@ -257,7 +263,6 @@ function toggleCategory(catId) {
       </div>
 
       <div>
-        <label class="input-form-label text-red-500">*</label>
         <label class="input-form-label">예상 이익률 (%)</label>
         <input
           type="text"
