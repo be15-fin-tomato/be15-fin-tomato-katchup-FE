@@ -11,11 +11,17 @@ const props = defineProps({
 })
 
 const series = computed(() => {
-  if (props.followerRate == null || props.nonFollowerRate == null) return []
+  if (props.followerRate == null || props.nonFollowerRate == null || (props.followerRate === 0 && props.nonFollowerRate === 0)) {
+    return []
+  }
   return [props.followerRate, props.nonFollowerRate]
 })
 
-const labels = ['팔로워', '팔로워가 아닌 사람']
+const labels = computed(() => {
+  return props.platform === 'instagram'
+      ? ['팔로워', '팔로워가 아닌 사람']
+      : ['구독자', '구독자가 아닌 사람'];
+})
 
 const getTitle = () => {
   return props.platform === 'instagram' ? '도달' : '노출';
@@ -24,6 +30,7 @@ const getTitle = () => {
 const getReachText = () => {
   return props.platform === 'instagram' ? '도달한 계정' : '노출 수';
 }
+
 </script>
 
 <template>
@@ -53,12 +60,20 @@ const getReachText = () => {
           }"
         />
 
-        <div v-if="series && series.length > 0"
-             class="absolute top-[46%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+        <div v-if="series && series.length > 0" class="absolute top-[46%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
           <div class="text-3xl font-extrabold">{{ (formatNumber(props.reach)) }}</div>
           <div class="text-gray-400 text-sm mt-1">{{ getReachText() }}</div>
         </div>
+
+        <div v-else class="flex flex-col gap-10 items-center justify-center text-center p-10">
+          <div>
+            <div class="text-3xl font-extrabold">{{ (formatNumber(props.reach)) }}</div>
+            <div class="text-gray-400 text-sm mt-1">{{ getReachText() }}</div>
+          </div>
+          <p class="text-gray-medium">데이터가 부족하여 그래프를 생성할 수 없습니다.</p>
+        </div>
       </div>
     </div>
+
   </div>
 </template>
