@@ -1,8 +1,8 @@
-import InfluencerManagementView from '@/features/user/views/InfluencerManagementView.vue';
 import EmailSystemView from '@/features/user/views/EmailSystemView.vue';
 import SurveyListView from '@/features/user/views/SurveyListView.vue';
-import YoutubeOAuthCallback from '@/features/user/components/YoutubeOAuthCallback.vue';
-import InstagramOAuthCallback from '@/features/user/components/InstagramOAuthCallback.vue';
+import InstagramOAuthCallback from '@/features/influencer/views/InstagramOAuthCallback.vue';
+import YoutubeOAuthCallback from '@/features/influencer/views/YoutubeOAuthCallback.vue';
+import InfluencerManagementView from '@/features/influencer/views/InfluencerManagementView.vue';
 
 export const userRoutes = [
     {
@@ -38,11 +38,6 @@ export const userRoutes = [
         name: 'surveyList',
         component: SurveyListView,
     },
-    // {
-    //     path: '/oauth2/callback/youtube',
-    //     component: () => import('@/features/user/components/YoutubeCallBackPopUp.vue'),
-    //     meta: { useLayout: 'none' },
-    // },
     {
         path: '/oauth2/youtube/callback',
         name: 'youtube-oauth-callback',
