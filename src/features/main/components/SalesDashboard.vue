@@ -248,7 +248,7 @@ const goToCalendar = () => {
                       {{ proposal.presentedAt.slice(0,10) }}
                     </span>
                     <span
-                      class="text-center mr-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                      class="text-center mr-2 w-[70px] text-xs font-semibold px-2 py-1 rounded-md"
                       :class="statusClassMap[proposal.statusName] || 'bg-gray-medium'"
                     >
                       {{ proposal.statusName }}
@@ -315,7 +315,7 @@ const goToCalendar = () => {
                 <span class="w-[210px] text-left truncate" title="예상매출"> ₩ {{ formatPrice(quotation.expectedRevenue) }}</span>
                 <span class="w-[210px] text-left truncate" title="기대수익">₩ {{ formatPrice(quotation.expectedProfit) }}</span>
                 <span
-                  class="text-center mr-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                  class="text-center mr-2 w-[70px] text-xs font-semibold px-2 py-1 rounded-md"
                   :class="statusClassMap[quotation.statusName] || 'bg-gray-medium'"
                 >
                   {{ quotation.statusName }}
@@ -347,7 +347,7 @@ const goToCalendar = () => {
                   <span class="w-[210px] text-left truncate" title="예상매출"> ₩ {{ formatPrice(contract.expectedRevenue) }}</span>
                   <span class="w-[210px] text-left truncate" title="기대수익">₩ {{ formatPrice(contract.expectedProfit) }}</span>
                   <span
-                    class="text-center mr-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                    class="text-center mr-2 w-[70px] text-xs font-semibold px-2 py-1 rounded-md"
                     :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
                   >
                   {{ contract.statusName }}
