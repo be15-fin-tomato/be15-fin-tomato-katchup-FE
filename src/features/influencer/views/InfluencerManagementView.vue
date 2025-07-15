@@ -177,10 +177,6 @@ const handleInfluencerIdConfirmed = (id) => {
   isYoutubeConnectAuthModalOpen.value = true;
 };
 
-const openInstagramConnectModal = () => {
-  isInstagramConnectModalOpen.value = true;
-};
-
 const handleInstagramIdConfirmed = (id) => {
   currentInfluencerIdForInstagram.value = id;
   isInstagramConnectModalOpen.value = false;

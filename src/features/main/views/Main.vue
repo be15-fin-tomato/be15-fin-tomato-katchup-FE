@@ -1,5 +1,4 @@
 <script setup>
-// import { ref, onMounted, computed } from 'vue'
 import SalesDashboard from '@/features/main/components/SalesDashboard.vue';
 
 </script>
@@ -7,6 +6,5 @@ import SalesDashboard from '@/features/main/components/SalesDashboard.vue';
 <template>
     <div class="flex min-h-screen relative">
         <SalesDashboard />
-
     </div>
 </template>
