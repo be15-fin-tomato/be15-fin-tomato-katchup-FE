@@ -9,6 +9,7 @@ import {
   fetchMyProposal,
   fetchMyQuotation, fetchMySchedule, fetchSalesActivity
 } from '@/features/main/api.js';
+import { Icon } from '@iconify/vue';
 
 const router = useRouter();
 const toast = useToast()
@@ -157,7 +158,7 @@ const goToCalendar = () => {
                 <div class="h-[1px] bg-gray-light mt-2 mb-5 w-full"></div>
                 <div class="flex space-x-7 my-5 h-[70%]">
                     <div
-                        class="flex-1 text-center border border-gray-light rounded-2xl py-3"
+                        class="flex-1 text-center border border-gray-light rounded-2xl py-3 hover:shadow-lg"
                         @click="goToList('management/client')"
                     >
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
@@ -166,7 +167,7 @@ const goToCalendar = () => {
                         <div class="text-5xl font-semibold pt-7">{{ salesActivity.clientCompanyCount }}</div>
                     </div>
                     <div
-                        class="flex-1 text-center border border-gray-light rounded-2xl py-3"
+                        class="flex-1 text-center border border-gray-light rounded-2xl py-3 hover:shadow-lg"
                         @click="goToList('influencer/list')"
                     >
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
@@ -175,7 +176,7 @@ const goToCalendar = () => {
                         <div class="text-5xl font-semibold pt-7">{{ salesActivity.influencerCount }}</div>
                     </div>
                     <div
-                        class="flex-1 text-center border border-gray-light rounded-2xl py-3"
+                        class="flex-1 text-center border border-gray-light rounded-2xl py-3 hover:shadow-lg"
                         @click="goToList('sales/contract')"
                     >
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
@@ -184,7 +185,7 @@ const goToCalendar = () => {
                         <div class="text-5xl font-semibold pt-7">{{ salesActivity.contractCount }}</div>
                     </div>
                     <div
-                        class="flex-1 text-center border border-gray-light rounded-2xl py-3"
+                        class="flex-1 text-center border border-gray-light rounded-2xl py-3 hover:shadow-lg"
                         @click="goToList('campaign')"
                     >
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
@@ -218,7 +219,10 @@ const goToCalendar = () => {
         <div class="flex gap-5">
             <!-- 제안 -->
             <div class="dashboard-section w-2/3">
-              <h2 class="text-xl font-bold px-3">제안</h2>
+              <div class="flex gap-1 px-3 items-center justify-between">
+                  <h2 class="text-xl font-bold">제안</h2>
+                  <Icon icon="ic:baseline-plus" class="w-6 h-6 hover:bg-btn-gray/20" @click="goToList('sales/proposal')" />
+              </div>
               <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
               <ul class="max-h-[200px] overflow-y-auto">
                 <template v-for="(proposal, index) in proposalList" :key="index">
@@ -256,7 +260,10 @@ const goToCalendar = () => {
 
                 <!-- 고객사 -->
                 <div class="dashboard-section w-1/3">
-                    <h2 class="text-xl font-bold px-3">고객사</h2>
+                    <div class="flex gap-1 px-3 items-center justify-between">
+                      <h2 class="text-xl font-bold">고객사</h2>
+                      <Icon icon="ic:baseline-plus" class="w-6 h-6 hover:bg-btn-gray/20" @click="goToList('management/client')" />
+                    </div>
                     <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
                     <ul class="max-h-[200px] overflow-y-auto">
                         <template v-for="(company, index) in limitedCompanyList" :key="index">
@@ -289,7 +296,10 @@ const goToCalendar = () => {
 
         <!-- 견적 -->
         <div class="dashboard-section w-full max-h-[320px] overflow-y-auto">
-          <h2 class="text-xl font-bold px-3">견적</h2>
+          <div class="flex gap-1 px-3 items-center justify-between">
+            <h2 class="text-xl font-bold">견적</h2>
+            <Icon icon="ic:baseline-plus" class="w-6 h-6 hover:bg-btn-gray/20" @click="goToList('sales/quotation')" />
+          </div>
           <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
           <ul class="max-h-[200px] overflow-y-auto">
             <template v-for="(quotation, index) in quotationList" :key="index">
@@ -318,7 +328,10 @@ const goToCalendar = () => {
         <!-- 계약 -->
         <div class="flex gap-5">
           <div class="dashboard-section w-full max-h-[320px] overflow-y-auto">
-            <h2 class="text-xl font-bold px-3">계약</h2>
+            <div class="flex gap-1 px-3 items-center justify-between">
+              <h2 class="text-xl font-bold">계약</h2>
+              <Icon icon="ic:baseline-plus" class="w-6 h-6 hover:bg-btn-gray/20" @click="goToList('sales/contract')" />
+            </div>
             <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
             <ul class="max-h-[200px] overflow-y-auto">
               <template v-for="(contract, index) in contractList" :key="index">
