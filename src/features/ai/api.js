@@ -12,8 +12,16 @@ export const fetchListupDetail = async (id) => {
 };
 
 export const fetchCampaignList = async (params) => {
+    // 빈 문자열 또는 null/undefined인 파라미터 제거
+    const cleanedParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => {
+            if (Array.isArray(value)) return value.length > 0;
+            return value !== null && value !== undefined && value !== '';
+        }),
+    );
+
     return api.get('/campaign/ai/search', {
-        params,
+        params: cleanedParams,
         paramsSerializer: (params) => {
             return qs.stringify(params, { arrayFormat: 'repeat' }); // tags=1&tags=2
         },
