@@ -54,7 +54,7 @@ const getReachText = () => {
         />
 
         <div v-if="series && series.length > 0"
-             class="absolute top-[43%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+             class="absolute top-[46%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
           <div class="text-3xl font-extrabold">{{ (formatNumber(props.reach)) }}</div>
           <div class="text-gray-400 text-sm mt-1">{{ getReachText() }}</div>
         </div>
