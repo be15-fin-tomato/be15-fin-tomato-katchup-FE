@@ -1,13 +1,13 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import InfluencerFormModal from '../components/InfluencerFormModal.vue';
 import InfluencerManagementFilter from '@/components/common/InfluencerManagementFilter.vue';
 import { getInfluencers, registerInfluencer, updateInfluencer, deleteInfluencerApi } from '@/features/user/api.js';
 import InfluencerManagementCard from '@/components/common/InfluencerManagementCard.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
 import YoutubeConnectIdModal from '@/features/influencer/components/YoutubeConnectModal.vue';
 import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
+import InfluencerFormModal from '@/features/influencer/components/InfluencerFormModal.vue';
 
 const influencers = ref([]);
 const isModalOpen = ref(false);
