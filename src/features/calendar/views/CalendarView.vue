@@ -7,6 +7,7 @@ import koLocale from '@fullcalendar/core/locales/ko'
 import { Icon } from '@iconify/vue'
 import ScheduleModal from '../components/ScheduleModal.vue'
 import { useToast } from 'vue-toastification';
+import { useRouter } from 'vue-router';
 
 import {
     getScheduleList,
@@ -25,6 +26,7 @@ function formatDateToLocalYYYYMMDD(date) {
 }
 
 const toast = useToast();
+const router = useRouter();
 const todayDate = new Date()
 const calendarRef = ref(null)
 const selectedDate = ref(formatDateToLocalYYYYMMDD(todayDate))
@@ -62,7 +64,10 @@ const fetchPipelineEvents = async () => {
                     id: `present-${item.pipelineId}`,
                     title: `${item.name} 발표일`,
                     start: item.presentedAt,
-                    allDay: true
+                    allDay: true,
+                    extendedProps: {
+                        campaignId: item.campaignId,
+                    }
                 });
             }
             return events;
@@ -224,6 +229,15 @@ async function deleteEvent(eventToDelete) {
     console.error(err);
   }
 }
+
+function goToCampaignDetail(campaignId) {
+    if (!campaignId) {
+        toast.error('캠페인 ID가 없습니다.')
+        return
+    }
+    router.push({ name: 'CampaignDetail', params: { campaignId } })
+}
+
 </script>
 
 <template>
@@ -290,6 +304,8 @@ async function deleteEvent(eventToDelete) {
             v-for="(event, index) in pipelineDailySchedule"
             :key="'pipeline-' + index"
             class="flex bg-gray-100 rounded-md p-3 mb-3 min-h-[72px] border border-blue-300"
+            @click="goToCampaignDetail(event.extendedProps?.campaignId)"
+            style="cursor: pointer;"
           >
             <div class="flex items-stretch">
               <div
