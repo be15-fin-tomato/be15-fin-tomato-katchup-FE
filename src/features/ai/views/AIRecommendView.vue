@@ -316,7 +316,6 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive, watch } from 'vue';
-import axios from 'axios';
 import { Icon } from '@iconify/vue';
 import AddedInfluencers from '../components/AddedInfluencers.vue';
 import AIInfluencerCard from '../components/AIInfluencerCard.vue';
@@ -632,6 +631,7 @@ onMounted(async () => {
     campaignLoading.value = true;
     influencerLoading.value = true;
     const categoryRes = await fetchCategoryList();
+    await fetchCampaigns();
     const rawCategories = categoryRes.data.data;
     categoryList.value = [
         '전체',
@@ -681,8 +681,6 @@ onMounted(async () => {
             console.error('리스트업 상세 조회 실패', e);
         }
     }
-
-    await fetchCampaigns();
     initialized = true;
 });
 </script>
