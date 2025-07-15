@@ -67,6 +67,8 @@ const fetchPipelineEvents = async () => {
                     allDay: true,
                     extendedProps: {
                         campaignId: item.campaignId,
+                        pipelineId: item.pipelineId,
+                        pipelineStepId: item.pipelineStepId,
                     }
                 });
             }
@@ -230,12 +232,30 @@ async function deleteEvent(eventToDelete) {
   }
 }
 
-function goToCampaignDetail(campaignId) {
-    if (!campaignId) {
-        toast.error('캠페인 ID가 없습니다.')
-        return
-    }
-    router.push({ name: 'CampaignDetail', params: { campaignId } })
+function goToPipelineDetail(event) {
+  const pipelineId = event.extendedProps?.pipelineId;
+  const stepId = event.extendedProps?.pipelineStepId;
+
+  if (!pipelineId || !stepId) {
+    toast.error('파이프라인 정보가 누락되었습니다.');
+    return;
+  }
+
+  const stepRouteMap = {
+    2: 'listup',
+    3: 'proposal',
+    4: 'quotation',
+    6: 'contract',
+    7: 'revenue',
+  };
+
+  const step = stepRouteMap[stepId];
+  if (!step) {
+    toast.error('유효하지 않은 단계입니다.');
+    return;
+  }
+
+  router.push({ name: 'SalesDetail', params: { step, pipelineId } });
 }
 
 </script>
@@ -304,7 +324,7 @@ function goToCampaignDetail(campaignId) {
             v-for="(event, index) in pipelineDailySchedule"
             :key="'pipeline-' + index"
             class="flex bg-gray-100 rounded-md p-3 mb-3 min-h-[72px] border border-blue-300"
-            @click="goToCampaignDetail(event.extendedProps?.campaignId)"
+            @click="goToPipelineDetail(event)"
             style="cursor: pointer;"
           >
             <div class="flex items-stretch">
