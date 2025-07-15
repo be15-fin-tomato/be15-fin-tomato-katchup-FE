@@ -105,7 +105,7 @@ const fetchAll = async () => {
       };
 
       influencer.value = {
-        id: currentCampaign.pipelineInfluencerId,
+        id: currentCampaign.influencerId,
         name: currentCampaign.influencerName,
         platform: 'Youtube',
         subscribers: 0,
