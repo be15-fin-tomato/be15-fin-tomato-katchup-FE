@@ -47,6 +47,8 @@ async function loadInfluencers() {
     delete params.categoryIds;
   }
 
+    console.log('[loadInfluencers] 호출 파라미터:', params);
+
   try {
     const res = await fetchInfluencerList(params);
     influencerList.value = res.data.data.data;
@@ -60,15 +62,27 @@ async function loadInfluencers() {
 
 // [수정] 필터 적용 함수
 function handleApplyFilters(newFilters) {
-  const updatedFilters = { ...filters.value, ...newFilters };
+    console.log('[handleApplyFilters] 전달된 필터:', newFilters);
 
-  if (newFilters.categoryIds && newFilters.categoryIds.length === 0) {
-    delete updatedFilters.categoryIds;
-  }
+    let updatedFilters = {};
 
-  filters.value = updatedFilters;
-  currentPageZeroBased.value = 0;
+    if (Object.keys(newFilters).length === 0) {
+        // 빈 객체면 완전 초기화
+        updatedFilters = {};
+    } else {
+        updatedFilters = { ...filters.value, ...newFilters };
+
+        if (newFilters.categoryIds && newFilters.categoryIds.length === 0) {
+            delete updatedFilters.categoryIds;
+        }
+    }
+
+    filters.value = updatedFilters;
+    currentPageZeroBased.value = 0;
+
+    console.log('[handleApplyFilters] filters.value 상태:', filters.value);
 }
+
 
 onMounted(async () => {
   try {
@@ -92,7 +106,6 @@ onMounted(async () => {
   await loadInfluencers();
 });
 
-//
 watch(
   () => ({ ...filters.value, page: currentPageZeroBased.value }),
   () => {
@@ -100,7 +113,6 @@ watch(
   },
   { deep: true }
 );
-
 </script>
 
 <template>
