@@ -229,7 +229,7 @@ const goToCalendar = () => {
                   <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
 
                   <li
-                    class="flex w-full gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                    class="flex justify-between w-full gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                     @click="goToDetail('sales/proposal', proposal.pipelineId)"
                   >
                     <span class="w-[100px] font-bold truncate mr-3" :title="proposal.companyName">
@@ -248,7 +248,7 @@ const goToCalendar = () => {
                       {{ proposal.presentedAt.slice(0,10) }}
                     </span>
                     <span
-                      class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                      class="text-center mr-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
                       :class="statusClassMap[proposal.statusName] || 'bg-gray-medium'"
                     >
                       {{ proposal.statusName }}
@@ -275,9 +275,9 @@ const goToCalendar = () => {
                             >
                                 <span class="text-left col-span-2">{{ company.clientCompanyName }}</span>
                                 <span class="text-left col-span-2">{{ company.telephone }}</span>
-                                <span class="col-span-1 flex justify-end">
+                                <span class="col-span-1 flex justify-end mr-1">
                                     <span
-                                        class="text-xs font-semibold px-2 py-1 rounded-md w-fit"
+                                        class="text-xs font-semibold px-3 py-1 rounded-md w-fit"
                                         :class="{
                                         'bg-blue-400 text-white': company.statusName === '잠재',
                                         'bg-green-400 text-white': company.statusName === '신규',
@@ -306,7 +306,7 @@ const goToCalendar = () => {
               <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
 
               <li
-                class="flex w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                class="flex justify-between w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                 @click="goToDetail('sales/quotation', quotation.pipelineId)"
               >
                 <span class="w-[180px] text-left font-bold truncate" :title="quotation.companyName">{{ quotation.companyName }}</span>
@@ -315,7 +315,7 @@ const goToCalendar = () => {
                 <span class="w-[210px] text-left truncate" title="예상매출"> ₩ {{ formatPrice(quotation.expectedRevenue) }}</span>
                 <span class="w-[210px] text-left truncate" title="기대수익">₩ {{ formatPrice(quotation.expectedProfit) }}</span>
                 <span
-                  class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                  class="text-center mr-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
                   :class="statusClassMap[quotation.statusName] || 'bg-gray-medium'"
                 >
                   {{ quotation.statusName }}
@@ -338,7 +338,7 @@ const goToCalendar = () => {
                 <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
 
                 <li
-                  class="flex w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                  class="flex justify-between w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                   @click="goToDetail('sales/contract', contract.pipelineId)"
                 >
                   <span class="w-[180px] text-left font-bold truncate" :title="contract.companyName">{{ contract.companyName }}</span>
@@ -347,7 +347,7 @@ const goToCalendar = () => {
                   <span class="w-[210px] text-left truncate" title="예상매출"> ₩ {{ formatPrice(contract.expectedRevenue) }}</span>
                   <span class="w-[210px] text-left truncate" title="기대수익">₩ {{ formatPrice(contract.expectedProfit) }}</span>
                   <span
-                    class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                    class="text-center mr-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
                     :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
                   >
                   {{ contract.statusName }}
