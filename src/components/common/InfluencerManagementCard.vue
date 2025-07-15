@@ -4,7 +4,12 @@ import defaultThumbnail from '@/assets/images/logo.png';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
-import { disconnectYoutube, requestYoutubeAuthUrl } from '@/features/influencer/api.js';
+import {
+  disconnectInstagram,
+  disconnectYoutube,
+  requestInstagramAuthUrl,
+  requestYoutubeAuthUrl
+} from '@/features/influencer/api.js';
 import { useToast } from 'vue-toastification';
 
 const props = defineProps({
@@ -62,17 +67,31 @@ const handleYoutubeDisconnect = async () => {
   }
 };
 
-const openInstagramConnectModal = () => {
-  isInstagramConnectModalOpen.value = true;
-  currentInfluencerIdForInstagram.value = props.id;
+const handleInstagramConnect = async () => {
+  try {
+    const authUrl = await requestInstagramAuthUrl(props.id);
+
+    if (authUrl) {
+      console.log('인스타그램 인증 URL:', authUrl);
+      window.location.href = authUrl;
+    } else {
+      toast.error('인스타그램 인증 URL을 가져오지 못했습니다.');
+    }
+  } catch (error) {
+    console.error('인스타그램 연동 중 오류 발생:', error);
+    toast.error('인스타그램 연동에 실패했습니다. 다시 시도해주세요.');
+  }
 };
 
-const handleInstagramIdConfirmed = (id) => {
-  currentInfluencerIdForInstagram.value = id;
-  isInstagramConnectModalOpen.value = false;
-  console.log('Instagram 연동을 위한 인플루언서 ID 확인:', id);
-  alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
-  // TODO: 인스타그램 연동 로직 등록
+const handleInstagramDisconnect = async () => {
+  try {
+    await disconnectInstagram(props.id);
+    toast.success('인스타그램 연동이 성공적으로 해제되었습니다!');
+    console.log('인스타그램 연동 해제 성공');
+  } catch (error) {
+    toast.error('인스타그램 연동 해제에 실패했습니다. 다시 시도해주세요.');
+    console.error('인스타그램 연동 해제 중 오류 발생:', error);
+  }
 };
 </script>
 
@@ -173,14 +192,14 @@ const handleInstagramIdConfirmed = (id) => {
         </div>
         <button
           v-if="instagram === '미연결'"
-          @click="openInstagramConnectModal"
+          @click="handleInstagramConnect"
           class="flex px-2 h-[40px] border-[1px] border-blue-600 rounded-lg items-center justify-center gap-1 font-bold text-blue-600 hover:bg-blue-50 transition-colors"
         >
           <Icon icon="solar:link-round-bold" width="20" height="20" />
           연동
         </button>
         <button
-          v-else @click="handleInstagramUnConnect"
+          v-else @click="handleInstagramDisconnect"
           class="flex px-2 h-[40px] border-[1px] border-red-600 rounded-lg items-center justify-center gap-1 font-bold text-red-600 hover:bg-red-50 transition-colors"
         >
           <Icon icon="solar:link-round-bold" width="20" height="20" />
