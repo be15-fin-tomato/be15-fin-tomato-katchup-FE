@@ -1,6 +1,7 @@
 <script setup>
 import { TAG_COLOR_MAP } from '@/constants/tags'
 import { Icon } from '@iconify/vue'
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   influencer: {
@@ -8,6 +9,8 @@ const props = defineProps({
     required: true
   }
 })
+
+const router = useRouter();
 
 const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black'
@@ -42,6 +45,10 @@ const formatGender = (gender) => {
     default:
       return '기타'
   }
+}
+
+const goToList = () => {
+  router.push(`/influencer/list`);
 }
 </script>
 
@@ -85,19 +92,29 @@ const formatGender = (gender) => {
           </div>
       </div>
 
-        <div class="absolute right-10 top-10 px-10 py-5 text-md text-gray-dark flex flex-col gap-3 whitespace-nowrap items-start">
-          <div class="flex items-center justify-center gap-3">
+      <div class="flex justify-end">
+        <Icon
+          icon="material-symbols:lists-rounded" width="48" height="48"
+          class="text-btn-blue cursor-pointer mb-3"
+          @click="goToList"
+        />
+      </div>
+
+        <div class="absolute right-0 top-37 px-10 py-5 text-md text-gray-dark flex gap-3 whitespace-nowrap items-start">
+          <div class="flex items-center justify-center gap-2">
             <span><Icon icon="mingcute:target-line" width="26" height="26" /></span>
             <span>타깃 : </span>
             <span class="bg-pipeline-proposal/50 px-2 rounded-md">{{ influencer?.ageRange ?? '미정' }}</span>
             <span :class="[genderColor(influencer?.targetGender), 'px-2 rounded-md']">{{ formatGender(influencer?.targetGender) }}</span>
           </div>
-          <div class="flex items-center justify-center gap-3">
+          <div class="flex items-center justify-center gap-2">
+            /
             <span><Icon icon="fluent-emoji-high-contrast:money-bag" width="26" height="26" /></span>
             <span>단가 : </span>
             <span>{{ influencer?.price?.toLocaleString() ?? '미정' }}원</span>
           </div>
-          <div class="flex items-center justify-center gap-3">
+          <div class="flex items-center justify-center gap-2">
+            /
             <span><Icon icon="hugeicons:manager" width="25" height="25" /></span>
             <span>매니저 : </span>
             <span>{{ influencer?.manager ?? '없음' }}</span>
