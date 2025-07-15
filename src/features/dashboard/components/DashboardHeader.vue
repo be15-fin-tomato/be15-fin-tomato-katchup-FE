@@ -2,6 +2,7 @@
 import { TAG_COLOR_MAP } from '@/constants/tags'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router';
+import { formatNumber } from '@/utils/fomatters.js';
 
 const props = defineProps({
   influencer: {
@@ -16,11 +17,6 @@ const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black'
 }
 
-const formatCount = (num) => {
-  if (num === null || num === undefined) return '해당 없음'
-  const parsedNum = parseInt(num)
-  return parsedNum >= 10000 ? `${Math.floor(parsedNum / 10000)}만명` : `${parsedNum}명`
-}
 const genderColor = (gender) => {
   switch (gender) {
     case 'M':
@@ -83,11 +79,11 @@ const goToList = () => {
           <div class="flex flex-col gap-2">
             <div class="flex items-center gap-3 text-md text-gray-dark">
               <Icon icon="logos:youtube-icon" class="w-7 h-7" />
-              <span>구독자 {{ formatCount(influencer?.youtube?.subscriber) }}</span>
+              <span>구독자 {{ formatNumber(influencer?.youtube?.subscriber) }}</span>
             </div>
             <div class="flex items-center gap-3 text-md text-gray-dark">
               <Icon icon="skill-icons:instagram" class="w-7 h-7" />
-              <span>팔로워 {{ formatCount(influencer?.instagram?.follower) }}</span>
+              <span>팔로워 {{ formatNumber(influencer?.instagram?.follower) }}</span>
             </div>
           </div>
       </div>
