@@ -30,6 +30,17 @@ export const disconnectYoutube = async (influencerId) => {
   }
 }
 
+/* 인플루언서 인스타그램 연동 */
+export const requestInstagramAuthUrl = async (influencerId) => {
+  try {
+    const response = await api.get(`/oauth2/instagram/auth-url/${influencerId}`)
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to get Instagram auth URL:', error);
+    throw error;
+  }
+}
+
 /* 인플루언서 인스타그램 연동 해제 */
 export const disconnectInstagram = async (influencerId) => {
   try {
