@@ -189,7 +189,7 @@ const cancel = async () => {
     </div>
 
     <div class="flex">
-      <div class="w-1/2">
+      <div class="w-1/2 mr-6">
         <CampaignForm ref="campaignFormRef" v-model="form" :isEditing="isEditing" />
       </div>
 
