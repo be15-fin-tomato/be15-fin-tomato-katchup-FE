@@ -43,8 +43,7 @@
         <QuillEditor
           :content="editorContent"
           @update:content="editorContent = $event"
-          :readonly="isSending"
-        />
+          :readonly="isSending" />
 
         <div class="flex items-center gap-2 mt-4">
           <button
@@ -65,6 +64,11 @@
             :disabled="isSending"
           />
         </div>
+
+        <!-- 새롭게 추가된 용량 안내 메시지 -->
+        <p class="text-red-500 text-xs mt-1">
+          용량은 20MB 까지입니다. 용량이 크면 전송에 시간이 오래 걸릴 수 있습니다.
+        </p>
 
         <div class="mt-2" v-if="attachedFiles.length > 0 || loadingFile">
           <span v-if="loadingFile" class="text-gray-500 text-sm">첨부파일 로드 중...</span>
@@ -118,14 +122,14 @@ const props = defineProps({
 });
 
 const editorContent = ref('');
-const emailTitle = ref(''); // 이메일 제목 필드 (v-model="emailTitle"에 바인딩)
+const emailTitle = ref('');
 
 const currentFieldKey = ref('');
 const form = ref({
   email: null,
 });
 
-const attachedFiles = ref([]); // 로컬 파일 (File 객체) 또는 S3 파일 메타데이터 (Object)
+const attachedFiles = ref([]);
 const fileInput = ref(null);
 const loadingFile = ref(false);
 const isSending = ref(false);
@@ -161,12 +165,18 @@ watch(() => props.initialFile, async (newFile) => {
       );
 
       if (!isS3FileAlreadyAttached) {
+        // S3 파일 추가 시, 어떤 데이터가 들어오는지 콘솔에 찍어봅니다.
+        console.log('--- S3 File Watch Triggered ---');
+        console.log('newFile:', newFile);
+        console.log('newFile.size:', newFile.size, typeof newFile.size);
+        console.log('------------------------------');
+
         attachedFiles.value.push({
           name: newFile.originalName,
           originalName: newFile.originalName,
           fileId: newFile.fileId,
           program: newFile.program,
-          isS3File: true
+          isS3File: true,
         });
       }
     } catch (error) {
@@ -208,6 +218,13 @@ const triggerFileInput = () => {
 const handleFilesChange = (event) => {
   const files = event.target.files;
   if (files && files.length > 0) {
+    Array.from(files).forEach(file => {
+      console.log('--- Local File Added ---');
+      console.log('File Name:', file.name);
+      console.log('File Size (bytes):', file.size);
+      console.log('File Type:', file.type);
+      console.log('------------------------');
+    });
     attachedFiles.value = [...attachedFiles.value, ...Array.from(files)];
   }
   if (fileInput.value) {
@@ -245,7 +262,7 @@ const sendEmail = async () => {
   console.log("수신자 이메일:", form.value.email?.email);
   console.log("제목:", emailTitle.value);
   console.log("Quill Editor 내용 (HTML):", editorContent.value);
-  console.log("첨부 파일들:", attachedFiles.value);
+  console.log("첨부 파일들 (attachedFiles.value):", attachedFiles.value);
   console.log("-----------------------");
 
   if (!form.value.email?.email.trim()) {
@@ -270,7 +287,7 @@ const sendEmail = async () => {
   attachedFiles.value.forEach(file => {
     if (file.isS3File && file.fileId) {
       fileIdToSend = file.fileId;
-    } else {
+    } else if (file instanceof File) {
       localFilesToUpload.push(file);
     }
   });
@@ -290,7 +307,7 @@ const sendEmail = async () => {
       toast.success('이메일이 성공적으로 전송되었습니다.');
       emailTitle.value = '';
       editorContent.value = '';
-      form.value.email = null; // 이름과 이메일 필드를 모두 초기화
+      form.value.email = null;
       attachedFiles.value = [];
       if (fileInput.value) {
         fileInput.value.value = '';
@@ -309,5 +326,4 @@ const sendEmail = async () => {
 </script>
 
 <style scoped>
-
 </style>
