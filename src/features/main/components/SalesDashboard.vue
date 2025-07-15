@@ -135,6 +135,10 @@ const goToDetail = (type, id) => {
   router.push(`/${type}/${id}`);
 };
 
+const goToCompanyDetail = (type, id) => {
+  router.push(`/${type}/${id}/detail`);
+};
+
 const goToList = (type) => {
   router.push(`/${type}`);
 }
@@ -245,7 +249,7 @@ const goToCalendar = () => {
 
                             <li
                                 class="grid w-full grid-cols-5 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                                @click="goToDetail('management/client', company.id)"
+                                @click="goToCompanyDetail('management/client', company.id)"
                             >
                                 <span class="text-left col-span-2">{{ company.clientCompanyName }}</span>
                                 <span class="text-left col-span-2">{{ company.telephone }}</span>
@@ -279,7 +283,7 @@ const goToCalendar = () => {
                     v-for="(proposal, index) in proposalList"
                     :key="index"
                     class="grid w-full grid-cols-18 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                    @click="goToDetail('sales/proposal', proposal.id)"
+                    @click="goToDetail('sales/proposal', proposal.pipelineId)"
                 >
                     <div
                         v-if="index > 0"
@@ -313,7 +317,7 @@ const goToCalendar = () => {
                         <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
                         <li
                             class="grid w-full grid-cols-12 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToDetail('sales/quotation', quotation.id)"
+                            @click="goToDetail('sales/quotation', quotation.pipelineId)"
                         >
                             <span class="text-left font-bold truncate col-span-2">{{ quotation.companyName }}</span>
                             <span class="text-left col-span-6">{{ quotation.quotationTitle }}</span>
@@ -333,7 +337,7 @@ const goToCalendar = () => {
                         <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
                         <li
                             class="grid w-full grid-cols-12 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToDetail('sales/quotation', contract.id)"
+                            @click="goToDetail('sales/contract', contract.pipelineId)"
                         >
                             <span class="text-left font-bold truncate col-span-2">{{ contract.companyName }}</span>
                             <span class="text-left col-span-3">{{ contract.campaignName }}</span>
