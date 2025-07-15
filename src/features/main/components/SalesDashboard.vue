@@ -216,29 +216,64 @@ const goToCalendar = () => {
         </div>
 
         <div class="flex gap-5">
-            <!-- 리스트업 -->
+            <!-- 제안 -->
             <div class="dashboard-section w-2/3">
-            <h2 class="text-xl font-bold mb-2 px-3">리스트업</h2>
-            <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
-                <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                    <template v-for="(listUp, index) in listUpList" :key="index">
-                        <li
-                            v-if="index > 0"
-                            class="h-[1px] bg-gray-light"
-                        ></li>
-                        <li
-                            class="grid w-full grid-cols-4 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToDetail('influencer/recommendation', listUp.id)"
-                        >
-                            <span class="text-left font-bold truncate col-span-1">{{ listUp.companyName }}</span>
-                            <span class="text-left col-span-1">{{ listUp.campaignName }}</span>
-                            <span class="text-left col-span-1">{{ listUp.productName }}</span>
-                            <span class="text-left col-span-1">{{ listUp.listupTitle }}</span>
-                        </li>
-                    </template>
-                </ul>
+              <h2 class="text-xl font-bold px-3">제안</h2>
+              <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
+              <ul class="max-h-[200px] overflow-y-auto">
+                <template v-for="(proposal, index) in proposalList" :key="index">
+                  <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
 
+                  <li
+                    class="flex w-full gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                    @click="goToDetail('sales/proposal', proposal.pipelineId)"
+                  >
+        <span class="w-[100px] font-bold truncate mr-3" :title="proposal.companyName">
+          {{ proposal.companyName }}
+        </span>
+                    <span class="w-[200px] truncate mr-3" :title="proposal.campaignName">
+          {{ proposal.campaignName }}
+        </span>
+                    <span class="w-[200px] truncate" :title="proposal.proposalTitle">
+          {{ proposal.proposalTitle }}
+        </span>
+                    <span class="text-center w-[70px] truncate" :title="proposal.clientManagerName">
+          {{ proposal.clientManagerName }}
+        </span>
+                    <span class="text-center w-[115px] text-gray-medium text-sm">
+          {{ proposal.presentedAt.slice(0,10) }}
+        </span>
+                    <span
+                      class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                      :class="statusClassMap[proposal.statusName] || 'bg-gray-medium'"
+                    >
+            {{ proposal.statusName }}
+        </span>
+                  </li>
+                </template>
+              </ul>
+              <!-- 리스트업 -->
+<!--            <h2 class="text-xl font-bold mb-2 px-3">리스트업</h2>-->
+<!--            <div class="h-[1px] bg-gray-light mt-1 w-full"></div>-->
+<!--                <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">-->
+<!--                    <template v-for="(listUp, index) in listUpList" :key="index">-->
+<!--                        <li-->
+<!--                            v-if="index > 0"-->
+<!--                            class="h-[1px] bg-gray-light"-->
+<!--                        ></li>-->
+<!--                        <li-->
+<!--                            class="grid w-full grid-cols-4 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"-->
+<!--                            @click="goToDetail('influencer/recommendation', listUp.id)"-->
+<!--                        >-->
+<!--                            <span class="text-left font-bold truncate col-span-1">{{ listUp.companyName }}</span>-->
+<!--                            <span class="text-left col-span-1">{{ listUp.campaignName }}</span>-->
+<!--                            <span class="text-left col-span-1">{{ listUp.productName }}</span>-->
+<!--                            <span class="text-left col-span-1">{{ listUp.listupTitle }}</span>-->
+<!--                        </li>-->
+<!--                    </template>-->
+<!--                </ul>-->
             </div>
+
                 <!-- 고객사 -->
                 <div class="dashboard-section w-1/3">
                     <h2 class="text-xl font-bold px-3">고객사</h2>
@@ -254,16 +289,16 @@ const goToCalendar = () => {
                                 <span class="text-left col-span-2">{{ company.clientCompanyName }}</span>
                                 <span class="text-left col-span-2">{{ company.telephone }}</span>
                                 <span class="col-span-1 flex justify-end">
-                                <span
-                                    class="text-xs font-semibold px-2 py-1 rounded-md w-fit"
-                                    :class="{
-                                    'bg-blue-400 text-white': company.statusName === '잠재',
-                                    'bg-green-400 text-white': company.statusName === '신규',
-                                    'bg-yellow-400 text-white': company.statusName === '기존',
-                                    'bg-gray-300 text-black': !['잠재', '신규', '기존'].includes(company.statusName)
-                                  }"
-                                >
-                                  {{ company.statusName }}
+                                    <span
+                                        class="text-xs font-semibold px-2 py-1 rounded-md w-fit"
+                                        :class="{
+                                        'bg-blue-400 text-white': company.statusName === '잠재',
+                                        'bg-green-400 text-white': company.statusName === '신규',
+                                        'bg-yellow-400 text-white': company.statusName === '기존',
+                                        'bg-gray-300 text-black': !['잠재', '신규', '기존'].includes(company.statusName)
+                                      }"
+                                    >
+                                        {{ company.statusName }}
                                 </span>
                               </span>
                             </li>
@@ -279,17 +314,13 @@ const goToCalendar = () => {
             <h2 class="text-xl font-bold mb-2 px-3">제안</h2>
             <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
             <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                <li
-                    v-for="(proposal, index) in proposalList"
-                    :key="index"
+                <template v-for="(proposal, index) in proposalList" :key="index">
+                  <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
+
+                  <li
                     class="grid w-full grid-cols-18 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                    @click="goToDetail('sales/proposal', proposal.pipelineId)"
-                >
-                    <div
-                        v-if="index > 0"
-                        class="col-span-full h-[1px] bg-gray-light mb-2"
-                        style="grid-column: 1 / -1"
-                    ></div>
+                     @click="goToDetail('sales/proposal', proposal.pipelineId)"
+                  >
                     <span class="font-bold truncate col-span-2 text-left">{{ proposal.companyName }}</span>
                     <span class="text-left col-span-3">{{ proposal.campaignName }}</span>
                     <span class="text-left col-span-3">{{ proposal.proposalTitle }}</span>
@@ -304,6 +335,7 @@ const goToCalendar = () => {
                     </span>
                     <span class="text-right text-gray-medium text-sm col-span-2">{{ proposal.presentedAt.slice(0,10) }}</span>
                 </li>
+                </template>
             </ul>
         </div>
 
