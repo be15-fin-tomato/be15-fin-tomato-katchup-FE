@@ -10,6 +10,7 @@ import InfluencerCardSkeleton from '@/features/influencer/components/InfluencerC
 const influencerList = ref([]);
 const categoryList = ref([]);
 const categoryNameToIdMap = ref({});
+const categoryIdToNameMap = ref({});
 
 const filters = ref({});
 
@@ -18,6 +19,8 @@ const pageSize = 6;
 const totalCount = ref(0);
 const totalPages = ref(0);
 const isLoading = ref(false);
+
+const selectedCategoryName = ref('전체');
 
 const reverseCategoryMap = {
     Entertainment: '엔터테인먼트',
@@ -64,27 +67,35 @@ async function loadInfluencers() {
     isLoading.value = false;
 }
 
-// [수정] 필터 적용 함수
 function handleApplyFilters(newFilters) {
     console.log('[handleApplyFilters] 전달된 필터:', newFilters);
 
-    let updatedFilters = {};
+    let updatedFilters = { ...filters.value };
 
-    if (Object.keys(newFilters).length === 0) {
-        // 빈 객체면 완전 초기화
-        updatedFilters = {};
-    } else {
-        updatedFilters = { ...filters.value, ...newFilters };
+    for (const key in newFilters) {
+        if (newFilters.hasOwnProperty(key)) {
+            const value = newFilters[key];
 
-        if (newFilters.categoryIds && newFilters.categoryIds.length === 0) {
-            delete updatedFilters.categoryIds;
+            if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
+                delete updatedFilters[key];
+            } else {
+                updatedFilters[key] = value;
+            }
         }
     }
 
     filters.value = updatedFilters;
     currentPageZeroBased.value = 0;
 
+    if (filters.value.categoryIds && filters.value.categoryIds.length > 0) {
+        const currentCategoryId = filters.value.categoryIds[0];
+        selectedCategoryName.value = categoryIdToNameMap.value[currentCategoryId] || '전체';
+    } else {
+        selectedCategoryName.value = '전체';
+    }
+
     console.log('[handleApplyFilters] filters.value 상태:', filters.value);
+    console.log('[handleApplyFilters] selectedCategoryName 상태:', selectedCategoryName.value);
 }
 
 onMounted(async () => {
@@ -93,16 +104,21 @@ onMounted(async () => {
         const rawCategories = categoryRes.data.data;
 
         const nameToId = {};
+        const idToName = {};
         const displayCategories = ['전체'];
 
         rawCategories.forEach((cat) => {
             const koreanName = reverseCategoryMap[cat.categoryName] || cat.categoryName;
             displayCategories.push(koreanName);
             nameToId[koreanName] = cat.categoryId;
+            idToName[cat.categoryId] = koreanName;
         });
 
         categoryList.value = displayCategories;
         categoryNameToIdMap.value = nameToId;
+        categoryIdToNameMap.value = idToName;
+
+        handleApplyFilters({});
     } catch (error) {
         console.error('카테고리 목록을 불러오는 데 실패했습니다:', error);
     }
@@ -132,10 +148,10 @@ watch(
 
             <InfluencerCategory
                 :categories="categoryList"
-                @update:selected="
+                :selectedCategory="selectedCategoryName" @update:selected="
                     (cat) => {
                         const categoryId = categoryNameToIdMap[cat];
-                        handleApplyFilters({ categoryIds: categoryId ? [categoryId] : [] });
+                        handleApplyFilters({ categoryIds: cat === '전체' ? [] : [categoryId] });
                     }
                 "
             />
