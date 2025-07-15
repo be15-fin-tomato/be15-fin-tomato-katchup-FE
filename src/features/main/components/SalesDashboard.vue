@@ -241,10 +241,10 @@ const goToCalendar = () => {
                     <span class="w-[200px] truncate" :title="proposal.proposalTitle">
                       {{ proposal.proposalTitle }}
                     </span>
-                    <span class="text-center w-[70px] truncate" :title="proposal.clientManagerName">
+                    <span class="text-center w-[70px] truncate" title="고객사 담당자">
                       {{ proposal.clientManagerName }}
                     </span>
-                    <span class="text-center w-[115px] text-gray-medium text-sm">
+                    <span class="text-center w-[115px] text-gray-medium text-sm truncate" title="발표일">
                       {{ proposal.presentedAt.slice(0,10) }}
                     </span>
                     <span
@@ -309,11 +309,11 @@ const goToCalendar = () => {
                 class="flex w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                 @click="goToDetail('sales/quotation', quotation.pipelineId)"
               >
-                <span class="w-[180px] text-left font-bold truncate">{{ quotation.companyName }}</span>
-                <span class="w-[290px] text-left font-bold truncate mr-10">{{ quotation.campaignName }}</span>
-                <span class="w-[290px] text-left truncate mr-10">{{ quotation.quotationTitle }}</span>
-                <span class="w-[210px] text-left"> ₩ {{ formatPrice(quotation.expectedRevenue) }}</span>
-                <span class="w-[210px] text-left">₩ {{ formatPrice(quotation.expectedProfit) }}</span>
+                <span class="w-[180px] text-left font-bold truncate" :title="quotation.companyName">{{ quotation.companyName }}</span>
+                <span class="w-[290px] text-left font-bold truncate mr-10" :title="quotation.campaignName">{{ quotation.campaignName }}</span>
+                <span class="w-[290px] text-left truncate mr-10" :title="quotation.quotationTitle">{{ quotation.quotationTitle }}</span>
+                <span class="w-[210px] text-left truncate" title="예상매출"> ₩ {{ formatPrice(quotation.expectedRevenue) }}</span>
+                <span class="w-[210px] text-left truncate" title="기대수익">₩ {{ formatPrice(quotation.expectedProfit) }}</span>
                 <span
                   class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
                   :class="statusClassMap[quotation.statusName] || 'bg-gray-medium'"
@@ -341,11 +341,11 @@ const goToCalendar = () => {
                   class="flex w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                   @click="goToDetail('sales/contract', contract.pipelineId)"
                 >
-                  <span class="w-[180px] text-left font-bold truncate">{{ contract.companyName }}</span>
-                  <span class="w-[290px] text-left font-bold truncate mr-10">{{ contract.campaignName }}</span>
-                  <span class="w-[290px] text-left truncate mr-10">{{ contract.contractTitle }}</span>
-                  <span class="w-[210px] text-left"> ₩ {{ formatPrice(contract.expectedRevenue) }}</span>
-                  <span class="w-[210px] text-left">₩ {{ formatPrice(contract.expectedProfit) }}</span>
+                  <span class="w-[180px] text-left font-bold truncate" :title="contract.companyName">{{ contract.companyName }}</span>
+                  <span class="w-[290px] text-left font-bold truncate mr-10" :title="contract.campaignName">{{ contract.campaignName }}</span>
+                  <span class="w-[290px] text-left truncate mr-10" :title="contract.contractTitle">{{ contract.contractTitle }}</span>
+                  <span class="w-[210px] text-left truncate" title="예상매출"> ₩ {{ formatPrice(contract.expectedRevenue) }}</span>
+                  <span class="w-[210px] text-left truncate" title="기대수익">₩ {{ formatPrice(contract.expectedProfit) }}</span>
                   <span
                     class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
                     :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
