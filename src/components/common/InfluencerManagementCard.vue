@@ -1,9 +1,7 @@
 <script setup>
-import { ref } from 'vue';
 import defaultThumbnail from '@/assets/images/logo.png';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
-import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
 import {
   disconnectInstagram,
   disconnectYoutube,
@@ -28,9 +26,6 @@ const props = defineProps({
 const toast = useToast();
 
 const emit = defineEmits(['edit', 'delete']);
-
-const isInstagramConnectModalOpen = ref(false);
-const currentInfluencerIdForInstagram = ref(null);
 
 const handleEdit = () => {
     emit('edit', { ...props, _originalData: props._originalData });
@@ -213,12 +208,6 @@ const handleInstagramDisconnect = async () => {
       </div>
     </div>
 
-    <InstagramConnectModal
-      v-if="isInstagramConnectModalOpen"
-      @close="isInstagramConnectModalOpen = false"
-      @confirm="handleInstagramIdConfirmed"
-      :influencerId="currentInfluencerIdForInstagram"
-    />
     <div class="flex flex-wrap gap-1 text-xs font-bold leading-snug text-black">
             <span
               v-for="(tag, index) in tags"
