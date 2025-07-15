@@ -153,9 +153,9 @@ const goToCalendar = () => {
         <div class="flex gap-5">
             <!-- 신규 영업 활동 -->
             <div class="dashboard-section w-2/3 px-10">
-                <h2 class="text-xl font-bold">신규 영업 활동</h2>
-                <div class="h-[1px] bg-gray-light mt-1 mb-5 w-full"></div>
-                <div class="flex space-x-7 my-9 h-[70%]">
+                <h2 class="text-xl font-bold">신규 영업 활동 (30일 이내)</h2>
+                <div class="h-[1px] bg-gray-light mt-2 mb-5 w-full"></div>
+                <div class="flex space-x-7 my-5 h-[70%]">
                     <div
                         class="flex-1 text-center border border-gray-light rounded-2xl py-3"
                         @click="goToList('management/client')"
@@ -163,7 +163,7 @@ const goToCalendar = () => {
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
                           고객사
                         </div>
-                        <div class="text-5xl font-semibold pt-10">{{ salesActivity.clientCompanyCount }}</div>
+                        <div class="text-5xl font-semibold pt-7">{{ salesActivity.clientCompanyCount }}</div>
                     </div>
                     <div
                         class="flex-1 text-center border border-gray-light rounded-2xl py-3"
@@ -172,7 +172,7 @@ const goToCalendar = () => {
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
                           인플루언서
                         </div>
-                        <div class="text-5xl font-semibold pt-10">{{ salesActivity.influencerCount }}</div>
+                        <div class="text-5xl font-semibold pt-7">{{ salesActivity.influencerCount }}</div>
                     </div>
                     <div
                         class="flex-1 text-center border border-gray-light rounded-2xl py-3"
@@ -181,24 +181,24 @@ const goToCalendar = () => {
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
                           계약
                         </div>
-                        <div class="text-5xl font-semibold pt-10">{{ salesActivity.contractCount }}</div>
+                        <div class="text-5xl font-semibold pt-7">{{ salesActivity.contractCount }}</div>
                     </div>
                     <div
                         class="flex-1 text-center border border-gray-light rounded-2xl py-3"
                         @click="goToList('campaign')"
                     >
                         <div class="text-lg font-bold bg-btn-sky rounded-md py-1.5 mx-4 text-white">
-                          파이프라인
+                          캠페인
                         </div>
-                        <div class="text-5xl font-semibold pt-10">{{ salesActivity.pipelineCount }}</div>
+                        <div class="text-5xl font-semibold pt-7">{{ salesActivity.pipelineCount }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- 일정 정보 -->
             <div class="dashboard-section w-1/3">
-                <h2 class="text-xl font-bold">일정</h2>
-                <div class="h-[1px] bg-gray-light mt-1 mb-3 w-full max-h-[200px] overflow-y-auto"></div>
+                <h2 class="text-xl font-bold">오늘의 일정</h2>
+                <div class="h-[1px] bg-gray-light mt-2 mb-5 w-full"></div>
                 <ul>
                     <li
                         v-for="(event, index) in sortedEventList"
@@ -219,7 +219,7 @@ const goToCalendar = () => {
             <!-- 제안 -->
             <div class="dashboard-section w-2/3">
               <h2 class="text-xl font-bold px-3">제안</h2>
-              <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
+              <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
               <ul class="max-h-[200px] overflow-y-auto">
                 <template v-for="(proposal, index) in proposalList" :key="index">
                   <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
@@ -228,56 +228,36 @@ const goToCalendar = () => {
                     class="flex w-full gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
                     @click="goToDetail('sales/proposal', proposal.pipelineId)"
                   >
-        <span class="w-[100px] font-bold truncate mr-3" :title="proposal.companyName">
-          {{ proposal.companyName }}
-        </span>
+                    <span class="w-[100px] font-bold truncate mr-3" :title="proposal.companyName">
+                      {{ proposal.companyName }}
+                    </span>
                     <span class="w-[200px] truncate mr-3" :title="proposal.campaignName">
-          {{ proposal.campaignName }}
-        </span>
+                      {{ proposal.campaignName }}
+                    </span>
                     <span class="w-[200px] truncate" :title="proposal.proposalTitle">
-          {{ proposal.proposalTitle }}
-        </span>
+                      {{ proposal.proposalTitle }}
+                    </span>
                     <span class="text-center w-[70px] truncate" :title="proposal.clientManagerName">
-          {{ proposal.clientManagerName }}
-        </span>
+                      {{ proposal.clientManagerName }}
+                    </span>
                     <span class="text-center w-[115px] text-gray-medium text-sm">
-          {{ proposal.presentedAt.slice(0,10) }}
-        </span>
+                      {{ proposal.presentedAt.slice(0,10) }}
+                    </span>
                     <span
                       class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
                       :class="statusClassMap[proposal.statusName] || 'bg-gray-medium'"
                     >
-            {{ proposal.statusName }}
-        </span>
+                      {{ proposal.statusName }}
+                    </span>
                   </li>
                 </template>
               </ul>
-              <!-- 리스트업 -->
-<!--            <h2 class="text-xl font-bold mb-2 px-3">리스트업</h2>-->
-<!--            <div class="h-[1px] bg-gray-light mt-1 w-full"></div>-->
-<!--                <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">-->
-<!--                    <template v-for="(listUp, index) in listUpList" :key="index">-->
-<!--                        <li-->
-<!--                            v-if="index > 0"-->
-<!--                            class="h-[1px] bg-gray-light"-->
-<!--                        ></li>-->
-<!--                        <li-->
-<!--                            class="grid w-full grid-cols-4 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"-->
-<!--                            @click="goToDetail('influencer/recommendation', listUp.id)"-->
-<!--                        >-->
-<!--                            <span class="text-left font-bold truncate col-span-1">{{ listUp.companyName }}</span>-->
-<!--                            <span class="text-left col-span-1">{{ listUp.campaignName }}</span>-->
-<!--                            <span class="text-left col-span-1">{{ listUp.productName }}</span>-->
-<!--                            <span class="text-left col-span-1">{{ listUp.listupTitle }}</span>-->
-<!--                        </li>-->
-<!--                    </template>-->
-<!--                </ul>-->
             </div>
 
                 <!-- 고객사 -->
                 <div class="dashboard-section w-1/3">
                     <h2 class="text-xl font-bold px-3">고객사</h2>
-                    <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
+                    <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
                     <ul class="max-h-[200px] overflow-y-auto">
                         <template v-for="(company, index) in limitedCompanyList" :key="index">
                             <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
@@ -304,87 +284,65 @@ const goToCalendar = () => {
                             </li>
                         </template>
                     </ul>
-
-
                 </div>
           </div>
 
-        <!-- 제안 -->
+        <!-- 견적 -->
         <div class="dashboard-section w-full max-h-[320px] overflow-y-auto">
-            <h2 class="text-xl font-bold mb-2 px-3">제안</h2>
-            <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
-            <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                <template v-for="(proposal, index) in proposalList" :key="index">
-                  <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
+          <h2 class="text-xl font-bold px-3">견적</h2>
+          <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
+          <ul class="max-h-[200px] overflow-y-auto">
+            <template v-for="(quotation, index) in quotationList" :key="index">
+              <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
 
-                  <li
-                    class="grid w-full grid-cols-18 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                     @click="goToDetail('sales/proposal', proposal.pipelineId)"
-                  >
-                    <span class="font-bold truncate col-span-2 text-left">{{ proposal.companyName }}</span>
-                    <span class="text-left col-span-3">{{ proposal.campaignName }}</span>
-                    <span class="text-left col-span-3">{{ proposal.proposalTitle }}</span>
-                    <span class="text-left col-span-3">{{ proposal.productName }}</span>
-                    <span class="text-left col-span-2">{{ proposal.clientManagerName }}</span>
-                    <span class="text-left col-span-2">{{ proposal.clientManagerPosition }}</span>
-                    <span
-                        class="text-center text-xs font-semibold px-2 py-1 rounded-md w-fit"
-                        :class="statusClassMap[proposal.statusName] || 'bg-gray-medium'"
-                    >
-                        {{ proposal.statusName }}
-                    </span>
-                    <span class="text-right text-gray-medium text-sm col-span-2">{{ proposal.presentedAt.slice(0,10) }}</span>
-                </li>
-                </template>
-            </ul>
+              <li
+                class="flex w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                @click="goToDetail('sales/quotation', quotation.pipelineId)"
+              >
+                <span class="w-[180px] text-left font-bold truncate">{{ quotation.companyName }}</span>
+                <span class="w-[290px] text-left font-bold truncate mr-10">{{ quotation.campaignName }}</span>
+                <span class="w-[290px] text-left truncate mr-10">{{ quotation.quotationTitle }}</span>
+                <span class="w-[210px] text-left"> ₩ {{ formatPrice(quotation.expectedRevenue) }}</span>
+                <span class="w-[210px] text-left">₩ {{ formatPrice(quotation.expectedProfit) }}</span>
+                <span
+                  class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                  :class="statusClassMap[quotation.statusName] || 'bg-gray-medium'"
+                >
+                  {{ quotation.statusName }}
+                </span>
+              </li>
+            </template>
+          </ul>
         </div>
 
+        <!-- 계약 -->
         <div class="flex gap-5">
-            <!-- 견적 -->
-            <div class="dashboard-section w-1/2">
-                <h2 class="text-xl font-bold mb-2 px-3">견적</h2>
-                <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
-                <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                    <template v-for="(quotation, index) in quotationList" :key="index">
-                        <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
-                        <li
-                            class="grid w-full grid-cols-12 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToDetail('sales/quotation', quotation.pipelineId)"
-                        >
-                            <span class="text-left font-bold truncate col-span-2">{{ quotation.companyName }}</span>
-                            <span class="text-left col-span-6">{{ quotation.quotationTitle }}</span>
-                            <span class="text-left col-span-2">{{ formatPrice(quotation.adPrice) }}</span>
-                            <span class="text-left col-span-2 pl-3">{{ formatPrice(quotation.expectedProfit) }}</span>
-                        </li>
-                    </template>
-                </ul>
+          <div class="dashboard-section w-full max-h-[320px] overflow-y-auto">
+            <h2 class="text-xl font-bold px-3">계약</h2>
+            <div class="h-[1px] bg-gray-light mt-2 w-full"></div>
+            <ul class="max-h-[200px] overflow-y-auto">
+              <template v-for="(contract, index) in contractList" :key="index">
+                <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
 
-            </div>
-            <!-- 계약 -->
-            <div class="dashboard-section w-1/2">
-                <h2 class="text-xl font-bold mb-2 px-3">계약</h2>
-                <div class="h-[1px] bg-gray-light mt-1 w-full"></div>
-                <ul class="flex flex-col w-full p-0 m-0 list-none max-h-[200px] overflow-y-auto">
-                    <template v-for="(contract, index) in contractList" :key="index">
-                        <li v-if="index > 0" class="h-[1px] bg-gray-light mx-3"></li>
-                        <li
-                            class="grid w-full grid-cols-12 items-center gap-2 px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
-                            @click="goToDetail('sales/contract', contract.pipelineId)"
-                        >
-                            <span class="text-left font-bold truncate col-span-2">{{ contract.companyName }}</span>
-                            <span class="text-left col-span-3">{{ contract.campaignName }}</span>
-                            <span class="text-left col-span-3">{{ contract.contractTitle }}</span>
-                            <span
-                                class="text-center text-xs col-span-2 font-semibold px-2 py-1 rounded-md w-fit"
-                                :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
-                            >
-                                {{ contract.statusName }}
-                            </span>
-                            <span class="text-right text-gray-medium text-sm col-span-2">{{ contract.presentedAt.slice(0,10) }}</span>
-                        </li>
-                    </template>
-                </ul>
-              </div>
+                <li
+                  class="flex w-full px-3 py-4 cursor-pointer hover:bg-btn-gray/20 transition-colors"
+                  @click="goToDetail('sales/contract', contract.pipelineId)"
+                >
+                  <span class="w-[180px] text-left font-bold truncate">{{ contract.companyName }}</span>
+                  <span class="w-[290px] text-left font-bold truncate mr-10">{{ contract.campaignName }}</span>
+                  <span class="w-[290px] text-left truncate mr-10">{{ contract.contractTitle }}</span>
+                  <span class="w-[210px] text-left"> ₩ {{ formatPrice(contract.expectedRevenue) }}</span>
+                  <span class="w-[210px] text-left">₩ {{ formatPrice(contract.expectedProfit) }}</span>
+                  <span
+                    class="text-center ml-2 w-[65px] text-xs font-semibold px-2 py-1 rounded-md"
+                    :class="statusClassMap[contract.statusName] || 'bg-gray-medium'"
+                  >
+                  {{ contract.statusName }}
+                </span>
+                </li>
+              </template>
+            </ul>
+          </div>
         </div>
   </div>
 </template>
