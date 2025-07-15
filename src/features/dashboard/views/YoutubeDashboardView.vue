@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 
 import DashboardBase from '@/features/dashboard/components/DashboardBase.vue'
