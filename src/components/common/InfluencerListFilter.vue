@@ -70,7 +70,7 @@ const resetFilters = () => {
     updateDisplayCategories();
     selectedSubscriberRange.value = subscriberOptions.value[0];
     selectedFollowerRange.value = followerOptions.value[0];
-    applyFilters();
+    emit('apply-filters', {});
 };
 
 const applyFilters = () => {
@@ -99,8 +99,7 @@ const applyFilters = () => {
             delete filtersToEmit[key];
         }
     }
-
-    emit('apply-filters', filtersToEmit);
+    emit('apply-filters', Object.keys(filtersToEmit).length === 0 ? {} : filtersToEmit);
 };
 
 const handleEnterKey = (event) => {
