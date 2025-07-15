@@ -144,8 +144,8 @@ const groups = [
         required: false,
         readOnly: false
       },
-      { key: 'startedAt', label: '시작일', type: 'input', inputType: 'date', required: false, readOnly: true },
-      { key: 'endedAt', label: '종료일', type: 'input', inputType: 'date', required: false, readOnly: true },
+      { key: 'startedAt', label: '시작일', type: 'input', inputType: 'date', required: false, readOnly: false },
+      { key: 'endedAt', label: '종료일', type: 'input', inputType: 'date', required: false, readOnly: false },
       { key: 'address', label: '주소', type: 'address-search', required: false, readOnly: true },
       { key: 'detailAddress', label: '상세 주소', type: 'input', inputType: 'text', required: false, readOnly: true },
       { key: 'userList', label: '담당자', type: 'search-user', searchType: 'user', required: false, readOnly: true },
@@ -271,7 +271,7 @@ const validateRequiredFields = () => {
 </script>
 
 <template>
-  <form @submit.prevent="submit" class="grid grid-cols-1 gap-4">
+  <div class="grid grid-cols-1 gap-4">
     <template v-for="(group, index) in groups" :key="index">
       <div v-if="group.type === 'horizontal'" class="flex items-center gap-4">
         <template v-for="field in group.fields" :key="field.key">
@@ -431,5 +431,5 @@ const validateRequiredFields = () => {
         </template>
       </template>
     </template>
-  </form>
+  </div>
 </template>
