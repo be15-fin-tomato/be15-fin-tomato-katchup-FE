@@ -18,7 +18,7 @@ const selectCategory = (category) => {
 </script>
 
 <template>
-  <div class="flex gap-3 mb-10">
+  <div class="flex gap-3 mb-5">
     <button
       v-for="category in props.categories"
       :key="category"
