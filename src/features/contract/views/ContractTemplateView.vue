@@ -334,7 +334,6 @@ onMounted(() => {
 
 watch(selectedBig, (newVal) => {
   if (newVal) {
-    // URL 쿼리에 detailId가 있다면 해당 detail을 먼저 로드 시도
     const initialDetailId = route.query.detailId;
     if (newVal.id == route.query.objectId && initialDetailId) {
       fetchSmallListAndDetails(newVal.id, initialDetailId);
@@ -408,11 +407,20 @@ async function handleAddSmall(newItem) {
       toast.success('템플릿이 성공적으로 생성되었습니다.');
       await fetchSmallListAndDetails(selectedBig.value.id);
       showSmallModal.value = false;
-    } else {
-      toast.error(`템플릿 생성 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    toast.error('템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    if (error.response && error.response.data) {
+      if (error.response.data.code === '30010' ||
+        (error.response.data.message && error.response.data.message.includes('파일 용량'))) {
+        toast.error('용량 초과입니다.');
+      } else if (error.response.status === 401) { // error.response.status 사용
+        toast.error('인증 실패: 로그인 정보가 유효하지 않습니다.');
+      } else {
+        toast.error(`템플릿 생성 중 오류가 발생했습니다: ${error.response.data.message || '알 수 없는 오류'}`);
+      }
+    } else {
+      toast.error('템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    }
     console.error('계약서 상세 템플릿 생성 API 호출 중 에러:', error);
   }
 }
@@ -426,11 +434,24 @@ async function handleUpdateSmall(updatedData) {
       toast.success('템플릿이 성공적으로 수정되었습니다.');
       await fetchSmallListAndDetails(selectedBig.value.id, detailId);
       showEditModal.value = false;
-    } else {
-      toast.error(`템플릿 수정 실패: ${response.message || '알 수 없는 오류'}`);
     }
+    // 이전의 'else' 블록을 제거했습니다. 이제 모든 에러는 catch 블록에서 처리됩니다.
   } catch (error) {
-    toast.error('템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    if (error.response && error.response.data) {
+      // 백엔드에서 ContractErrorCode.FILE_TOO_BIG의 code "30010"을 반환한다고 가정
+      // 또는 message에 '파일 용량'이 포함된 경우
+      if (error.response.data.code === '30010' ||
+        (error.response.data.message && error.response.data.message.includes('파일 용량'))) {
+        toast.error('용량 초과입니다.');
+      } else if (error.response.status === 401) { // error.response.status 사용
+        toast.error('인증 실패: 로그인 정보가 유효하지 않습니다.');
+      }
+      else {
+        toast.error(`템플릿 수정 중 오류가 발생했습니다: ${error.response.data.message || '알 수 없는 오류'}`);
+      }
+    } else {
+      toast.error('템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    }
     console.error('계약서 상세 템플릿 수정 API 호출 중 에러:', error);
   }
 }
@@ -455,7 +476,7 @@ async function deleteItem(item, type) {
         toast.success('템플릿 종류가 성공적으로 삭제되었습니다.');
         await fetchBigList();
         if (selectedBig.value?.id === item.id) {
-          selectedBig.value = bigList.value [0] || null; // 삭제된 경우 첫 번째 항목으로 대체
+          selectedBig.value = bigList.value [0] || null;
         }
         smallList.value = smallList.value.filter(s => s.parentId !== item.id);
         if (selectedSmall.value && selectedSmall.value.parentId === item.id) {
