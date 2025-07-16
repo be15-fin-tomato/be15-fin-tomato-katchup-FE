@@ -1,5 +1,5 @@
 <script setup>
-import defaultThumbnail from '@/assets/images/logo.png';
+import defaultThumbnail from '@/assets/images/default-profile.png';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import {
@@ -9,6 +9,8 @@ import {
   requestYoutubeAuthUrl
 } from '@/features/influencer/api.js';
 import { useToast } from 'vue-toastification';
+import { computed } from 'vue';
+import { getDisplayedRealName } from '@/utils/fomatters.js';
 
 const props = defineProps({
     id: Number,
@@ -26,6 +28,8 @@ const props = defineProps({
 const toast = useToast();
 
 const emit = defineEmits(['edit', 'delete']);
+
+const displayedRealName = computed(() => getDisplayedRealName(props.realName));
 
 const handleEdit = () => {
     emit('edit', { ...props, _originalData: props._originalData });
@@ -102,14 +106,18 @@ const handleInstagramDisconnect = async () => {
     <div class="flex items-center justify-between">
       <div class="flex items-center">
         <img
-          :src="thumbnail || defaultThumbnail"
-          alt="thumbnail"
-          class="w-[70px] h-[70px] rounded-full object-cover border border-color-gray-light"
+          v-if=thumbnail :src="thumbnail" alt="thumbnail"
+          class="w-[70px] h-[70px] rounded-full object-cover border border-gray-dark"
         />
+        <img
+          v-else :src="defaultThumbnail" alt="defaultThumbnail"
+          class="w-[70px] h-[70px] rounded-full object-cover border border-gray-dark"
+        >
         <div class="flex flex-col ml-3">
           <div class="flex items-center gap-1">
             <Icon icon="stash:star-duotone" class="w-5 h-5" />
-            <span v-if="realName">{{ realName }}</span>
+            <span v-if="displayedRealName">{{ displayedRealName }}</span>
+            <span v-else class="text-gray-dark">이름 없음</span>
           </div>
           <div class="flex flex-wrap items-center gap-2 text-gray-dark">
             <Icon icon="tdesign:user" class="w-4 h-4" />
@@ -119,14 +127,12 @@ const handleInstagramDisconnect = async () => {
       </div>
       <div class="flex gap-2">
         <button
-          class="px-3 h-[40px] text-sm rounded-md text-center text-black whitespace-nowrap bg-btn-blue drop-shadow-md border border-gray-medium hover:bg-btn-sky cursor-pointer"
+          class="btn-edit"
           @click="handleEdit"
         >
           수정
         </button>
-        <button
-          class="px-3 h-[40px] text-sm rounded-md text-center text-black whitespace-nowrap bg-gray-light border border-gray-medium drop-shadow-md hover:bg-btn-sky cursor-pointer"
-          @click="handleDelete"
+        <button class="btn-delete" @click="handleDelete"
         >
           삭제
         </button>
