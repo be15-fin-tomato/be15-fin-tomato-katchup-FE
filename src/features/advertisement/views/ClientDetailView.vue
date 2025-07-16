@@ -144,6 +144,8 @@ onMounted(async () => {
 
 const save = async () => {
   const payload = clientFormRef.value.getFormData();
+  if (!payload) return;
+
   console.log('[저장 요청]:', payload);
   try {
     await updateClientCompany(id, payload);

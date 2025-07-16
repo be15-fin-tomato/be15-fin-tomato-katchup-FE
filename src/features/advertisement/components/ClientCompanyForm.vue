@@ -58,19 +58,34 @@ const employeeStatusMap = {
   '퇴직': 3,
 };
 
-// 유선번호 유효성 검사 함수 (고객사 및 사원 공용)
-const validatePhoneNumber = (number) => {
+// 유선번호 최종 형식 유효성 검사 함수 (하이픈 포함 형식)
+const validatePhoneNumberFormat = (number) => {
   // 정규식: 2-3자리 국번, 3-4자리 중간번호, 4자리 끝번호 (하이픈 포함)
   // 예: 02-123-4567, 031-1234-5678
   const phoneRegex = /^(0(2|3[1-3]|4[1-4]|5[1-5]|6[1-4]|50[0-9]|70[0-9]|80[0-9]))-(\d{3,4})-(\d{4})$/;
   return phoneRegex.test(number);
 };
 
-// 고객사 유선번호 필드 입력 시 자동 하이픈 추가 및 유효성 검사
+let isPhoneToastShown = false;
 watch(() => form.phone, (newVal) => {
   if (!props.isEditing) return;
 
-  let cleaned = newVal.replace(/[^0-9]/g, '');
+  const originalVal = newVal;
+  const cleanedForFilter = originalVal.replace(/[^0-9-]/g, '');
+
+  if (cleanedForFilter !== originalVal) {
+    if (!isPhoneToastShown) {
+      toast.error('고객사 유선번호에는 숫자만 입력 가능합니다.');
+      isPhoneToastShown = true;
+      setTimeout(() => isPhoneToastShown = false, 1000);
+    }
+    nextTick(() => {
+      form.phone = cleanedForFilter;
+    });
+    return;
+  }
+
+  let cleaned = cleanedForFilter.replace(/[^0-9]/g, '');
   let formatted = '';
 
   if (cleaned.length === 0) {
@@ -78,6 +93,7 @@ watch(() => form.phone, (newVal) => {
     return;
   }
 
+  // 전화번호 자동 포맷팅 로직
   if (cleaned.startsWith('02')) {
     if (cleaned.length < 3) {
       formatted = cleaned;
@@ -88,27 +104,43 @@ watch(() => form.phone, (newVal) => {
     } else {
       formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2, 6)}-${cleaned.substring(6, 10)}`;
     }
-  } else if (cleaned.length < 4) {
-    formatted = cleaned;
-  } else if (cleaned.length < 8) {
-    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3)}`;
-  } else if (cleaned.length < 12) {
-    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, cleaned.length - 4)}-${cleaned.substring(cleaned.length - 4)}`;
-  } else {
-    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, 7)}-${cleaned.substring(7, 11)}`;
+  } else { // 03X 등 지역번호
+    if (cleaned.length < 4) {
+      formatted = cleaned;
+    } else if (cleaned.length < 8) {
+      formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3)}`;
+    } else {
+      formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, 7)}-${cleaned.substring(7, 11)}`;
+    }
   }
 
-  if (formatted !== newVal) {
+  if (formatted !== originalVal) {
     form.phone = formatted;
   }
 }, { immediate: false });
 
 
-// 사원 유선번호 필드 입력 시 자동 하이픈 추가 및 유효성 검사
+// 사원 유선번호 필드 입력 시 자동 하이픈 추가 및 실시간 유효성 검사 (숫자 및 하이픈 외 문자)
+let isEmployeePhoneToastShown = false;
 watch(() => newEmployee.telephone, (newVal) => {
   if (!isAddingEmployee.value) return;
 
-  let cleaned = newVal.replace(/[^0-9]/g, '');
+  const originalVal = newVal;
+  const cleanedForFilter = originalVal.replace(/[^0-9-]/g, '');
+
+  if (cleanedForFilter !== originalVal) {
+    if (!isEmployeePhoneToastShown) {
+      toast.error('사원 유선번호에는 숫자만 입력 가능합니다.');
+      isEmployeePhoneToastShown = true;
+      setTimeout(() => isEmployeePhoneToastShown = false, 1000);
+    }
+    nextTick(() => {
+      newEmployee.telephone = cleanedForFilter;
+    });
+    return;
+  }
+
+  let cleaned = cleanedForFilter.replace(/[^0-9]/g, '');
   let formatted = '';
 
   if (cleaned.length === 0) {
@@ -126,17 +158,17 @@ watch(() => newEmployee.telephone, (newVal) => {
     } else {
       formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2, 6)}-${cleaned.substring(6, 10)}`;
     }
-  } else if (cleaned.length < 4) {
-    formatted = cleaned;
-  } else if (cleaned.length < 8) {
-    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3)}`;
-  } else if (cleaned.length < 12) {
-    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, cleaned.length - 4)}-${cleaned.substring(cleaned.length - 4)}`;
   } else {
-    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, 7)}-${cleaned.substring(7, 11)}`;
+    if (cleaned.length < 4) {
+      formatted = cleaned;
+    } else if (cleaned.length < 8) {
+      formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3)}`;
+    } else {
+      formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, 7)}-${cleaned.substring(7, 11)}`;
+    }
   }
 
-  if (formatted !== newVal) {
+  if (formatted !== originalVal) {
     newEmployee.telephone = formatted;
   }
 }, { immediate: false });
@@ -175,11 +207,9 @@ watch(() => props.initialData, (data) => {
 }, { immediate: true });
 
 
-
 const getFormData = () => {
-  // 고객사 유선번호 유효성 최종 검사
-  if (form.phone && !validatePhoneNumber(form.phone)) {
-    toast.error('고객사 유선번호 형식이 올바르지 않습니다. 예: 02-1234-5678 또는 031-123-4567');
+  // 고객사 유선번호 최종 형식 유효성 검사
+  if (form.phone && !validatePhoneNumberFormat(form.phone)) {
     return null;
   }
 
@@ -270,9 +300,8 @@ const addEmployee = () => {
     return;
   }
 
-  if (newEmployee.telephone && !validatePhoneNumber(newEmployee.telephone)) {
-    toast.error('사원 유선번호 형식이 올바르지 않습니다. 예: 02-1234-5678 또는 031-123-4567');
-    return; // 유효성 검사 실패 시 함수 종료
+  if (newEmployee.telephone && !validatePhoneNumberFormat(newEmployee.telephone)) {
+    return;
   }
 
   newEmployee.client = form.name;
