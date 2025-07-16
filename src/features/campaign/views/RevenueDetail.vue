@@ -213,7 +213,7 @@ const fetchOpinion = async () => {
 
 const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
 
@@ -327,7 +327,10 @@ const cancel = () => {
         const original = revenueForm.value?.[key];
 
         if (Array.isArray(original)) {
-            form[key] = [...original];
+            // 깊은 복사로 해결
+            form[key] = original.map((item) =>
+                typeof item === 'object' && item !== null ? { ...item } : item,
+            );
         } else if (typeof original === 'object' && original !== null) {
             form[key] = { ...original };
         } else {

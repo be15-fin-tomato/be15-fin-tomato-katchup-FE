@@ -130,7 +130,7 @@ const toggle = (index) => {
 
 const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
 

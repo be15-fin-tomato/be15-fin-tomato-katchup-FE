@@ -178,7 +178,7 @@ const fetchOpinion = async () => {
 const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
         // 수정 모드 아닐 때는 무시
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
     const res = await getQuotationDetail(item.pipelineId);
