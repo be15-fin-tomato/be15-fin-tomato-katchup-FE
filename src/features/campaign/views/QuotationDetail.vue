@@ -61,6 +61,7 @@ import {
     deleteIdea,
     deleteQuotationDetail,
     getIdea,
+    getProposalDetail,
     getQuotationDetail,
     postIdea,
     updateQuotationDetail,
@@ -231,27 +232,41 @@ const fetchOpinion = async () => {
     opinions.value = res.data.data.response;
 };
 
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
         // 수정 모드 아닐 때는 무시
         toast.info('수정 상태가 아닙니다.');
         return;
     }
+    const res = await getProposalDetail(item.pipelineId);
+    const resForm = res.data.data.form;
+
     // 필요한 값만 form에 적용 (안전하게 매핑)
-    form.name = item.name;
-    form.requestAt = item.requestAt;
-    form.clientCompanyName = item.clientCompanyName;
-    form.clientManagerName = item.clientManagerName;
-    form.period = item.period;
-    form.presentAt = item.presentAt;
-    form.campaign = item.campaign;
-    form.username = item.username;
-    form.influencer = item.influencer;
-    form.price = item.price;
-    form.supplyAmount = item.supplyAmount;
-    form.extraProfit = item.extraProfit;
-    form.content = item.content;
-    form.notes = item.notes;
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
+    form.requestAt = resForm.requestAt;
+    form.presentAt = resForm.presentAt;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
+
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
 };
 
 // 저장 및 취소

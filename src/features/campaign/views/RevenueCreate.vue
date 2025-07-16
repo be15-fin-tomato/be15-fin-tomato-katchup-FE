@@ -247,7 +247,7 @@ const handleReferenceSelect = async (item) => {
 
     form.influencer = resForm.influencerList.map((i) => ({
         id: i.influencerId,
-        name: i.influencerName,
+        name: i.name,
     }));
     form.salesQuantity = resForm.availableQuantity;
     form.productPrice = resForm.productPrice;

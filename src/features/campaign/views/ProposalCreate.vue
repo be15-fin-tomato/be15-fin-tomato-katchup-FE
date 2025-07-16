@@ -338,7 +338,7 @@ const handleReferenceSelect = async (item) => {
     // form.influencer = resForm;
     form.influencer = resForm.map((i) => ({
         id: i.influencerId,
-        name: i.influencerName,
+        name: i.name,
         strength: '',
         notes: '',
     }));

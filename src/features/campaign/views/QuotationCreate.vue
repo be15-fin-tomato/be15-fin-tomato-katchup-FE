@@ -53,7 +53,6 @@ import DetailReferenceList from '@/features/campaign/components/DetailReferenceL
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '@/stores/auth.js';
 import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
-import { structuredForm } from '@/features/campaign/utils/structedForm.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -212,22 +211,33 @@ const handleReferenceSelect = async (item) => {
     }
 
     const res = await getProposalDetail(item.pipelineId);
-    const resForm = structuredForm(res.data.data.form);
-    // form.name = resForm.name;
+    const resForm = res.data.data.form;
+
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
     form.requestAt = resForm.requestAt;
-    form.clientCompany = resForm.clientCompany;
-    form.clientManager = resForm.clientManager;
+    form.presentAt = resForm.presentAt;
     form.startedAt = resForm.startedAt;
     form.endedAt = resForm.endedAt;
-    form.presentAt = resForm.presentAt;
-    form.campaign = resForm.campaign;
-    form.username = resForm.username;
-    form.influencer = resForm.influencer;
-    form.price = resForm.price;
-    form.supplyAmount = resForm.supplyAmount;
-    form.extraProfit = resForm.extraProfit;
-    form.content = resForm.content;
-    form.notes = resForm.notes;
+
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
 };
 
 // 저장 및 취소
