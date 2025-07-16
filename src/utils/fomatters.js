@@ -20,3 +20,18 @@ export const formatNumber = (num) => {
     }
   }
 };
+
+export const getDisplayedRealName = (realNameString) => {
+  if (!realNameString) {
+    return null;
+  }
+  const names = realNameString.split(',').map(name => name.trim()).filter(name => name.length > 0);
+
+  if (names.length === 0) {
+    return null;
+  }
+  if (names.length === 1) {
+    return names[0];
+  }
+  return `${names[0]} 외 ${names.length - 1}명`;
+};
