@@ -98,220 +98,255 @@
                         </span>
                     </div>
 
-                    <div
-                        class="border border-gray-light rounded-md bg-white p-4 overflow-y-auto max-h-[300px]"
-                    >
-                        <table class="w-full text-sm text-center">
-                            <thead class="text-xs text-gray-500 border-b border-gray-light">
-                                <tr>
-                                    <th class="py-2">#</th>
-                                    <th>상태</th>
-                                    <th>광고 업체</th>
-                                    <th>캠페인명</th>
-                                    <th>상품명</th>
-                                    <th>AI 추천</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template v-if="campaignLoading">
-                                    <tr
-                                        v-for="n in 4"
-                                        :key="'skeleton-' + n"
-                                        class="h-[64px] animate-pulse"
-                                    >
-                                        <td>
-                                            <div class="h-4 bg-gray-200 rounded w-6 mx-auto"></div>
-                                        </td>
-                                        <td>
-                                            <div class="h-6 w-14 bg-gray-300 rounded mx-auto"></div>
-                                        </td>
-                                        <td>
-                                            <div class="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
-                                        </td>
-                                        <td>
-                                            <div class="h-4 bg-gray-200 rounded w-48 mx-auto"></div>
-                                        </td>
-                                        <td>
-                                            <div class="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
-                                        </td>
-                                        <td>
-                                            <div class="h-6 bg-gray-300 rounded w-20 mx-auto"></div>
-                                        </td>
-                                    </tr>
-                                </template>
+                    <div class="border border-gray-light rounded-md bg-white">
+                        <!-- 상단 패딩 유지 영역 -->
+                        <div class="px-4 pt-4"></div>
 
-                                <template
-                                    v-else
-                                    v-for="(item, index) in campaignList"
-                                    :key="item.campaignId"
+                        <!-- 테이블 스크롤 영역 -->
+                        <div class="px-4 pb-4 overflow-y-auto max-h-[300px]">
+                            <table class="w-full text-sm text-center border-collapse">
+                                <thead
+                                    class="sticky top-0 bg-white z-10 text-xs text-gray-500 border-b border-gray-light"
                                 >
-                                    <tr v-if="item" class="h-[64px]">
-                                        <td>{{ index + 1 }}</td>
-                                        <td>
-                                            <span
-                                                class="text-white text-xs px-2 py-1 rounded ml-1"
-                                                :class="{
-                                                    'bg-red-300': item.campaignStatusId === 1,
-                                                    'bg-pink-300': item.campaignStatusId === 2,
-                                                    'bg-orange-300': item.campaignStatusId === 3,
-                                                    'bg-blue-300': item.campaignStatusId === 4,
-                                                    'bg-green-400': item.campaignStatusId === 5,
-                                                }"
-                                            >
-                                                {{
-                                                    campaignStatus[item.campaignStatusId] ??
-                                                    '알수없음'
-                                                }}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold break-words whitespace-normal">
-                                            {{ item.clientCompanyName }}
-                                        </td>
-                                        <td class="break-words whitespace-normal w-80">
-                                            {{ item.campaignName }}
-                                        </td>
-                                        <td>{{ item.productName }}</td>
-                                        <td>
-                                            <button
-                                                class="btn-recommend"
-                                                @click="
-                                                    selectedCampaignId = item.campaignId;
-                                                    getRecommendationsByCampaignId(item.campaignId);
-                                                "
-                                                :disabled="recommendLoading"
-                                                :class="{
-                                                    'opacity-50 cursor-not-allowed':
-                                                        recommendLoading,
-                                                }"
-                                            >
-                                                AI 추천 받기
-                                            </button>
-                                        </td>
+                                    <tr>
+                                        <th class="py-2">#</th>
+                                        <th>상태</th>
+                                        <th>광고 업체</th>
+                                        <th>캠페인명</th>
+                                        <th>상품명</th>
+                                        <th>AI 추천</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <template v-if="campaignLoading">
+                                        <tr
+                                            v-for="n in 4"
+                                            :key="'skeleton-' + n"
+                                            class="h-[64px] animate-pulse"
+                                        >
+                                            <td>
+                                                <div
+                                                    class="h-4 bg-gray-200 rounded w-6 mx-auto"
+                                                ></div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    class="h-6 w-14 bg-gray-300 rounded mx-auto"
+                                                ></div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    class="h-4 bg-gray-200 rounded w-20 mx-auto"
+                                                ></div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    class="h-4 bg-gray-200 rounded w-48 mx-auto"
+                                                ></div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    class="h-4 bg-gray-200 rounded w-20 mx-auto"
+                                                ></div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    class="h-6 bg-gray-300 rounded w-20 mx-auto"
+                                                ></div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template
+                                        v-else
+                                        v-for="(item, index) in campaignList"
+                                        :key="item.campaignId"
+                                    >
+                                        <tr v-if="item" class="h-[64px]">
+                                            <td>{{ index + 1 }}</td>
+                                            <td>
+                                                <span
+                                                    class="text-white text-xs px-2 py-1 rounded ml-1"
+                                                    :class="{
+                                                        'bg-red-300': item.campaignStatusId === 1,
+                                                        'bg-pink-300': item.campaignStatusId === 2,
+                                                        'bg-orange-300':
+                                                            item.campaignStatusId === 3,
+                                                        'bg-blue-300': item.campaignStatusId === 4,
+                                                        'bg-green-400': item.campaignStatusId === 5,
+                                                    }"
+                                                >
+                                                    {{
+                                                        campaignStatus[item.campaignStatusId] ??
+                                                        '알수없음'
+                                                    }}
+                                                </span>
+                                            </td>
+                                            <td class="font-semibold break-words whitespace-normal">
+                                                {{ item.clientCompanyName }}
+                                            </td>
+                                            <td class="break-words whitespace-normal w-80">
+                                                {{ item.campaignName }}
+                                            </td>
+                                            <td>{{ item.productName }}</td>
+                                            <td>
+                                                <button
+                                                    class="btn-recommend"
+                                                    @click="
+                                                        selectedCampaignId = item.campaignId;
+                                                        getRecommendationsByCampaignId(
+                                                            item.campaignId,
+                                                        );
+                                                    "
+                                                    :disabled="recommendLoading"
+                                                    :class="{
+                                                        'opacity-50 cursor-not-allowed':
+                                                            recommendLoading,
+                                                    }"
+                                                >
+                                                    AI 추천 받기
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div v-if="showRecommendation" class="container mb-10 relative">
-                    <button
-                        class="absolute top-3 right-3 text-gray-400 hover:text-black z-10"
-                        @click="showRecommendation = false"
-                    >
-                        <Icon icon="flowbite:close-outline" width="28" height="28" />
-                    </button>
-
-                    <AIInfluencerCard
-                        :influencers="recommendedInfluencerList"
-                        :isLoading="recommendLoading"
-                        v-model:filterOptions="filterOptions"
-                        :getRecommendationsByCampaignId="getRecommendationsByCampaignId"
-                        @close="showRecommendation = false"
-                        @add-influencer="addInfluencer"
-                    />
-                </div>
-
-                <div class="container">
-                    <h2 class="text-lg font-bold text-black mb-2">인플루언서 검색</h2>
-                    <div class="blue-line mb-4"></div>
-                    <InfluencerCategory
-                        :categories="categoryList"
-                        @update:selected="selectedCategory = $event"
-                    />
-
-                    <div class="flex gap-2 mb-6 items-center">
-                        <input
-                            v-model="searchQuery"
-                            class="input-form-box w-[300px]"
-                            placeholder="Search"
-                        />
-                        <button class="bg-[#A6C8FF] text-white text-sm h-[40px] px-6 rounded">
-                            찾기
+                    <div v-if="showRecommendation" class="container mb-10 relative">
+                        <button
+                            class="absolute top-3 right-3 text-gray-400 hover:text-black z-10"
+                            @click="showRecommendation = false"
+                        >
+                            <Icon icon="flowbite:close-outline" width="28" height="28" />
                         </button>
-                    </div>
-                    <div class="overflow-y-auto max-h-[400px]">
-                        <template v-if="influencerLoading">
-                            <div
-                                v-for="n in 6"
-                                :key="'skeleton-influencer-' + n"
-                                class="flex justify-between items-center mb-4 p-4 bg-white border rounded animate-pulse"
-                            >
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-full bg-gray-300"></div>
-                                    <div class="space-y-2">
-                                        <div class="w-40 h-4 bg-gray-200 rounded"></div>
-                                        <div class="w-32 h-3 bg-gray-200 rounded"></div>
-                                        <div class="flex gap-2">
-                                            <div class="w-12 h-3 bg-gray-200 rounded"></div>
-                                            <div class="w-16 h-3 bg-gray-200 rounded"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <div class="w-20 h-4 bg-gray-300 rounded"></div>
-                                    <div class="w-20 h-4 bg-gray-300 rounded"></div>
-                                </div>
-                            </div>
-                        </template>
 
-                        <!-- 실제 인플루언서 데이터 렌더링 -->
-                        <template v-else>
-                            <div
-                                v-for="influencer in influencerList"
-                                :key="influencer.influencerId"
-                                class="flex justify-between items-center mb-4 p-4 bg-white border rounded"
-                                @click="addInfluencer(influencer)"
-                            >
-                                <div class="flex items-center gap-4">
-                                    <img
-                                        :src="
-                                            influencer.youtube?.thumbnailUrl?.includes('ggpht')
-                                                ? influencer.youtube?.thumbnailUrl
-                                                : '/tomato.png'
-                                        "
-                                        alt="profile"
-                                        class="w-12 h-12 rounded-full object-cover"
-                                    />
-                                    <div>
-                                        <div class="font-semibold text-black">
-                                            {{ influencer.youtube?.name || '해당 없음' }}
-                                            <span class="text-xs text-gray-500"
-                                                >({{ influencer.name }})</span
-                                            >
+                        <AIInfluencerCard
+                            :influencers="recommendedInfluencerList"
+                            :filterOptions="filterOptions"
+                            :getRecommendationsByCampaignId="getRecommendationsByCampaignId"
+                            :isLoading="recommendLoading"
+                            :addedInfluencerIds="addedInfluencers.map((i) => i.influencerId)"
+                            @add-influencer="addInfluencer"
+                        />
+                    </div>
+
+                    <div class="container">
+                        <h2 class="text-lg font-bold text-black mb-2">인플루언서 검색</h2>
+                        <div class="blue-line mb-4"></div>
+                        <InfluencerCategory
+                            :categories="categoryList"
+                            @update:selected="selectedCategory = $event"
+                        />
+
+                        <div class="flex gap-2 mb-6 items-center">
+                            <input
+                                v-model="searchQuery"
+                                class="input-form-box w-[300px]"
+                                placeholder="Search"
+                            />
+                            <button class="bg-[#A6C8FF] text-white text-sm h-[40px] px-6 rounded">
+                                찾기
+                            </button>
+                        </div>
+                        <div class="overflow-y-auto max-h-[400px]">
+                            <template v-if="influencerLoading">
+                                <div
+                                    v-for="n in 6"
+                                    :key="'skeleton-influencer-' + n"
+                                    class="flex justify-between items-center mb-4 p-4 bg-white border rounded animate-pulse"
+                                >
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-gray-300"></div>
+                                        <div class="space-y-2">
+                                            <div class="w-40 h-4 bg-gray-200 rounded"></div>
+                                            <div class="w-32 h-3 bg-gray-200 rounded"></div>
+                                            <div class="flex gap-2">
+                                                <div class="w-12 h-3 bg-gray-200 rounded"></div>
+                                                <div class="w-16 h-3 bg-gray-200 rounded"></div>
+                                            </div>
                                         </div>
-                                        <div class="font-semibold text-gray-500">
-                                            @{{ influencer.instagram?.name || '해당 없음' }}
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <div class="w-20 h-4 bg-gray-300 rounded"></div>
+                                        <div class="w-20 h-4 bg-gray-300 rounded"></div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- 실제 인플루언서 데이터 렌더링 -->
+                            <template v-else>
+                                <div
+                                    v-for="influencer in influencerList"
+                                    :key="influencer.influencerId"
+                                    :class="[
+                                        'flex justify-between items-center mb-4 p-4 border rounded cursor-pointer hover:shadow',
+                                        addedInfluencers.some(
+                                            (i) => i.influencerId === influencer.influencerId,
+                                        )
+                                            ? 'bg-indigo-50 border-indigo-300'
+                                            : 'bg-white border-gray-medium',
+                                    ]"
+                                    @click="addInfluencer(influencer)"
+                                >
+                                    <div class="flex items-center gap-4">
+                                        <img
+                                            :src="
+                                                influencer.youtube?.thumbnailUrl?.includes('ggpht')
+                                                    ? influencer.youtube?.thumbnailUrl
+                                                    : '/tomato.png'
+                                            "
+                                            alt="profile"
+                                            class="w-12 h-12 rounded-full object-cover"
+                                        />
+                                        <div>
+                                            <div class="font-semibold text-black">
+                                                {{ influencer.youtube?.name || '해당 없음' }}
+                                                <span class="text-xs text-gray-500"
+                                                    >({{ influencer.name }})</span
+                                                >
+                                            </div>
+                                            <div class="font-semibold text-gray-500">
+                                                @{{ influencer.instagram?.name || '해당 없음' }}
+                                            </div>
+                                            <div class="flex flex-wrap gap-2 mt-1">
+                                                <span
+                                                    v-for="tag in influencer.tags ?? []"
+                                                    :key="tag.categoryId"
+                                                    :class="`${tagStyle(tag.categoryName)} px-2 py-1 rounded-full text-xs`"
+                                                >
+                                                    #{{ tag.categoryName }}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="flex flex-wrap gap-2 mt-1">
-                                            <span
-                                                v-for="tag in influencer.tags ?? []"
-                                                :key="tag.categoryId"
-                                                :class="`${tagStyle(tag.categoryName)} px-2 py-1 rounded-full text-xs`"
-                                            >
-                                                #{{ tag.categoryName }}
-                                            </span>
+                                    </div>
+                                    <div class="flex gap-4 items-center">
+                                        <div class="flex items-center gap-1 text-sm">
+                                            <Icon
+                                                icon="logos:youtube-icon"
+                                                width="18"
+                                                height="18"
+                                            />
+                                            <span>{{
+                                                formatCount(influencer.youtube?.subscriber) ||
+                                                '해당 없음'
+                                            }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1 text-sm">
+                                            <Icon
+                                                icon="skill-icons:instagram"
+                                                width="18"
+                                                height="18"
+                                            />
+                                            <span>{{
+                                                formatCount(influencer.instagram?.follower) ||
+                                                '해당 없음'
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex gap-4 items-center">
-                                    <div class="flex items-center gap-1 text-sm">
-                                        <Icon icon="logos:youtube-icon" width="18" height="18" />
-                                        <span>{{
-                                            formatCount(influencer.youtube?.subscriber) ||
-                                            '해당 없음'
-                                        }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-sm">
-                                        <Icon icon="skill-icons:instagram" width="18" height="18" />
-                                        <span>{{
-                                            formatCount(influencer.instagram?.follower) ||
-                                            '해당 없음'
-                                        }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -63,10 +63,7 @@
             <!-- 버튼 영역 -->
             <div class="flex justify-end gap-2">
                 <button class="btn-delete" @click="$emit('close')">취소</button>
-                <button class="btn-create" @click="handleSubmit">
-                    <!--                    {{ isEditing ? '저장하기' : '추가하기' }}-->
-                    저장하기
-                </button>
+                <button class="btn-create" @click="handleSubmit">저장</button>
             </div>
             <teleport to="body">
                 <div
