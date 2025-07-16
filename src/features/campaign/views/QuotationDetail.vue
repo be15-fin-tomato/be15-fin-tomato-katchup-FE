@@ -14,8 +14,16 @@
                             {{ isEditing ? '취소' : '삭제' }}
                         </button>
 
-                        <button class="btn-create" @click="isEditing ? save() : (isEditing = true)">
-                            {{ isEditing ? '저장' : '수정' }}
+                        <button
+                            class="btn-create flex items-center gap-1 justify-center transition"
+                            @click="isEditing ? save() : (isEditing = true)"
+                            :disabled="isSaving"
+                        >
+                            <span
+                                v-if="isSaving"
+                                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                            ></span>
+                            {{ isEditing ? (isSaving ? '저장 중...' : '저장') : '수정' }}
                         </button>
 
                         <Icon
@@ -73,6 +81,7 @@ const quotationForm = ref(null);
 const form = reactive({});
 const proposalReferences = ref([]);
 const isEditing = ref(false);
+const isSaving = ref(false);
 
 // form 그룹 정의
 const groups = [
@@ -247,6 +256,7 @@ const handleReferenceSelect = (item) => {
 
 // 저장 및 취소
 const save = async () => {
+    isSaving.value = true;
     try {
         const requiredFields = [
             { key: 'name', label: '제목' },
@@ -284,14 +294,17 @@ const save = async () => {
         toast.success('견적이 수정되었습니다.');
     } catch (e) {
         toast.error(e.response.data.message);
+    } finally {
+        await fetchQuotationDetail();
+        isSaving.value = false;
+        isEditing.value = false;
     }
-    await fetchQuotationDetail();
-    isEditing.value = false;
 };
 
 const cancel = () => {
     Object.assign(form, quotationForm.value);
     isEditing.value = false;
+    isSaving.value = false;
 };
 
 const remove = async () => {
