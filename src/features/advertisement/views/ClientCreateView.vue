@@ -20,6 +20,8 @@ const handleSave = async () => {
 
   const formData = clientFormRef.value.getFormData();
 
+  if (!formData) return;
+
   if (
     !formData.clientCompanyName ||
     !Array.isArray(formData.userIds) ||
