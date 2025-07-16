@@ -48,13 +48,11 @@ const fetchData = async () => {
             allItems.value = res.data.data.campaignList;
         } else if (type === 'email') {
             res = await getUserNameAndEmail();
-        } else {
-            console.error('Unknown search type:', type);
         }
 
         // allItems.value = res.data.data;
     } catch (e) {
-        console.error('검색 데이터 조회 실패:', e);
+        alert(e.response.data.message);
     } finally {
         isLoading.value = false;
     }

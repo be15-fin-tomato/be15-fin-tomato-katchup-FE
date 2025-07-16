@@ -8,7 +8,6 @@ export const useAuthStore = defineStore('auth', () => {
     const expirationTime = ref(null);
 
     const isAuthenticated = computed(() => {
-        console.log('엑세스토큰 : ', accessToken.value);
         return !!accessToken.value && Date.now() < (expirationTime.value || 0);
     });
 
@@ -18,10 +17,8 @@ export const useAuthStore = defineStore('auth', () => {
             const payload = jwtDecode(token);
             userId.value = payload.userId;
             userName.value = payload.name;
-            console.log(userName.value);
             expirationTime.value = payload.exp * 1000;
         } catch (e) {
-            console.log('엑세스 토큰 파싱 에러', e);
             accessToken.value = null;
             userId.value = null;
             expirationTime.value = null;

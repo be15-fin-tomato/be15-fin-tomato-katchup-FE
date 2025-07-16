@@ -21,8 +21,8 @@
 
           <div class="overflow-y-auto flex-1 px-4">
             <div v-for="item in bigList" :key="item.id" class="group relative mb-2">
-              <div class="flex items-center gap-2">
-                <template v-if="editingBigId === item.id">
+              <template v-if="editingBigId === item.id">
+                <div class="flex items-center gap-2">
                   <input
                     v-model="editBigName"
                     class="w-full border px-2 py-1 rounded text-sm"
@@ -36,32 +36,45 @@
                   <button @click="cancelEditBig">
                     <Icon icon="iconoir:cancel" width="18" height="18" />
                   </button>
-                </template>
-                <template v-else>
+                </div>
+              </template>
+              <template v-else>
+                <label
+                  class="flex items-center gap-2 w-full cursor-pointer py-1 relative z-10 transition-colors duration-200 rounded overflow-hidden"
+                >
                   <input
                     type="radio"
                     :value="item"
                     v-model="selectedBig"
                     :disabled="showBigInput"
+                    class="appearance-none hidden"
                   />
                   <input
                     type="text"
                     :value="item.name"
                     readonly
-                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer"
+                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
                   />
-                  <div
-                    class="absolute right-0 top-1 hidden group-hover:flex gap-1"
-                  >
-                    <button @click="startEditBig(item)">
-                      <Icon icon="ei:pencil" class="w-5 h-5" />
-                    </button>
-                    <button @click="deleteItem(item,'big')">
-                      <Icon icon="iconoir:cancel" width="18" height="18" />
-                    </button>
-                  </div>
-                </template>
-              </div>
+                  <Icon
+                    v-if="selectedBig?.id === item.id"
+                    icon="mdi:check-outline"
+                    width="24"
+                    height="24"
+                    style="color: #2e2193"
+                    class="absolute right-1 top-1/2 -translate-y-1/2"
+                  />
+                </label>
+                <div
+                  class="absolute right-0 top-1 hidden group-hover:flex gap-1"
+                >
+                  <button @click="startEditBig(item)">
+                    <Icon icon="ei:pencil" class="w-5 h-5" />
+                  </button>
+                  <button @click="deleteItem(item,'big')">
+                    <Icon icon="iconoir:cancel" width="18" height="18" />
+                  </button>
+                </div>
+              </template>
             </div>
             <div v-if="showBigInput" class="flex items-center gap-2 mb-2">
               <input
@@ -81,7 +94,7 @@
 
         <div class="w-[300px] border border-gray-dark rounded bg-white flex flex-col">
           <div class="flex items-center justify-between px-4 pt-4 pb-2">
-            <h3 class="font-bold text-sm">목록</h3>
+            <h3 class="font-bold text-sm">템플릿</h3>
             <button
               class="text-gray-dark text-sm cursor-pointer"
               @click="showSmallModal = true"
@@ -97,22 +110,38 @@
               :key="item.id"
               class="group relative mb-2"
             >
-              <div class="flex items-center gap-2">
-                <input type="radio" :value="item" :checked="selectedSmall?.id === item.id" @change="selectSmallItem(item)" />
+              <label
+                class="flex items-center gap-2 w-full cursor-pointer py-1 relative z-10 transition-colors duration-200 rounded overflow-hidden"
+              >
+                <input
+                  type="radio"
+                  :value="item"
+                  :checked="selectedSmall?.id === item.id"
+                  @change="selectSmallItem(item)"
+                  class="appearance-none hidden"
+                />
                 <input
                   type="text"
                   :value="item.name"
                   readonly
-                  class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer"
+                  class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
                 />
-                <div class="absolute right-0 top-1 hidden group-hover:flex gap-1">
-                  <button @click="editItem(item)">
-                    <Icon icon="ei:pencil" class="w-6 h-6" />
-                  </button>
-                  <button @click="deleteItem(item,'small')">
-                    <Icon icon="iconoir:cancel" width="20" height="20" />
-                  </button>
-                </div>
+                <Icon
+                  v-if="selectedSmall?.id === item.id"
+                  icon="mdi:check-outline"
+                  width="24"
+                  height="24"
+                  style="color: #2e2193"
+                  class="absolute right-1 top-1/2 -translate-y-1/2"
+                />
+              </label>
+              <div class="absolute right-0 top-1 hidden group-hover:flex gap-1">
+                <button @click="editItem(item)">
+                  <Icon icon="ei:pencil" class="w-6 h-6" />
+                </button>
+                <button @click="deleteItem(item,'small')">
+                  <Icon icon="iconoir:cancel" width="20" height="20" />
+                </button>
               </div>
             </div>
           </div>
@@ -235,10 +264,10 @@ async function fetchBigList() {
         if (found) {
           selectedBig.value = found;
         } else {
-          selectedBig.value = bigList.value[0];
+          selectedBig.value = bigList.value [0];
         }
       } else {
-        selectedBig.value = bigList.value[0];
+        selectedBig.value = bigList.value [0];
       }
     }
   } catch (error) {
@@ -249,7 +278,7 @@ async function fetchBigList() {
       { id: 2, name: '이메일 (API 로드 실패)' },
     ];
     if (bigList.value.length > 0) {
-      selectedBig.value = bigList.value[0];
+      selectedBig.value = bigList.value [0];
     }
   }
 }
@@ -305,7 +334,6 @@ onMounted(() => {
 
 watch(selectedBig, (newVal) => {
   if (newVal) {
-    // URL 쿼리에 detailId가 있다면 해당 detail을 먼저 로드 시도
     const initialDetailId = route.query.detailId;
     if (newVal.id == route.query.objectId && initialDetailId) {
       fetchSmallListAndDetails(newVal.id, initialDetailId);
@@ -379,11 +407,20 @@ async function handleAddSmall(newItem) {
       toast.success('템플릿이 성공적으로 생성되었습니다.');
       await fetchSmallListAndDetails(selectedBig.value.id);
       showSmallModal.value = false;
-    } else {
-      toast.error(`템플릿 생성 실패: ${response.message || '알 수 없는 오류'}`);
     }
   } catch (error) {
-    toast.error('템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    if (error.response && error.response.data) {
+      if (error.response.data.code === '30010' ||
+        (error.response.data.message && error.response.data.message.includes('파일 용량'))) {
+        toast.error('용량 초과입니다.');
+      } else if (error.response.status === 401) { // error.response.status 사용
+        toast.error('인증 실패: 로그인 정보가 유효하지 않습니다.');
+      } else {
+        toast.error(`템플릿 생성 중 오류가 발생했습니다: ${error.response.data.message || '알 수 없는 오류'}`);
+      }
+    } else {
+      toast.error('템플릿 생성 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    }
     console.error('계약서 상세 템플릿 생성 API 호출 중 에러:', error);
   }
 }
@@ -397,11 +434,24 @@ async function handleUpdateSmall(updatedData) {
       toast.success('템플릿이 성공적으로 수정되었습니다.');
       await fetchSmallListAndDetails(selectedBig.value.id, detailId);
       showEditModal.value = false;
-    } else {
-      toast.error(`템플릿 수정 실패: ${response.message || '알 수 없는 오류'}`);
     }
+    // 이전의 'else' 블록을 제거했습니다. 이제 모든 에러는 catch 블록에서 처리됩니다.
   } catch (error) {
-    toast.error('템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    if (error.response && error.response.data) {
+      // 백엔드에서 ContractErrorCode.FILE_TOO_BIG의 code "30010"을 반환한다고 가정
+      // 또는 message에 '파일 용량'이 포함된 경우
+      if (error.response.data.code === '30010' ||
+        (error.response.data.message && error.response.data.message.includes('파일 용량'))) {
+        toast.error('용량 초과입니다.');
+      } else if (error.response.status === 401) { // error.response.status 사용
+        toast.error('인증 실패: 로그인 정보가 유효하지 않습니다.');
+      }
+      else {
+        toast.error(`템플릿 수정 중 오류가 발생했습니다: ${error.response.data.message || '알 수 없는 오류'}`);
+      }
+    } else {
+      toast.error('템플릿 수정 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
+    }
     console.error('계약서 상세 템플릿 수정 API 호출 중 에러:', error);
   }
 }
@@ -426,7 +476,7 @@ async function deleteItem(item, type) {
         toast.success('템플릿 종류가 성공적으로 삭제되었습니다.');
         await fetchBigList();
         if (selectedBig.value?.id === item.id) {
-          selectedBig.value = bigList.value[0] || null; // 삭제된 경우 첫 번째 항목으로 대체
+          selectedBig.value = bigList.value [0] || null;
         }
         smallList.value = smallList.value.filter(s => s.parentId !== item.id);
         if (selectedSmall.value && selectedSmall.value.parentId === item.id) {
@@ -493,4 +543,5 @@ function cancelAddBig() {
 </script>
 
 <style scoped>
+
 </style>

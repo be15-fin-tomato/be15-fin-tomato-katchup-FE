@@ -122,3 +122,25 @@ export const fetchCampaignContent = async (pipelineInfluencerId) => {
   return response.data.data;
 }
 
+/* 유입 분석 조회 */
+export const fetchCampaignTraffic = async (pipelineInfluencerId) => {
+  try {
+    const response = await api.get(`/dashboard/traffic/${pipelineInfluencerId}`);
+
+    if (response.data.success) {
+      return response.data.data.map(item => ({
+        id: item.trafficId,
+        source: item.trafficName,
+        views: item.percentage
+      }));
+    } else {
+      throw new Error(response.data.message || '캠페인 트래픽 데이터 조회 실패');
+    }
+  } catch (error) {
+    console.error(`Error fetching campaign traffic for ID ${pipelineInfluencerId}:`, error);
+    throw new Error(error.response?.data?.message || '캠페인 트래픽 데이터를 불러오는 중 오류 발생');
+  }
+};
+
+
+

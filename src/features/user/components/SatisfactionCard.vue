@@ -40,18 +40,21 @@ const satisfactionColorClass = computed(() => {
     class="w-full border border-gray-medium rounded-xl bg-white shadow-sm px-5 pt-5 pb-0.5 hover:bg-gray-100 transition-colors duration-200"
   >
     <div class="flex justify-between items-start">
-      <div class="flex flex-col justify-between min-h-[80px]">
-        <h3 class="text-lg font-bold text-black">평균 만족도</h3>
-      </div>
+      <h3 class="text-lg font-semibold mb-4">
+        평균 만족도
+      </h3>
     </div>
-    <div class="flex items-center gap-15">
-      <h1 class="text-5xl font-bold text-black">{{ satisfaction }}점</h1>
+
+    <div class="flex flex-col items-center justify-center h-[200px]">
       <Icon
         :icon="satisfactionIcon"
-        :class="satisfactionColorClass"
-        width="150px"
-        height="150px"
+        :class="[satisfactionColorClass, 'mb-4']"
+        width="150"
+        height="150"
       />
+      <h1 class="text-4xl font-extrabold text-black">
+        {{ satisfaction }}
+      </h1>
     </div>
   </div>
 </template>

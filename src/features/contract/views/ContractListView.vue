@@ -126,48 +126,60 @@ onMounted(() => {
 
         <div class="blue-line mb-6"></div>
 
-        <table class="w-full text-[14px] text-center border-t border-gray-200">
-          <thead class="bg-gray-100 text-[14px] border-t border-gray-300">
-          <tr>
-            <th class="py-2">캠페인명</th>
-            <th>상품명</th>
-            <th>고객사명</th>
-            <th>인플루언서명</th>
-            <th>수정일</th>
-            <th>계약서</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr
-            v-for="(item, index) in contractList"
-            :key="index"
-            class="border-b"
+        <div class="overflow-y-auto max-h-[600px]">
+          <table class="w-full text-[14px] text-center border-t border-gray-200 table-fixed">
+            <thead class="bg-gray-100 text-[14px] border-t border-gray-300 sticky top-0 z-10">
+            <tr>
+              <th class="py-2 w-[200px]">캠페인명</th>
+              <th class="w-[100px]">상품명</th>
+              <th class="w-[80px]">고객사명</th>
+              <th class="w-[120px]">인플루언서명</th>
+              <th class="w-[150px]">수정일</th>
+              <th class="w-[80px]">계약서</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+              v-for="(item, index) in contractList"
+              :key="index"
+              class="border-b border-gray-200"
+            >
+              <td class="py-2 px-2 truncate max-w-[160px]" :title="item.campaignName">
+                {{ item.campaignName }}
+              </td>
+              <td class="px-2 truncate max-w-[140px]" :title="item.productName">
+                {{ item.productName }}
+              </td>
+              <td class="px-2 truncate max-w-[140px]" :title="item.clientCompanyName">
+                {{ item.clientCompanyName }}
+              </td>
+              <td class="px-2 truncate max-w-[140px]" :title="item.influencerName">
+                {{ item.influencerName }}
+              </td>
+              <td class="px-2 truncate max-w-[120px]" :title="item.updatedAt">
+                {{ item.updatedAt }}
+              </td>
+              <td class="px-2">
+          <span
+            v-if="item.fileId"
+            class="text-request hover:underline cursor-pointer"
+            @click.prevent="openPasswordModal(item.contractId)"
           >
-            <td class="py-2">{{ item.campaignName }}</td>
-            <td>{{ item.productName }}</td>
-            <td>{{ item.clientCompanyName }}</td>
-            <td>{{ item.influencerName }}</td>
-            <td>{{ item.updatedAt }}</td>
-            <td>
-                <span
-                  v-if="item.fileId"
-                  class="text-request hover:underline cursor-pointer"
-                  @click.prevent="openPasswordModal(item.contractId)"
+            다운로드
+          </span>
+                <label
+                  v-else
+                  class="text-opinion-circle hover:underline cursor-pointer"
+                  @click.prevent="openUploadModal(item.contractId)"
                 >
-                  보기
-                </span>
-              <label
-                v-else
-                class="text-opinion-circle hover:underline cursor-pointer"
-                @click.prevent="openUploadModal(item.contractId)"
-              >
-                등록
-                <input type="file" class="hidden" />
-              </label>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+                  등록
+                </label>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
 
         <PagingBar
           class="mt-6"

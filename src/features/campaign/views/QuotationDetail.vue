@@ -14,8 +14,16 @@
                             {{ isEditing ? '취소' : '삭제' }}
                         </button>
 
-                        <button class="btn-create" @click="isEditing ? save() : (isEditing = true)">
-                            {{ isEditing ? '저장' : '수정' }}
+                        <button
+                            class="btn-create flex items-center gap-1 justify-center transition"
+                            @click="isEditing ? save() : (isEditing = true)"
+                            :disabled="isSaving"
+                        >
+                            <span
+                                v-if="isSaving"
+                                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                            ></span>
+                            {{ isEditing ? (isSaving ? '저장 중...' : '저장') : '수정' }}
                         </button>
 
                         <Icon
@@ -53,6 +61,7 @@ import {
     deleteIdea,
     deleteQuotationDetail,
     getIdea,
+    getProposalDetail,
     getQuotationDetail,
     postIdea,
     updateQuotationDetail,
@@ -73,6 +82,7 @@ const quotationForm = ref(null);
 const form = reactive({});
 const proposalReferences = ref([]);
 const isEditing = ref(false);
+const isSaving = ref(false);
 
 // form 그룹 정의
 const groups = [
@@ -222,31 +232,46 @@ const fetchOpinion = async () => {
     opinions.value = res.data.data.response;
 };
 
-const handleReferenceSelect = (item) => {
+const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
         // 수정 모드 아닐 때는 무시
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
+    const res = await getProposalDetail(item.pipelineId);
+    const resForm = res.data.data.form;
+
     // 필요한 값만 form에 적용 (안전하게 매핑)
-    form.name = item.name;
-    form.requestAt = item.requestAt;
-    form.clientCompanyName = item.clientCompanyName;
-    form.clientManagerName = item.clientManagerName;
-    form.period = item.period;
-    form.presentAt = item.presentAt;
-    form.campaign = item.campaign;
-    form.username = item.username;
-    form.influencer = item.influencer;
-    form.price = item.price;
-    form.supplyAmount = item.supplyAmount;
-    form.extraProfit = item.extraProfit;
-    form.content = item.content;
-    form.notes = item.notes;
+    form.clientCompany = {
+        id: resForm.clientCompanyId,
+        name: resForm.clientCompanyName,
+    };
+    form.clientManager = {
+        id: resForm.clientManagerId,
+        name: resForm.clientManagerName,
+    };
+    form.username = resForm.userList.map((u) => ({
+        id: u.userId,
+        name: u.userName,
+    }));
+    form.campaign = {
+        id: resForm.campaignId,
+        name: resForm.campaignName,
+    };
+    form.requestAt = resForm.requestAt;
+    form.presentAt = resForm.presentAt;
+    form.startedAt = resForm.startedAt;
+    form.endedAt = resForm.endedAt;
+
+    form.influencer = resForm.influencerList.map((i) => ({
+        id: i.influencerId,
+        name: i.influencerName,
+    }));
 };
 
 // 저장 및 취소
 const save = async () => {
+    isSaving.value = true;
     try {
         const requiredFields = [
             { key: 'name', label: '제목' },
@@ -284,14 +309,17 @@ const save = async () => {
         toast.success('견적이 수정되었습니다.');
     } catch (e) {
         toast.error(e.response.data.message);
+    } finally {
+        await fetchQuotationDetail();
+        isSaving.value = false;
+        isEditing.value = false;
     }
-    await fetchQuotationDetail();
-    isEditing.value = false;
 };
 
 const cancel = () => {
     Object.assign(form, quotationForm.value);
     isEditing.value = false;
+    isSaving.value = false;
 };
 
 const remove = async () => {

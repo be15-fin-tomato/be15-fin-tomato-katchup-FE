@@ -155,9 +155,8 @@ const stepOptions = [
   { id: 2, label: '리스트업', value: '리스트업' },
   { id: 3, label: '제안', value: '제안' },
   { id: 4, label: '견적', value: '견적' },
-  { id: 5, label: '협상', value: '협상' },
   { id: 6, label: '계약', value: '계약' },
-  { id: 8, label: '사후관리', value: '사후관리' },
+  { id: 7, label: '매출', value: '매출' },
 ];
 
 const statusOptions = [

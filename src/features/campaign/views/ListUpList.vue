@@ -22,20 +22,13 @@ const categoryOptions = [
     // { value: 'user', label: '담당자' },
 ];
 
-const filterOptions = [
-    { value: 'approved', label: '승인완료' },
-    { value: 'request', label: '승인요청' },
-    { value: 'onhold', label: '보류/대기' },
-    { value: 'rejected', label: '거절됨' },
-];
-
 const searchFilters = ref({
     category: '',
     keyword: '',
     userId: null,
     filter: '',
     sort: 'date',
-    sortOrder: 'asc',
+    sortOrder: 'desc',
 });
 
 // 목록 불러오기
@@ -45,7 +38,7 @@ const fetchListUpList = async () => {
         listupList.value = res.data.data.response;
         total.value = res.data.data.pagination.totalCount;
     } catch (e) {
-        console.error(e);
+        toast.error(e.response.data.message || '리스트업 목록 조회에 실패하였습니다.');
     }
 };
 
@@ -86,7 +79,6 @@ const toggleMenu = (id) => {
         <SalesFiltering
             v-model="searchFilters"
             :categoryOptions="categoryOptions"
-            :filterOptions="filterOptions"
             @search="handleSearch"
         />
 
