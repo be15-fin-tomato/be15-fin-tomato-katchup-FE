@@ -42,7 +42,8 @@ const newEmployee = reactive({
   phone: '',
   telephone: '',
   email: '',
-  note: ''
+  note: '',
+  status: '재직'
 });
 
 const companyStatusMap = {
