@@ -1,14 +1,15 @@
 <template>
     <div class="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
         <div class="bg-white rounded-xl p-6 w-[554px] h-[640px] overflow-y-auto font-display">
-            <h2 class="text-lg font-semibold mb-6">
+            <h2 class="text-lg font-semibold mb-5">
                 인플루언서 {{ initialData ? '수정' : '등록' }}
             </h2>
 
             <div class="mb-4">
-                <label class="text-sm font-medium mb-1 block"
-                    >본명 <span class="text-red-500">*</span></label
-                >
+                <label class="text-sm font-medium mb-1 block">
+                    본명
+                    <span class="text-red-500">*</span>
+                </label>
                 <input
                     type="text"
                     class="w-full h-[44px] border border-gray-medium rounded px-3 text-sm"
@@ -17,7 +18,17 @@
                 />
             </div>
 
-            <div class="grid grid-cols-2 gap-x-4 gap-y-4 mb-6">
+            <div class="grid grid-cols-2 gap-4">
+                <label class="text-sm font-medium mb-1 block">
+                    성별
+                    <span class="text-red-500">*</span>
+                </label>
+                <label class="text-sm font-medium mb-1 block">
+                    담당자
+                    <span class="text-red-500">*</span>
+                </label>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-4 mb-5">
                 <select
                     class="h-[44px] border border-gray-medium rounded px-3 text-sm"
                     v-model="form.genderDisplay"
@@ -37,7 +48,20 @@
                         {{ manager.name }}
                     </option>
                 </select>
+            </div>
 
+            <div class="grid grid-cols-2 gap-4">
+                <label class="text-sm font-medium mb-1 block">
+                    주요 지역
+                    <span class="text-red-500">*</span>
+                </label>
+                <label class="text-sm font-medium mb-1 block">
+                    광고 단가
+                    <span class="text-red-500">*</span>
+                </label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-x-4 gap-y-4 mb-5">
                 <select
                     class="h-[44px] border border-gray-medium rounded px-3 text-sm"
                     v-model="form.national"
@@ -55,6 +79,9 @@
                 />
             </div>
 
+            <label class="text-xs text-gray-dark font-medium mb-1 block">
+              선택된 카테고리
+            </label>
             <div
                 class="w-full min-h-[80px] border border-gray-medium rounded px-3 py-2 text-sm mb-4 flex flex-wrap gap-2 items-start"
                 id="categoryInput"
@@ -62,7 +89,7 @@
                 <span
                     v-for="tag in selectedTags"
                     :key="tag"
-                    class="px-2 py-1 rounded-full cursor-pointer"
+                    class="px-2 rounded-full cursor-pointer"
                     :class="TAG_COLOR_MAP[tag] || 'bg-gray-200 text-black'"
                     @click="returnTag(tag)"
                 >
@@ -70,17 +97,23 @@
                 </span>
             </div>
 
+            <label class="text-xs text-gray-dark font-medium mb-1 block">
+              카테고리를 선택하세요.
+            </label>
             <div id="categoryTags" class="border border-gray-medium rounded px-3 py-2">
                 <div class="flex flex-wrap gap-2">
                     <span
                         v-for="tag in availableTags"
                         :key="tag"
-                        class="text-sm px-2 py-1 rounded-full cursor-pointer"
+                        class="text-sm px-2 rounded-full cursor-pointer"
                         :class="TAG_COLOR_MAP[tag] || 'bg-gray-200 text-black'"
                         @click="moveTagToSelected(tag)"
                     >
                         # {{ tag }}
                     </span>
+                </div>
+                <div v-if="allTagsSelected" class="py-3 text-center text-gray-medium text-xs">
+                    모두 선택되었습니다.
                 </div>
             </div>
 
@@ -103,7 +136,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { TAG_COLOR_MAP, TAGS } from '@/constants/tags';
 import { searchUser } from '@/features/chat/api.js';
 import { useToast } from 'vue-toastification';
@@ -216,9 +249,8 @@ onMounted(() => {
         availableTags.value = TAGS.filter((tag) => !selectedTags.value.includes(tag));
     }
 });
-</script>
 
-<style scoped>
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-@import 'tailwindcss';
-</style>
+const allTagsSelected = computed(() => {
+  return TAGS.length > 0 && TAGS.every(tag => selectedTags.value.includes(tag));
+});
+</script>
