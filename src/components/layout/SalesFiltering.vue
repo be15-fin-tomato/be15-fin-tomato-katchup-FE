@@ -38,7 +38,7 @@
         </div>
 
         <!-- 필터/정렬 -->
-        <div>
+        <div v-if="filterOptions.length > 0">
             <div class="font-bold mb-3">상태</div>
 
             <!-- 필터 -->
@@ -58,23 +58,22 @@
                     <option value="title">제목</option>
                 </select>
 
-                <button
-                    @click="toggleSortOrder"
-                    type="button"
-                    class="w-[40px] h-[40px] bg-btn-gray rounded-md flex items-center justify-center"
-                >
-                    <span v-if="localValue.sortOrder === 'asc'">
-                        <img src="@/assets/icons/sort.svg" alt="sort" class="w-5 select-none" />
-                    </span>
-                    <span v-else>⬇</span>
-                </button>
+                <div>
+                    <select v-model="localValue.sortOrder" class="input-form-box">
+                        <option value="desc">내림차순</option>
+                        <option value="asc">오름차순</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- 검색 버튼 -->
-        <button type="submit" class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md
-         hover:brightness-95 active:scale-95 active:brightness-90
-         transition transform shadow-sm hover:shadow-md">검색</button>
+        <button
+            type="submit"
+            class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md hover:brightness-95 active:scale-95 active:brightness-90 transition transform shadow-sm hover:shadow-md"
+        >
+            검색
+        </button>
     </form>
 </template>
 
@@ -114,9 +113,6 @@ const emitSearch = () => {
     };
     emit('search', searchParams);
 };
-const toggleSortOrder = () => {
-    localValue.sortOrder = localValue.sortOrder === 'asc' ? 'desc' : 'asc';
-};
 
 const openUserSearch = () => {
     const popup = window.open(
@@ -139,7 +135,7 @@ function defaultSearch() {
         userId: null,
         filter: '',
         sort: 'date',
-        sortOrder: 'asc',
+        sortOrder: 'desc',
     };
 }
 </script>

@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { deleteProposal, deleteRevenue, getProposalList } from '@/features/campaign/api.js';
+import { deleteProposal, getProposalList } from '@/features/campaign/api.js';
 import { computed, onMounted, ref } from 'vue';
 import SalesCards from '@/features/campaign/components/SalesCards.vue';
 import SalesFiltering from '@/components/layout/SalesFiltering.vue';
@@ -24,7 +24,7 @@ const searchFilters = ref({
     manager: null,
     filter: '',
     sort: 'date',
-    sortOrder: 'asc',
+    sortOrder: 'desc',
 });
 
 // 목록 불러오기

@@ -33,7 +33,7 @@
 
   --color-btn-yellow: #FFD000;
   --color-btn-sky: #A3D8FF;
-  --color-btn-blue: #BAC9FF;
+  --color-btn-blue: #92B4EC;
   --color-btn-gray: #A8C1DA;
   --color-btn-open-popup: #7FA2EE;
 
@@ -90,7 +90,8 @@
   .btn-create {
     @apply px-4 py-2 mr-2 bg-btn-blue text-white rounded-lg font-semibold
     hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
-    transition transform shadow-md cursor-pointer;
+    transition transform shadow-md cursor-pointer
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:shadow-none disabled:active:scale-100;
   }
 
   /* 삭제 버튼 */
@@ -104,7 +105,8 @@
   .btn-edit {
     @apply px-4 py-2 mr-2 bg-btn-blue text-white rounded-lg font-semibold
     hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
-    transition transform shadow-md cursor-pointer;
+    transition transform shadow-md cursor-pointer
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:shadow-none disabled:active:scale-100;
   }
 
   /* 팝업 여는 버튼 */

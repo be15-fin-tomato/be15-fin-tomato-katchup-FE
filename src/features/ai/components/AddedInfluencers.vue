@@ -66,7 +66,7 @@ const modalState = computed({
                 class="btn-create flex justify-center items-center w-full"
                 @click="modalState = true"
             >
-                {{ isEditing ? '수정하기' : '추가하기' }}
+                {{ isEditing ? '수정' : '추가' }}
             </button>
         </div>
     </div>
