@@ -16,12 +16,7 @@
         placeholder="캠페인명으로 검색"
         class="input-form-box p-3 border border-blue-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-400 w-1/3"
       />
-      <button
-        @click="handleSearch"
-        class="ml-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg text-base transition duration-300 ease-in-out"
-      >
-        검색
-      </button>
+      <button type="submit" class="btn-create">검색</button>
     </div>
 
     <div class="grid grid-cols-2 gap-6">

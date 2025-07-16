@@ -39,10 +39,10 @@ function goToDashboard(target) {
 
     switch (target) {
         case 'youtube':
-            router.push(`/influencer/dashboard/youtube/${props.influencer.id}`);
+            router.push(`/influencer/dashboard/youtube?id=${props.influencer.id}`);
             break;
         case 'instagram':
-            router.push(`/influencer/dashboard/instagram/${props.influencer.id}`);
+            router.push(`/influencer/dashboard/instagram?id=${props.influencer.id}`);
             break;
         default:
             console.warn(`Unknown dashboard target: ${target}`);

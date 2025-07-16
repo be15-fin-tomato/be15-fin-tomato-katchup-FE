@@ -20,18 +20,14 @@ const emit = defineEmits(['update:metric', 'update:period'])
 
     <div class="flex gap-0 ml-4">
       <button
-        v-for="(period, index) in ['일간','주간','월간']"
-        :key="period"
         :class="[
           'px-3 py-1 border border-gray-medium',
-          activePeriod === period ? 'bg-click text-white' : 'bg-white',
-          index === 0 ? 'rounded-l-md' : '',
-          index === 2 ? 'rounded-r-md' : '',
-          index !== 0 ? '-ml-px' : ''
+          activePeriod === '주간' ? 'bg-click text-white' : 'bg-white',
+          'rounded-md'
         ]"
-        @click="$emit('update:period', period)"
+        @click="$emit('update:period', '주간')"
       >
-        {{ period }}
+        주간
       </button>
     </div>
   </div>
