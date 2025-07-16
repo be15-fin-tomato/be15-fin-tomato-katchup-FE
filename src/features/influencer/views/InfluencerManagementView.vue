@@ -186,7 +186,7 @@ const handleInstagramIdConfirmed = (id) => {
 </script>
 
 <template>
-  <div class="w-full min-h-screen bg-background flex font-sans">
+  <div class="w-full min-h-screen flex">
     <InfluencerManagementFilter
       @apply-filters="handleApplyFilters"
     />
