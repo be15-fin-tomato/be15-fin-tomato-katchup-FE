@@ -450,7 +450,7 @@ const handleDeleteCompany = async () => {
           v-else
           class="col-span-2 flex items-center justify-center text-gray-400 border rounded py-24 max-h-[500px]"
         >
-          가운데 목록에서 항목을 선택해 주세요
+          목록에서 항목을 선택해 주세요
         </div>
       </div>
     </div>
