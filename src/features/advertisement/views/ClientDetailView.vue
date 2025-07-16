@@ -144,6 +144,8 @@ onMounted(async () => {
 
 const save = async () => {
   const payload = clientFormRef.value.getFormData();
+  if (!payload) return;
+
   console.log('[저장 요청]:', payload);
   try {
     await updateClientCompany(id, payload);
@@ -235,49 +237,50 @@ const handleDeleteCompany = async () => {
       <p class="font-bold mb-2">캠페인 계약 목록</p>
       <div class="blue-line mb-4" />
 
-      <table class="w-full table-auto border-collapse text-sm">
-        <!-- 헤더 -->
-        <thead class="text-white text-center text-sm">
-        <tr class="bg-btn-blue rounded-lg overflow-hidden">
-          <th class="px-4 py-2 rounded-l-lg">캠페인명</th>
-          <th class="px-4 py-2">상품명</th>
-          <th class="px-4 py-2">인플루언서</th>
-          <th class="px-4 py-2">수익</th>
-          <th class="px-4 py-2">기간</th>
-          <th class="px-4 py-2 rounded-r-lg">성과</th>
-        </tr>
-        </thead>
+      <div class="max-h-[400px] overflow-y-auto pr-2">
+        <table class="w-full table-auto border-collapse text-sm">
+          <thead class="text-white text-center text-sm">
+          <tr class="bg-btn-blue rounded-lg overflow-hidden">
+            <th class="px-4 py-2 rounded-l-lg">캠페인명</th>
+            <th class="px-4 py-2">상품명</th>
+            <th class="px-4 py-2">인플루언서</th>
+            <th class="px-4 py-2">수익</th>
+            <th class="px-4 py-2">기간</th>
+            <th class="px-4 py-2 rounded-r-lg">성과</th>
+          </tr>
+          </thead>
 
-        <!-- 본문 -->
-        <tbody>
-        <tr
-          v-for="(c, i) in contractList"
-          :key="i"
-          class="h-[46px] text-center border-b border-gray-200 even:bg-gray-50"
-        >
-          <td class="px-4 whitespace-nowrap">{{ c.campaignName }}</td>
-          <td class="px-4 whitespace-nowrap">{{ c.productName }}</td>
-          <td class="px-4 whitespace-nowrap">{{ c.influencerName }}</td>
-          <td class="px-4 whitespace-nowrap">
-            {{ typeof c.revenue === 'number' ? `${c.revenue.toLocaleString()} ₩` : c.revenue }}
-          </td>
-          <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
-          <td class="px-4 whitespace-nowrap">
-            <RouterLink
-              :to="`/campaign/dashboard/${c.pipelineInfluencerId}`"
-              class="text-primary underline hover:font-medium"
-            >
-              보러가기
-            </RouterLink>
-          </td>
-        </tr>
-        <tr v-if="contractList.length === 0">
-          <td colspan="6" class="py-4 text-center text-gray-500">
-            조회된 계약 정보가 없습니다.
-          </td>
-        </tr>
-        </tbody>
-      </table>
+          <!-- 본문 -->
+          <tbody>
+          <tr
+            v-for="(c, i) in contractList"
+            :key="i"
+            class="h-[46px] text-center border-b border-gray-200 even:bg-gray-50"
+          >
+            <td class="px-4 whitespace-nowrap">{{ c.campaignName }}</td>
+            <td class="px-4 whitespace-nowrap">{{ c.productName }}</td>
+            <td class="px-4 whitespace-nowrap">{{ c.influencerName }}</td>
+            <td class="px-4 whitespace-nowrap">
+              {{ typeof c.revenue === 'number' ? `${c.revenue.toLocaleString()} ₩` : c.revenue }}
+            </td>
+            <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
+            <td class="px-4 whitespace-nowrap">
+              <RouterLink
+                :to="`/campaign/dashboard/${c.pipelineInfluencerId}`"
+                class="text-primary underline hover:font-medium"
+              >
+                보러가기
+              </RouterLink>
+            </td>
+          </tr>
+          <tr v-if="contractList.length === 0">
+            <td colspan="6" class="py-4 text-center text-gray-500">
+              조회된 계약 정보가 없습니다.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -449,7 +452,7 @@ const handleDeleteCompany = async () => {
           v-else
           class="col-span-2 flex items-center justify-center text-gray-400 border rounded py-24 max-h-[500px]"
         >
-          가운데 목록에서 항목을 선택해 주세요
+          목록에서 항목을 선택해 주세요
         </div>
       </div>
     </div>
