@@ -22,7 +22,7 @@ const form = reactive({
   businessNumber: '',
   note: '',
   status: 'null',
-  phone: '',
+  phone: '', // 고객사 유선번호
   fax: '',
   user: [],
   address1: '',
@@ -39,8 +39,8 @@ const newEmployee = reactive({
   client: '',
   department: '',
   title: '',
-  phone: '',
-  telephone: '',
+  phone: '', // 사원 휴대폰
+  telephone: '', // 사원 유선번호
   email: '',
   note: '',
   status: '재직'
@@ -57,6 +57,90 @@ const employeeStatusMap = {
   '휴직': 2,
   '퇴직': 3,
 };
+
+// 유선번호 유효성 검사 함수 (고객사 및 사원 공용)
+const validatePhoneNumber = (number) => {
+  // 정규식: 2-3자리 국번, 3-4자리 중간번호, 4자리 끝번호 (하이픈 포함)
+  // 예: 02-123-4567, 031-1234-5678
+  const phoneRegex = /^(0(2|3[1-3]|4[1-4]|5[1-5]|6[1-4]|50[0-9]|70[0-9]|80[0-9]))-(\d{3,4})-(\d{4})$/;
+  return phoneRegex.test(number);
+};
+
+// 고객사 유선번호 필드 입력 시 자동 하이픈 추가 및 유효성 검사
+watch(() => form.phone, (newVal) => {
+  if (!props.isEditing) return;
+
+  let cleaned = newVal.replace(/[^0-9]/g, '');
+  let formatted = '';
+
+  if (cleaned.length === 0) {
+    form.phone = '';
+    return;
+  }
+
+  if (cleaned.startsWith('02')) {
+    if (cleaned.length < 3) {
+      formatted = cleaned;
+    } else if (cleaned.length < 6) {
+      formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2)}`;
+    } else if (cleaned.length < 10) {
+      formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2, cleaned.length - 4)}-${cleaned.substring(cleaned.length - 4)}`;
+    } else {
+      formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2, 6)}-${cleaned.substring(6, 10)}`;
+    }
+  } else if (cleaned.length < 4) {
+    formatted = cleaned;
+  } else if (cleaned.length < 8) {
+    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3)}`;
+  } else if (cleaned.length < 12) {
+    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, cleaned.length - 4)}-${cleaned.substring(cleaned.length - 4)}`;
+  } else {
+    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, 7)}-${cleaned.substring(7, 11)}`;
+  }
+
+  if (formatted !== newVal) {
+    form.phone = formatted;
+  }
+}, { immediate: false });
+
+
+// 사원 유선번호 필드 입력 시 자동 하이픈 추가 및 유효성 검사
+watch(() => newEmployee.telephone, (newVal) => {
+  if (!isAddingEmployee.value) return;
+
+  let cleaned = newVal.replace(/[^0-9]/g, '');
+  let formatted = '';
+
+  if (cleaned.length === 0) {
+    newEmployee.telephone = '';
+    return;
+  }
+
+  if (cleaned.startsWith('02')) {
+    if (cleaned.length < 3) {
+      formatted = cleaned;
+    } else if (cleaned.length < 6) {
+      formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2)}`;
+    } else if (cleaned.length < 10) {
+      formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2, cleaned.length - 4)}-${cleaned.substring(cleaned.length - 4)}`;
+    } else {
+      formatted = `${cleaned.substring(0, 2)}-${cleaned.substring(2, 6)}-${cleaned.substring(6, 10)}`;
+    }
+  } else if (cleaned.length < 4) {
+    formatted = cleaned;
+  } else if (cleaned.length < 8) {
+    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3)}`;
+  } else if (cleaned.length < 12) {
+    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, cleaned.length - 4)}-${cleaned.substring(cleaned.length - 4)}`;
+  } else {
+    formatted = `${cleaned.substring(0, 3)}-${cleaned.substring(3, 7)}-${cleaned.substring(7, 11)}`;
+  }
+
+  if (formatted !== newVal) {
+    newEmployee.telephone = formatted;
+  }
+}, { immediate: false });
+
 
 // 초기 데이터 반영
 watch(() => props.initialData, (data) => {
@@ -92,41 +176,49 @@ watch(() => props.initialData, (data) => {
 
 
 
-const getFormData = () => ({
-  clientCompanyName: form.name,
-  clientCompanyStatusId: companyStatusMap[form.status],
-  businessId: form.businessNumber ? Number(form.businessNumber) : null,
-  sales: form.revenue ? Number(form.revenue) : null,
-  numberOfEmployees: form.employeeCount ? Number(form.employeeCount) : null,
-  telephone: form.phone || null,
-  fax: form.fax || null,
-  address: form.address1 || null,
-  detailAddress: form.address2 || null,
-  notes: form.note || null,
-  userIds: Array.isArray(form.user) ? form.user.map(u => u.id) : [],
-  clientManagers: Array.isArray(employeeList.value)
-    ? toRaw(employeeList.value).map(e => ({
-      ...(e.clientManagerId ? { clientManagerId: e.clientManagerId } : {}),
-      name: e.name,
-      clientManagerStatusId: employeeStatusMap[e.status],
-      department: e.department || null,
-      position: e.title || null,
-      telephone: e.telephone || null,
-      phone: e.phone || null,
-      email: e.email?.trim() || '',
-      notes: e.note || null,
-    }))
-    : [],
-});
+const getFormData = () => {
+  // 고객사 유선번호 유효성 최종 검사
+  if (form.phone && !validatePhoneNumber(form.phone)) {
+    toast.error('고객사 유선번호 형식이 올바르지 않습니다. 예: 02-1234-5678 또는 031-123-4567');
+    return null;
+  }
+
+  return {
+    clientCompanyName: form.name,
+    clientCompanyStatusId: companyStatusMap[form.status],
+    businessId: form.businessNumber ? Number(form.businessNumber) : null,
+    sales: form.revenue ? Number(form.revenue) : null,
+    numberOfEmployees: form.employeeCount ? Number(form.employeeCount) : null,
+    telephone: form.phone || null,
+    fax: form.fax || null,
+    address: form.address1 || null,
+    detailAddress: form.address2 || null,
+    notes: form.note || null,
+    userIds: Array.isArray(form.user) ? form.user.map(u => u.id) : [],
+    clientManagers: Array.isArray(employeeList.value)
+      ? toRaw(employeeList.value).map(e => ({
+        ...(e.clientManagerId ? { clientManagerId: e.clientManagerId } : {}),
+        name: e.name,
+        clientManagerStatusId: employeeStatusMap[e.status],
+        department: e.department || null,
+        position: e.title || null,
+        telephone: e.telephone || null,
+        phone: e.phone || null, // 사원 휴대폰 번호
+        email: e.email?.trim() || '',
+        notes: e.note || null,
+      }))
+      : [],
+  };
+};
 
 const closeEmployeeForm = () => {
-    isAddingEmployee.value = false;
-    editIndex.value = -1;
-    // newEmployee 폼 초기화
-    Object.keys(newEmployee).forEach((key) => {
-        if (key !== 'client') newEmployee[key] = '';
-    });
-    newEmployee.status = '재직';
+  isAddingEmployee.value = false;
+  editIndex.value = -1;
+  // newEmployee 폼 초기화
+  Object.keys(newEmployee).forEach((key) => {
+    if (key !== 'client') newEmployee[key] = '';
+  });
+  newEmployee.status = '재직';
 };
 
 defineExpose({ getFormData, closeEmployeeForm });
@@ -178,6 +270,11 @@ const addEmployee = () => {
     return;
   }
 
+  if (newEmployee.telephone && !validatePhoneNumber(newEmployee.telephone)) {
+    toast.error('사원 유선번호 형식이 올바르지 않습니다. 예: 02-1234-5678 또는 031-123-4567');
+    return; // 유효성 검사 실패 시 함수 종료
+  }
+
   newEmployee.client = form.name;
 
   const employeeData = { ...newEmployee };
@@ -189,7 +286,7 @@ const addEmployee = () => {
     employeeList.value.splice(editIndex.value, 1, employeeData);
   }
 
-    closeEmployeeForm();
+  closeEmployeeForm();
 
 };
 
@@ -216,32 +313,30 @@ const editEmployee = (index) => {
 };
 
 const deleteEmployee = (index) => {
-    const employee = employeeList.value[index];
-    if (!employee) return;
+  const employee = employeeList.value[index];
+  if (!employee) return;
 
-    if (!employee.clientManagerId) {
-        // 새로 추가된 사원이면 바로 제거
-        employeeList.value.splice(index, 1);
-        closeEmployeeForm(); // 삭제 후 폼 닫기 및 초기화
-    } else {
-        // 기존 DB에 있던 사원이면 부모에 삭제 요청 emit
-        emit('delete-employee', employee.clientManagerId);
-    }
+  if (!employee.clientManagerId) {
+    // 새로 추가된 사원이면 바로 제거
+    employeeList.value.splice(index, 1);
+    closeEmployeeForm(); // 삭제 후 폼 닫기 및 초기화
+  } else {
+    // 기존 DB에 있던 사원이면 부모에 삭제 요청 emit
+    emit('delete-employee', employee.clientManagerId);
+  }
 };
 
 watch(isAddingEmployee, (val) => {
-    if (val && editIndex.value === -1) {
-        newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
-    }
+  if (val && editIndex.value === -1) {
+    newEmployee.client = form.name; // 새 사원 추가시 강제로 넣어줌
+  }
 });
 </script>
 <template>
-  <!-- 상단 고객사 등록 영역 -->
+  <!-- 고객사 등록 영역 -->
   <div class="w-full flex justify-center px-4">
     <div class="container bg-white w-full">
       <!-- 제목 및 버튼 -->
-
-
       <div class="grid grid-cols-2 gap-10">
         <div class="flex flex-col gap-2.5">
           <!-- 왼쪽 필드 -->
@@ -276,7 +371,7 @@ watch(isAddingEmployee, (val) => {
             <option value="신규">신규</option>
           </select>
           <label class="input-form-label">유선번호</label>
-          <input class="input-form-box" v-model="form.telephone" :disabled="!isEditing" />
+          <input class="input-form-box" v-model="form.phone" :disabled="!isEditing" />
           <label class="input-form-label">팩스번호</label>
           <input class="input-form-box" v-model="form.fax" :disabled="!isEditing" />
           <label class="input-form-label">
@@ -324,29 +419,28 @@ watch(isAddingEmployee, (val) => {
       </span>
               </p>
               <p class="text-sm text-gray-500">
-                {{ employee.position }} <!-- 차장, 대리 같은 직책 -->
-                <template v-if="employee.phone || employee.email"> | </template>
+                {{ employee.position }} <template v-if="employee.phone || employee.email"> | </template>
                 {{ employee.phone }}
                 <template v-if="employee.phone && employee.email"> / </template>
                 {{ employee.email }}
               </p>
             </div>
-              <div class="flex gap-2">
-                <button class="btn-icon" v-if="!isEditing" @click="router.push({ path: '/contract/template', query: { recipientEmail: employee.email, recipientName: employee.name } })">
-                  <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-                  MAIL
+            <div class="flex gap-2">
+              <button class="btn-icon" v-if="!isEditing" @click="router.push({ path: '/contract/template', query: { recipientEmail: employee.email, recipientName: employee.name } })">
+                <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                MAIL
+              </button>
+              <template v-if="isEditing">
+                <button class="btn-icon" @click="editEmployee(index)">
+                  <Icon icon="lucide:edit" width="20" height="20" />
+                  수정
                 </button>
-                <template v-if="isEditing">
-                  <button class="btn-icon" @click="editEmployee(index)">
-                    <Icon icon="lucide:edit" width="20" height="20" />
-                    수정
-                  </button>
-                  <button class="btn-icon" @click="deleteEmployee(index)">
-                    <Icon icon="gg:trash" width="20" height="20" />
-                    삭제
-                  </button>
-                </template>
-              </div>
+                <button class="btn-icon" @click="deleteEmployee(index)">
+                  <Icon icon="gg:trash" width="20" height="20" />
+                  삭제
+                </button>
+              </template>
+            </div>
           </div>
         </div>
       </div>
