@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({
   campaign: Object,
@@ -10,6 +11,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const toast = useToast();
 
 // Computed 속성: 캠페인 이름 (없으면 '-')
 const campaignTitle = computed(() => props.campaign?.name ?? '-');
@@ -38,7 +40,7 @@ const tagStyle = (tag) => {
 function goToDashboard(target) {
   if (!props.influencer || !props.influencer.id) {
     console.warn(`Cannot navigate to ${target} dashboard: influencer ID is missing.`);
-    alert('인플루언서 ID가 없어 대시보드로 이동할 수 없습니다.');
+    toast.error('인플루언서 ID가 없어 대시보드로 이동할 수 없습니다.');
     return;
   }
 

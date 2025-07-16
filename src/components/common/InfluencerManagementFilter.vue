@@ -159,161 +159,140 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="custom-sidebar flex flex-col gap-2 overflow-y-auto">
-    <p class="text text-md font-semibold mb-4 mt-5">인플루언서 검색</p>
+  <div class="custom-sidebar flex flex-col gap-2">
+    <p class="font-bold">인플루언서 검색</p>
 
-    <input
-      v-model="influencerNameQuery"
-      type="text"
-      placeholder="인플루언서명"
-      class="w-full border border-gray-medium rounded-md p-2 mb-3"
-      @keyup.enter="handleEnterKey"
-    />
-
-    <p class="text text-md font-semibold mb-4 mt-5">필터</p>
-
-    <label class="block text-sm text-gray-dark mb-1">카테고리</label>
-    <div class="relative mb-3" ref="categoryDropdownRef">
-      <div
-        class="w-full border border-gray-medium rounded-md p-2 cursor-pointer flex justify-between items-center"
-        @click="toggleCategoryDropdown"
+    <div class="grid grid-cols-4 gap-2">
+      <input
+        v-model="influencerNameQuery"
+        type="text"
+        placeholder="이름"
+        class="input-form-box w-full mb-2 col-span-3"
+        @keyup.enter="handleEnterKey"
+      />
+      <button
+        @click="applyFilters"
+        class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md h-[43px]
+         hover:brightness-95 active:scale-95 active:brightness-90
+         transition transform shadow-sm hover:shadow-md col-span-1"
       >
-        <span class="text-sm text-gray-dark overflow-hidden whitespace-nowrap text-ellipsis mr-2">
-          {{ displaySelectedCategories }}
-        </span>
-        <i class="bi bi-chevron-down text-black transition-transform" :class="{ 'rotate-180': isCategoryDropdownOpen }"></i>
-      </div>
+        검색
+      </button>
+    </div>
 
-      <div
-        v-if="isCategoryDropdownOpen"
-        class="absolute z-10 w-full mt-1 bg-white border border-gray-medium rounded-md shadow-lg max-h-60 overflow-y-auto"
-      >
-        <div class="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100">
-          <input
-            type="checkbox"
-            id="category-all"
-            :checked="selectedCategories.length === 0"
-            @change="selectedCategories = []; updateDisplayCategories();"
-            class="mr-2 h-4 w-4 text-blue-600 border-gray-medium rounded cursor-pointer"
-          />
-          <label for="category-all" class="text-sm text-gray-dark cursor-pointer">전체</label>
+      <label class="block">카테고리</label>
+      <div class="relative mb-2" ref="categoryDropdownRef">
+        <div
+          class="input-form-box w-full cursor-pointer flex justify-between items-center h-[40px]"
+          @click="toggleCategoryDropdown"
+        >
+          <span class="text-gray-dark overflow-hidden whitespace-nowrap text-ellipsis mr-2">
+            {{ displaySelectedCategories }}
+          </span>
+          <i class="bi bi-chevron-down text-black transition-transform" :class="{ 'rotate-180': isCategoryDropdownOpen }"></i>
         </div>
-        <div v-for="category in categories.slice(1)" :key="category.id" class="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100">
-          <input
-            type="checkbox"
-            :id="`category-${category.id}`"
-            :value="category.id"
-            v-model="selectedCategories"
-            @change="handleCategoryChange"
-            class="mr-2 h-4 w-4 text-blue-600 border-gray-medium rounded cursor-pointer"
-          />
-          <label :for="`category-${category.id}`" class="text-sm text-gray-dark cursor-pointer">{{ category.name }}</label>
+
+        <div
+          v-if="isCategoryDropdownOpen"
+          class="absolute z-10 w-full mt-1 bg-white border border-gray-dark rounded-sm shadow-lg max-h-60 overflow-y-auto"
+        >
+          <div class="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100">
+            <input
+              type="checkbox"
+              id="category-all"
+              :checked="selectedCategories.length === 0"
+              @change="selectedCategories = []; updateDisplayCategories();"
+              class="mr-2 h-4 w-4 text-blue-600 border-gray-dark rounded-sm cursor-pointer"
+            />
+            <label for="category-all" class="text-gray-dark cursor-pointer">전체</label>
+          </div>
+          <div v-for="category in categories.slice(1)" :key="category.id" class="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100">
+            <input
+              type="checkbox"
+              :id="`category-${category.id}`"
+              :value="category.id"
+              v-model="selectedCategories"
+              @change="handleCategoryChange"
+              class="mr-2 h-4 w-4 text-blue-600 border-gray-dark rounded-sm cursor-pointer"
+            />
+            <label :for="`category-${category.id}`" class="text-gray-dark cursor-pointer">{{ category.name }}</label>
+          </div>
+          <p v-if="categories.length === 1" class="text-gray-dark px-3 py-2">카테고리 없음</p>
         </div>
-        <p v-if="categories.length === 1" class="text-gray-dark text-sm px-3 py-2">카테고리 없음</p>
       </div>
-    </div>
 
-    <label class="block text-sm text-gray-dark mb-1">구독자 수 (만명)</label>
-    <div class="relative mb-3">
-      <select
-        v-model="selectedSubscriberRange"
-        class="appearance-none w-full border border-gray-medium rounded-md p-2 leading-tight focus:outline-none"
-        @change="applyFilters"
-      >
-        <option v-for="option in subscriberOptions" :key="option.label" :value="option">
-          {{ option.label }}
-        </option>
-      </select>
-      <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
-        <i class="bi bi-chevron-down text-black"></i>
+      <label class="block">구독자수</label>
+      <div class="relative mb-2">
+        <select
+          v-model="selectedSubscriberRange"
+          class="input-form-box appearance-none w-full leading-tight focus:outline-none text-gray-dark"
+          @change="applyFilters"
+        >
+          <option v-for="option in subscriberOptions" :key="option.label" :value="option">
+            {{ option.label }}
+          </option>
+        </select>
+        <div class="flex items-center absolute inset-y-5 right-3 pointer-events-none">
+          <i class="bi bi-chevron-down"></i>
+        </div>
       </div>
-    </div>
 
-    <label class="block text-sm text-gray-dark mb-1">팔로워 수 (만명)</label>
-    <div class="relative mb-3">
-      <select
-        v-model="selectedFollowerRange"
-        class="appearance-none w-full border border-gray-medium rounded-md p-2 leading-tight focus:outline-none"
-        @change="applyFilters"
-      >
-        <option v-for="option in followerOptions" :key="option.label" :value="option">
-          {{ option.label }}
-        </option>
-      </select>
-      <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
-        <i class="bi bi-chevron-down text-black"></i>
+      <label class="block">팔로워수</label>
+      <div class="relative mb-3">
+        <select
+          v-model="selectedFollowerRange"
+          class="input-form-box appearance-none w-full leading-tight focus:outline-none text-gray-dark"
+          @change="applyFilters"
+        >
+          <option v-for="option in followerOptions" :key="option.label" :value="option">
+            {{ option.label }}
+          </option>
+        </select>
+        <div class="absolute inset-y-5 mb-2 right-3 flex items-center pointer-events-none">
+          <i class="bi bi-chevron-down text-black"></i>
+        </div>
       </div>
-    </div>
 
-    <label class="block text-sm text-gray-dark mb-1">가격 (만원)</label>
-    <div class="relative mb-5">
-      <select
-        v-model="selectedPriceRange"
-        class="appearance-none w-full border border-gray-medium rounded-md p-2 leading-tight focus:outline-none"
-        @change="applyFilters"
-      >
-        <option v-for="option in priceOptions" :key="option.label" :value="option">
-          {{ option.label }}
-        </option>
-      </select>
-      <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
-        <i class="bi bi-chevron-down text-black"></i>
+      <label class="block">광고단가</label>
+      <div class="relative mb-2">
+        <select
+          v-model="selectedPriceRange"
+          class="input-form-box appearance-none w-full leading-tight focus:outline-none text-gray-dark"
+          @change="applyFilters"
+        >
+          <option v-for="option in priceOptions" :key="option.label" :value="option">
+            {{ option.label }}
+          </option>
+        </select>
+        <div class="absolute inset-y-5 mb-2 right-3 flex items-center pointer-events-none">
+          <i class="bi bi-chevron-down text-black"></i>
+        </div>
       </div>
-    </div>
+
+      <label class="block">정렬</label>
+      <div class="relative mb-3">
+        <select
+          v-model="selectedSortOption"
+          class="input-form-box appearance-none w-full leading-tight focus:outline-none text-gray-dark"
+          @change="applyFilters"
+        >
+          <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+        <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
+          <i class="bi bi-chevron-down text-black"></i>
+        </div>
+      </div>
 
     <button
-      @click="applyFilters"
-      class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md
-         hover:brightness-95 active:scale-95 active:brightness-90
-         transition transform shadow-sm hover:shadow-md"
+      class="w-full bg-gray-medium text-white rounded-lg font-semibold py-2
+        hover:brightness-95 hover:shadow-lg active:brightness-90 active:scale-95
+        transition transform shadow-md cursor-pointer"
+      @click="resetFilters"
     >
-      검색
-    </button>
-
-    <button class="w-full bg-gray-200 text-gray-700 font-semibold py-2 rounded-md mb-5 hover:bg-gray-300 transition-colors shadow-md" @click="resetFilters">
       초기화
     </button>
 
-    <label class="block text-sm text-gray-dark mb-1">정렬</label>
-    <div class="relative mb-3">
-      <select
-        v-model="selectedSortOption"
-        class="appearance-none w-full border border-gray-medium rounded-md p-2 leading-tight focus:outline-none"
-        @change="applyFilters"
-      >
-        <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-          {{ option.label }}
-        </option>
-      </select>
-      <div class="absolute inset-y-0 mb-2 right-3 flex items-center pointer-events-none">
-        <i class="bi bi-chevron-down text-black"></i>
-      </div>
-    </div>
-
   </div>
 </template>
-
-<style scoped>
-.custom-sidebar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.custom-sidebar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.custom-sidebar::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 10px;
-}
-
-.custom-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.bg-btn-blue {
-  background-color: var(--color-btn-blue);
-}
-
-</style>
