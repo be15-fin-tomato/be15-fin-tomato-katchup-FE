@@ -301,49 +301,52 @@ watch(isAddingEmployee, (val) => {
     <div class="container bg-white mt-12 w-full">
       <div class="flex justify-between items-center mb-4">
         <p class="font-bold">사원 정보 ({{ employeeList.length }})</p>
-        <button class="btn-create !py-1 !px-4 text-sm" @click="isAddingEmployee = true" v-if="isEditing">추가</button>      </div>
+        <button class="btn-create !py-1 !px-4 text-sm" @click="isAddingEmployee = true" v-if="isEditing">추가</button>
+      </div>
 
-      <div class="grid grid-cols-2 gap-4" v-if="employeeList.length > 0">
-        <div v-for="(employee, index) in employeeList" :key="index" class="border rounded-lg p-4 flex items-center justify-between shadow-sm">
-          <div>
-            <!-- 사원 목록에서 이름 옆 -->
-            <p class="font-semibold">
-              {{ employee.name }}
-              <span
-                class="text-xs font-semibold ml-2 px-2 py-0.5 rounded"
-                :class="{
-        'bg-[#A2D9FF] text-white': employee.status === '재직',
-        'bg-[#FFD000] text-white': employee.status === '휴직',
-        'bg-[#FF6D6D] text-white': employee.status === '퇴직',
-      }"
-              >
-      {{ employee.status }}
-    </span>
-            </p>
-            <p class="text-sm text-gray-500">
-              {{ employee.position }} <!-- 차장, 대리 같은 직책 -->
-              <template v-if="employee.phone || employee.email"> | </template>
-              {{ employee.phone }}
-              <template v-if="employee.phone && employee.email"> / </template>
-              {{ employee.email }}
-            </p>
-          </div>
-            <div class="flex gap-2">
-              <button class="btn-icon" v-if="!isEditing" @click="router.push({ path: '/contract/template', query: { recipientEmail: employee.email, recipientName: employee.name } })">
-                <Icon icon="material-symbols:mail-outline" width="20" height="20" />
-                MAIL
-              </button>
-              <template v-if="isEditing">
-                <button class="btn-icon" @click="editEmployee(index)">
-                  <Icon icon="lucide:edit" width="20" height="20" />
-                  수정
-                </button>
-                <button class="btn-icon" @click="deleteEmployee(index)">
-                  <Icon icon="gg:trash" width="20" height="20" />
-                  삭제
-                </button>
-              </template>
+      <div class="max-h-[370px] overflow-y-auto pr-2">
+        <div class="grid grid-cols-2 gap-4" v-if="employeeList.length > 0">
+          <div v-for="(employee, index) in employeeList" :key="index" class="border rounded-lg p-4 flex items-center justify-between shadow-sm">
+            <div>
+              <!-- 사원 목록에서 이름 옆 -->
+              <p class="font-semibold">
+                {{ employee.name }}
+                <span
+                  class="text-xs font-semibold ml-2 px-2 py-0.5 rounded"
+                  :class="{
+          'bg-[#A2D9FF] text-white': employee.status === '재직',
+          'bg-[#FFD000] text-white': employee.status === '휴직',
+          'bg-[#FF6D6D] text-white': employee.status === '퇴직',
+        }"
+                >
+        {{ employee.status }}
+      </span>
+              </p>
+              <p class="text-sm text-gray-500">
+                {{ employee.position }} <!-- 차장, 대리 같은 직책 -->
+                <template v-if="employee.phone || employee.email"> | </template>
+                {{ employee.phone }}
+                <template v-if="employee.phone && employee.email"> / </template>
+                {{ employee.email }}
+              </p>
             </div>
+              <div class="flex gap-2">
+                <button class="btn-icon" v-if="!isEditing" @click="router.push({ path: '/contract/template', query: { recipientEmail: employee.email, recipientName: employee.name } })">
+                  <Icon icon="material-symbols:mail-outline" width="20" height="20" />
+                  MAIL
+                </button>
+                <template v-if="isEditing">
+                  <button class="btn-icon" @click="editEmployee(index)">
+                    <Icon icon="lucide:edit" width="20" height="20" />
+                    수정
+                  </button>
+                  <button class="btn-icon" @click="deleteEmployee(index)">
+                    <Icon icon="gg:trash" width="20" height="20" />
+                    삭제
+                  </button>
+                </template>
+              </div>
+          </div>
         </div>
       </div>
     </div>
