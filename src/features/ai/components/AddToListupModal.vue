@@ -8,13 +8,14 @@
                 <label class="block text-sm font-medium mb-1">캠페인 명</label>
                 <div class="flex gap-2">
                     <input
+                        :disabled="isEditing"
                         :value="selectedCampaign?.name ?? ''"
                         type="text"
-                        class="input-form-box flex-1"
+                        :class="['input-form-box flex-1', isEditing ? 'bg-gray-100' : 'bg-white']"
                         readonly
                     />
                     <button
-                        type="button"
+                        v-show="!isEditing"
                         class="px-3 py-1 bg-blue-500 text-white rounded"
                         @click="openSearchPopup('selectedCampaign', 'pipeline')"
                     >
@@ -45,7 +46,7 @@
                     >
                         <img
                             :src="
-                                influencer.youtube?.thumbnailUrl
+                                influencer.youtube?.thumbnailUrl?.includes('ggpht')
                                     ? influencer.youtube?.thumbnailUrl
                                     : '/tomato.png'
                             "
@@ -62,10 +63,7 @@
             <!-- 버튼 영역 -->
             <div class="flex justify-end gap-2">
                 <button class="btn-delete" @click="$emit('close')">취소</button>
-                <button class="btn-create" @click="handleSubmit">
-                    <!--                    {{ isEditing ? '저장하기' : '추가하기' }}-->
-                    저장하기
-                </button>
+                <button class="btn-create" @click="handleSubmit">저장</button>
             </div>
             <teleport to="body">
                 <div
@@ -182,7 +180,6 @@ const handleSubmit = async () => {
             payload.pipelineId = route.params.id;
         }
 
-        console.log('제출:', payload);
         if (props.isEditing) {
             await updateListup(payload);
             toast.success('리스트업이 수정되었습니다.');

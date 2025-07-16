@@ -23,7 +23,9 @@
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <span class="text-xs text-gray-400">{{ opinion.createdAt }}</span>
+                            <span class="text-xs text-gray-400">{{
+                                opinion.createdAt.replace('T', ' ')
+                            }}</span>
 
                             <div class="relative">
                                 <button
