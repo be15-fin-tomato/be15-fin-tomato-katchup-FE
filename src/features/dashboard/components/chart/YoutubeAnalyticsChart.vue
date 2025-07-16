@@ -3,37 +3,35 @@ import { computed } from 'vue';
 import ApexCharts from 'vue3-apexcharts';
 
 const props = defineProps({
-  rows: Array, // rows는 이제 객체 배열을 예상합니다. 예: [{ date: '...', views: ..., comments: ... }]
+  rows: Array,
   activeMetric: String,
 });
 
-// rows 배열의 각 객체에서 'date' 속성을 가져오도록 변경
 const categories = computed(() => props.rows.map(row => row.date));
 
 const metricKeyMap = {
   '조회수': 'views',
   '댓글수': 'comments',
   '좋아요수': 'likes',
-  '클릭수': 'clicks', // 클릭수도 추가 (목 데이터에 포함시킬 경우)
+  '클릭수': 'clicks',
 };
 
 const chartSeries = computed(() => {
   const key = metricKeyMap[props.activeMetric];
-  // rows 배열의 각 객체에서 해당 metric의 값을 가져오도록 변경
   const data = props.rows.map(row => row[key] || 0);
 
   return [
     { name: props.activeMetric, type: 'column', data },
-    { name: props.activeMetric + ' 트렌드', type: 'line', data } // 트렌드 이름 변경 (선택 사항)
+    { name: props.activeMetric + ' 트렌드', type: 'line', data }
   ];
 });
 
 const chartOptions = computed(() => ({
   chart: {
-    height: 200,
+    height: 250, // 높이 조정
     type: 'line',
     stacked: false,
-    toolbar: { show: false } // 툴바 숨김
+    toolbar: { show: false }
   },
   stroke: {
     width: [0, 1.5],
@@ -51,12 +49,12 @@ const chartOptions = computed(() => ({
     shape: 'circle',
     colors: ['#ffffff'],
     strokeWidth: 2,
-    strokeColors: '#DA001A', // 기본 색상에서 변경
+    strokeColors: '#DA001A',
     hover: { sizeOffset: 3 }
   },
   xaxis: {
-    categories: categories.value,
-    labels: { style: { fontSize: '12px', colors: '#333' } } // 폰트 스타일 추가
+    categories: categories.value, // dashboard에서 생성된 날짜 카테고리 사용
+    labels: { style: { fontSize: '12px', colors: '#333' } }
   },
   yaxis: {
     labels: {
@@ -67,13 +65,13 @@ const chartOptions = computed(() => ({
   legend: { show: false },
   dataLabels: {
     enabled: true,
-    enabledOnSeries: [1], // 라인 차트에만 데이터 레이블 표시
+    enabledOnSeries: [1],
     formatter: (val) => val.toLocaleString(),
     offsetY: -10,
     style: {
       fontSize: '12px',
       fontWeight: '500',
-      colors: ['#000000'] // 데이터 레이블 색상
+      colors: ['#000000']
     },
     background: {
       enabled: true,
