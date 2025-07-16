@@ -16,7 +16,7 @@ const stepOrder = [
   { id: 4, key: 'quotation', label: '견적', colorVar: 'bg-pipeline-quotation' },
   { id: 5, key: 'negotiation', label: '협상', colorVar: 'bg-pipeline-negotiation' },
   { id: 6, key: 'contract', label: '계약', colorVar: 'bg-pipeline-contract' },
-  { id: 8, key: 'aftercare', label: '사후관리', colorVar: 'bg-pipeline-aftercare' },
+  { id: 7, key: 'aftercare', label: '매출', colorVar: 'bg-pipeline-aftercare' },
 ];
 
 // 등록된 단계 중 가장 높은 pipelineStepId 기준으로 색칠
