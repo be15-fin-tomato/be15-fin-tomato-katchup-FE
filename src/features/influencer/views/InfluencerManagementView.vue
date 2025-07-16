@@ -5,9 +5,8 @@ import InfluencerManagementFilter from '@/components/common/InfluencerManagement
 import { getInfluencers, registerInfluencer, updateInfluencer, deleteInfluencerApi } from '@/features/user/api.js';
 import InfluencerManagementCard from '@/components/common/InfluencerManagementCard.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
-import YoutubeConnectIdModal from '@/features/influencer/components/YoutubeConnectModal.vue';
-import InstagramConnectModal from '@/features/influencer/components/InstagramConnectModal.vue';
 import InfluencerFormModal from '@/features/influencer/components/InfluencerFormModal.vue';
+import { useToast } from 'vue-toastification';
 
 const influencers = ref([]);
 const isModalOpen = ref(false);
@@ -23,13 +22,7 @@ const totalPages = ref(0);
 const filters = ref({});
 
 const router = useRouter();
-
-const isYoutubeConnectIdModalOpen = ref(false);
-const isYoutubeConnectAuthModalOpen = ref(false);
-const currentInfluencerIdForYoutube = ref(null);
-
-const isInstagramConnectModalOpen = ref(false);
-const currentInfluencerIdForInstagram = ref(null);
+const toast = useToast();
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -94,7 +87,7 @@ const fetchInfluencers = async () => {
 
   } catch (error) {
     console.error('인플루언서 목록을 가져오는 데 실패했습니다:', error);
-    alert('인플루언서 목록을 불러오는 중 오류가 발생했습니다.');
+    toast.error('인플루언서 목록을 불러오는 중 오류가 발생했습니다.');
   } finally {
     isLoading.value = false;
   }
@@ -135,11 +128,11 @@ const deleteInfluencer = async (id) => {
       const payload = { influencerId: id };
       await deleteInfluencerApi(payload);
 
-      alert('인플루언서가 성공적으로 삭제되었습니다.');
+      toast.success('인플루언서가 성공적으로 삭제되었습니다.');
       fetchInfluencers();
     } catch (error) {
       console.error('인플루언서 삭제 중 오류 발생:', error);
-      alert('인플루언서 삭제에 실패했습니다.');
+      toast.error('인플루언서 삭제에 실패했습니다.');
     }
   }
 };
@@ -150,10 +143,10 @@ const saveInfluencer = async (formDataFromModal) => {
     if (formDataFromModal.influencerId) {
       const { influencerId, ...restOfPayload } = formDataFromModal;
       response = await updateInfluencer({ influencerId, ...restOfPayload });
-      alert('인플루언서 정보가 성공적으로 수정되었습니다.');
+      toast.success('인플루언서 정보가 성공적으로 수정되었습니다.');
     } else {
       response = await registerInfluencer(formDataFromModal);
-      alert('새로운 인플루언서가 성공적으로 등록되었습니다.');
+      toast.success('새로운 인플루언서가 성공적으로 등록되었습니다.');
     }
     closeModal();
   } catch (error) {
@@ -161,7 +154,7 @@ const saveInfluencer = async (formDataFromModal) => {
     const errorMessage = error.response && error.response.data && error.response.data.message
       ? error.response.data.message
       : '알 수 없는 오류가 발생했습니다. 입력값을 확인하거나 백엔드 로그를 확인해주세요.';
-    alert(`인플루언서 저장에 실패했습니다: ${errorMessage}`);
+    toast.error(`인플루언서 저장에 실패했습니다: ${errorMessage}`);
   }
 };
 
@@ -171,18 +164,6 @@ const updateCurrentPageFromPagingBar = (val) => {
   currentPageZeroBased.value = val - 1;
 };
 
-const handleInfluencerIdConfirmed = (id) => {
-  currentInfluencerIdForYoutube.value = id;
-  isYoutubeConnectIdModalOpen.value = false;
-  isYoutubeConnectAuthModalOpen.value = true;
-};
-
-const handleInstagramIdConfirmed = (id) => {
-  currentInfluencerIdForInstagram.value = id;
-  isInstagramConnectModalOpen.value = false;
-  console.log("Instagram 연동을 위한 인플루언서 ID 확인:", id);
-  alert(`인스타그램 연동: 인플루언서 ID ${id} 확인. (실제 연동 로직 추가 필요)`);
-};
 </script>
 
 <template>
@@ -236,19 +217,6 @@ const handleInstagramIdConfirmed = (id) => {
         :initialData="selectedInfluencer"
         @close="closeModal"
         @save="saveInfluencer"
-      />
-
-      <YoutubeConnectIdModal
-        v-if="isYoutubeConnectIdModalOpen"
-        @close="isYoutubeConnectIdModalOpen = false"
-        @confirm="handleInfluencerIdConfirmed"
-      />
-
-      <InstagramConnectModal
-        v-if="isInstagramConnectModalOpen"
-        @close="isInstagramConnectModalOpen = false"
-        @confirm="handleInstagramIdConfirmed"
-        :influencerId="currentInfluencerIdForInstagram"
       />
 
       <div v-if="totalPages > 1 && !isLoading" class="flex justify-center mt-8">
