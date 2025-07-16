@@ -180,7 +180,6 @@ const handleSubmit = async () => {
             payload.pipelineId = route.params.id;
         }
 
-        console.log('제출:', payload);
         if (props.isEditing) {
             await updateListup(payload);
             toast.success('리스트업이 수정되었습니다.');

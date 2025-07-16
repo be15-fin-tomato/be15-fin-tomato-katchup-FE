@@ -163,7 +163,6 @@ const save = async () => {
     const payload = buildProposalPayload(form, accordionItems.value);
 
     try {
-        console.log('전송 데이터:', payload);
         await updateProposal(payload);
         toast.success('제안이 수정되었습니다.');
     } catch (e) {
@@ -269,7 +268,6 @@ const normalizeInfluencer = (raw) => {
 };
 
 const buildProposalPayload = (form, accordionItems) => {
-    console.log(route.params.proposalId);
     return {
         pipelineId: route.params.proposalId,
         campaignId: form.campaign?.id,
@@ -308,7 +306,7 @@ const fetchProposalDetail = async () => {
         listUpReferences.value = res.data.data.referenceList ?? [];
         opinions.value = res.data.data.ideaList ?? [];
     } catch (e) {
-        console.log(e);
+        toast.error(e.response.data.message || '제안 상세 조회에 실패하였습니다.');
     }
 };
 
@@ -346,7 +344,7 @@ watch(
                 }));
                 openIndexes.value = enriched.map((_, i) => i);
             } catch (e) {
-                console.error('인플루언서 상세 fetch 실패:', e);
+                toast.error(e.response.data.message || '인플루언서 상세 조회에 실패하였습니다.');
             }
         }
 

@@ -22,7 +22,6 @@ async function bootstrap() {
             const response = await refreshToken();
             authStore.setAccessToken(response.data.data.accessToken);
         } catch (e) {
-            console.log('엑세스 토큰 지우기..');
             authStore.clearAccessToken();
         }
     }

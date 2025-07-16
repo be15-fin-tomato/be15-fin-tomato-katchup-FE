@@ -38,7 +38,7 @@ const fetchListUpList = async () => {
         listupList.value = res.data.data.response;
         total.value = res.data.data.pagination.totalCount;
     } catch (e) {
-        console.error(e);
+        toast.error(e.response.data.message || '리스트업 목록 조회에 실패하였습니다.');
     }
 };
 
