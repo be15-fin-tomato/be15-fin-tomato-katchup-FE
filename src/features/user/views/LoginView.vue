@@ -13,12 +13,15 @@ const authStore = useAuthStore();
 
 const emp_number = ref('');
 const password = ref('');
+const isLoading = ref(false);
 
 const handleLogin = async () => {
   if (!emp_number.value || !password.value) {
     toast.error('사원코드와 비밀번호를 입력해주세요.');
     return;
   }
+
+  isLoading.value = true;
 
   try {
     const res = await login({ loginId: emp_number.value, password: password.value });
@@ -32,9 +35,10 @@ const handleLogin = async () => {
     const res = error.response?.data;
     const message = res?.message || '로그인 중 오류가 발생했습니다.';
     toast.error(message);
+  } finally {
+    isLoading.value = false;
   }
 };
-
 </script>
 
 <template>
@@ -69,12 +73,14 @@ const handleLogin = async () => {
                         비밀번호 찾기
                     </RouterLink>
                 </div>
-                <button
-                    type="submit"
-                    class="bg-[#A8C1DA] text-white px-5 py-3 mb-5 text-md rounded w-full"
-                >
-                    로그인
-                </button>
+              <button
+                type="submit"
+                :disabled="isLoading"
+                class="bg-[#A8C1DA] text-white px-5 py-3 mb-5 text-md rounded w-full transition-opacity duration-200"
+                :class="{ 'opacity-50 cursor-not-allowed': isLoading }"
+              >
+                {{ isLoading ? '로그인 중...' : '로그인' }}
+              </button>
             </form>
         </div>
     </div>
