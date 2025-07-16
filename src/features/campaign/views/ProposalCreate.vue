@@ -20,7 +20,6 @@ const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 const opinions = ref([]);
-const proposalForm = ref(null);
 const form = reactive({});
 const listUpReferences = ref([]);
 const accordionItems = ref([]);
