@@ -38,7 +38,7 @@
         </div>
 
         <!-- 필터/정렬 -->
-        <div>
+        <div v-if="filterOptions.length > 0">
             <div class="font-bold mb-3">상태</div>
 
             <!-- 필터 -->
@@ -72,9 +72,12 @@
         </div>
 
         <!-- 검색 버튼 -->
-        <button type="submit" class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md
-         hover:brightness-95 active:scale-95 active:brightness-90
-         transition transform shadow-sm hover:shadow-md">검색</button>
+        <button
+            type="submit"
+            class="w-full bg-btn-blue text-white font-semibold py-2 rounded-md hover:brightness-95 active:scale-95 active:brightness-90 transition transform shadow-sm hover:shadow-md"
+        >
+            검색
+        </button>
     </form>
 </template>
 
