@@ -35,7 +35,7 @@ const searchFilters = ref({
     manager: null,
     filter: '',
     sort: 'date',
-    sortOrder: 'asc',
+    sortOrder: 'desc',
 });
 
 // 목록 불러오기

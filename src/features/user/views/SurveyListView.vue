@@ -5,17 +5,20 @@ import PagingBar from '@/components/common/PagingBar.vue';
 import SatisfactionCard from '@/features/user/components/SatisfactionCard.vue';
 import ChartCard from '@/features/user/components/ChartCard.vue';
 import { fetchSatisfactionList } from '@/features/user/api';
+import { useRouter } from 'vue-router';
 
 const currentPage = ref(1);
 const pageSize = 10;
 const totalPages = ref(0);
 const totalCount = ref(0);
 const satisfactionList = ref([]);
+const router = useRouter();
 
 const searchModel = ref({
   searchType: 'all',
   keyword: '',
   user: null,
+  isReacted: null,
   sort: 'date',
   sortOrder: 'asc',
 });
@@ -26,6 +29,7 @@ const loadSatisfactionList = async () => {
       searchType: searchModel.value.searchType,
       keyword: searchModel.value.keyword,
       userName: searchModel.value.user?.name ?? '',
+      isReacted: searchModel.value.isReacted,
       page: currentPage.value,
       size: pageSize,
     });
@@ -35,6 +39,18 @@ const loadSatisfactionList = async () => {
   } catch (err) {
     console.error('만족도 조회 실패:', err);
   }
+};
+
+const goToEmailSystem = (id, campaignName, isReacted) => {
+  router.push({
+    path: '/management/email',
+    query: {
+      satisfactionId: id,
+      searchType: 'campaignName',
+      keyword: campaignName,
+      isReacted: isReacted
+    },
+  });
 };
 
 const handleSearch = (filters) => {
@@ -75,7 +91,16 @@ onMounted(() => {
         <SatisfactionCard />
       </div>
 
-      <table class="w-full text-sm text-center border-t mt-10 border-gray-400">
+      <table class="w-full text-sm text-center border-t mt-10 border-gray-400 table-fixed">
+        <colgroup>
+          <col class="w-[8%]" />
+          <col class="w-[14%]" />
+          <col class="w-[30%]" />
+          <col class="w-[15%]" />
+          <col class="w-[15%]" />
+          <col class="w-[15%]" />
+          <col class="w-[8%]" />
+        </colgroup>
         <thead class="text-sm font-semibold border-b border-gray-400">
         <tr>
           <th class="py-2">고객</th>
@@ -88,18 +113,36 @@ onMounted(() => {
         </tr>
         </thead>
         <tbody>
-        <tr v-for="item in satisfactionList" :key="item.satisfactionId">
-          <td class="py-2">{{ item.clientManagerName || '-' }}</td>
-          <td>{{ item.clientCompanyName || '-' }}</td>
-          <td>{{ item.campaignName || '-' }}</td>
-          <td>{{ item.influencerName || '-' }}</td>
-          <td>{{ item.sentDate ? item.sentDate : '-' }}</td>
-          <td>{{ item.responseDate ? item.responseDate : '-' }}</td>
+        <tr
+          v-for="item in satisfactionList"
+          :key="item.satisfactionId"
+          class="border-b border-gray-200"
+        >
+          <td class="h-12 px-2 py-0 leading-[3rem] truncate" :title="item.clientManagerName">
+            {{ item.clientManagerName || '-' }}
+          </td>
+          <td class="h-12 px-2 py-0 leading-[3rem] truncate" :title="item.clientCompanyName">
+            {{ item.clientCompanyName || '-' }}
+          </td>
+          <td class="h-12 px-2 py-0 leading-[3rem] truncate" :title="item.campaignName">
+            {{ item.campaignName || '-' }}
+          </td>
+          <td class="h-12 px-2 py-0 leading-[3rem] truncate" :title="item.influencerName">
+            {{ item.influencerName || '-' }}
+          </td>
+          <td class="h-12 px-2 py-0 leading-[3rem] truncate">
+            {{ item.sentDate ? item.sentDate : '-' }}
+          </td>
+          <td class="h-12 px-2 py-0 leading-[3rem] truncate ">
+            {{ item.responseDate ? item.responseDate : '-' }}
+          </td>
           <td
+            class="h-12 px-2 py-0 leading-[3rem] truncate whitespace-nowrap cursor-pointer underline"
             :class="{
-              'text-blue-500': item.isReacted === 'Y',
-              'text-red-500': item.isReacted === 'N' || !item.isReacted,
-            }"
+    'text-blue-500': item.isReacted === 'Y',
+    'text-red-500': item.isReacted === 'N' || !item.isReacted,
+  }"
+            @click="goToEmailSystem(item.satisfactionId, item.campaignName, item.isReacted)"
           >
             {{ item.isReacted === 'Y' ? '응답' : item.isReacted === 'N' ? '미응답' : '-' }}
           </td>

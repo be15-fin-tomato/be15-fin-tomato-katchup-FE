@@ -154,7 +154,7 @@ onMounted(() => {
                   class="text-request hover:underline cursor-pointer"
                   @click.prevent="openPasswordModal(item.contractId)"
                 >
-                  보기
+                  다운로드
                 </span>
               <label
                 v-else

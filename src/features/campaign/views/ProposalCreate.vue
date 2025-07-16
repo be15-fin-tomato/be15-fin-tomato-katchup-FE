@@ -20,7 +20,6 @@ const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 const opinions = ref([]);
-const proposalForm = ref(null);
 const form = reactive({});
 const listUpReferences = ref([]);
 const accordionItems = ref([]);
@@ -249,7 +248,6 @@ const save = async () => {
     const payload = buildProposalPayload(form, accordionItems.value);
 
     try {
-        console.log('전송 데이터:', payload);
         await createProposal(payload);
         toast.success('제안이 등록되었습니다.');
         isEditing.value = false;
@@ -257,11 +255,6 @@ const save = async () => {
     } catch (e) {
         toast.error(e?.response?.data?.message);
     }
-};
-
-const cancel = () => {
-    Object.assign(form, proposalForm.value);
-    isEditing.value = false;
 };
 
 const fetchInfluencerDetail = async (ids) => {
@@ -303,7 +296,7 @@ watch(
                 }));
                 openIndexes.value = enriched.map((_, i) => i);
             } catch (e) {
-                console.error('인플루언서 상세 fetch 실패:', e);
+                toast.error(e.response.data.message || '인플루언서 상세 조회에 실패하였습니다.');
             }
         }
 
@@ -336,7 +329,7 @@ const handleDelete = (id) => {
 
 const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
 
@@ -345,7 +338,7 @@ const handleReferenceSelect = async (item) => {
     // form.influencer = resForm;
     form.influencer = resForm.map((i) => ({
         id: i.influencerId,
-        name: i.influencerName,
+        name: i.name,
         strength: '',
         notes: '',
     }));

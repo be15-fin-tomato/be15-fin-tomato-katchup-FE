@@ -30,6 +30,7 @@ const form = reactive({});
 const listUpReferences = ref([]);
 const accordionItems = ref([]);
 const isEditing = ref(false);
+const isSaving = ref(false);
 const route = useRoute();
 
 const groups = [
@@ -130,7 +131,7 @@ const toggle = (index) => {
 
 const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
 
@@ -139,7 +140,7 @@ const handleReferenceSelect = async (item) => {
     // form.influencer = resForm;
     form.influencer = resForm.map((i) => ({
         id: i.influencerId,
-        name: i.influencerName,
+        name: i.name,
         strength: '',
         notes: '',
     }));
@@ -147,6 +148,7 @@ const handleReferenceSelect = async (item) => {
 
 // 저장 및 취소
 const save = async () => {
+    isSaving.value = true;
     const requiredFields = [
         { key: 'name', label: '제목' },
         { key: 'clientCompany', label: '고객사' },
@@ -161,13 +163,14 @@ const save = async () => {
     const payload = buildProposalPayload(form, accordionItems.value);
 
     try {
-        console.log('전송 데이터:', payload);
         await updateProposal(payload);
         toast.success('제안이 수정되었습니다.');
     } catch (e) {
         toast.error(e.response.data.message);
     } finally {
         isEditing.value = false;
+        isSaving.value = false;
+        await fetchProposalDetail();
     }
 };
 
@@ -265,7 +268,6 @@ const normalizeInfluencer = (raw) => {
 };
 
 const buildProposalPayload = (form, accordionItems) => {
-    console.log(route.params.proposalId);
     return {
         pipelineId: route.params.proposalId,
         campaignId: form.campaign?.id,
@@ -304,7 +306,7 @@ const fetchProposalDetail = async () => {
         listUpReferences.value = res.data.data.referenceList ?? [];
         opinions.value = res.data.data.ideaList ?? [];
     } catch (e) {
-        console.log(e);
+        toast.error(e.response.data.message || '제안 상세 조회에 실패하였습니다.');
     }
 };
 
@@ -342,7 +344,7 @@ watch(
                 }));
                 openIndexes.value = enriched.map((_, i) => i);
             } catch (e) {
-                console.error('인플루언서 상세 fetch 실패:', e);
+                toast.error(e.response.data.message || '인플루언서 상세 조회에 실패하였습니다.');
             }
         }
 
@@ -432,8 +434,16 @@ watch(
                             {{ isEditing ? '취소' : '삭제' }}
                         </button>
 
-                        <button class="btn-create" @click="isEditing ? save() : (isEditing = true)">
-                            {{ isEditing ? '저장' : '수정' }}
+                        <button
+                            class="btn-create flex items-center gap-1 justify-center transition"
+                            @click="isEditing ? save() : (isEditing = true)"
+                            :disabled="isSaving"
+                        >
+                            <span
+                                v-if="isSaving"
+                                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                            ></span>
+                            {{ isEditing ? (isSaving ? '저장 중...' : '저장') : '수정' }}
                         </button>
                         <Icon
                             icon="material-symbols:lists-rounded"

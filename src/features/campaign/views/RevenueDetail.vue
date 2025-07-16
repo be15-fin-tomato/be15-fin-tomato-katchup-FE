@@ -29,6 +29,7 @@ const revenueForm = ref(null);
 const form = reactive({});
 const contractReferences = ref([]);
 const isEditing = ref(false);
+const isSaving = ref(false);
 
 const groups = [
     {
@@ -213,7 +214,7 @@ const fetchOpinion = async () => {
 
 const handleReferenceSelect = async (item) => {
     if (!isEditing.value) {
-        alert('수정 모드가 아닙니다!');
+        toast.info('수정 상태가 아닙니다.');
         return;
     }
 
@@ -244,7 +245,7 @@ const handleReferenceSelect = async (item) => {
 
     form.influencer = resForm.influencerList.map((i) => ({
         id: i.influencerId,
-        name: i.influencerName,
+        name: i.name,
     }));
     form.salesQuantity = resForm.availableQuantity;
     form.productPrice = resForm.productPrice;
@@ -252,6 +253,7 @@ const handleReferenceSelect = async (item) => {
 
 // 저장 및 취소
 const save = async () => {
+    isSaving.value = true;
     try {
         const requiredFields = [
             { key: 'name', label: '제목' },
@@ -307,9 +309,11 @@ const save = async () => {
         toast.success('매출이 수정되었습니다.');
     } catch (e) {
         toast.error(e?.response?.data?.message);
+    } finally {
+        await fetchRevenueDetail();
+        isEditing.value = false;
+        isSaving.value = false;
     }
-    await fetchRevenueDetail();
-    isEditing.value = false;
 };
 
 const remove = async () => {
@@ -327,7 +331,10 @@ const cancel = () => {
         const original = revenueForm.value?.[key];
 
         if (Array.isArray(original)) {
-            form[key] = [...original];
+            // 깊은 복사로 해결
+            form[key] = original.map((item) =>
+                typeof item === 'object' && item !== null ? { ...item } : item,
+            );
         } else if (typeof original === 'object' && original !== null) {
             form[key] = { ...original };
         } else {
@@ -407,8 +414,16 @@ onMounted(async () => {
                             {{ isEditing ? '취소' : '삭제' }}
                         </button>
 
-                        <button class="btn-create" @click="isEditing ? save() : (isEditing = true)">
-                            {{ isEditing ? '저장' : '수정' }}
+                        <button
+                            class="btn-create flex items-center gap-1 justify-center transition"
+                            @click="isEditing ? save() : (isEditing = true)"
+                            :disabled="isSaving"
+                        >
+                            <span
+                                v-if="isSaving"
+                                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                            ></span>
+                            {{ isEditing ? (isSaving ? '저장 중...' : '저장') : '수정' }}
                         </button>
 
                         <Icon

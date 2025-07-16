@@ -61,7 +61,12 @@
                 <div
                     v-for="influencer in influencers"
                     :key="influencer.id"
-                    class="flex justify-between items-center p-4 bg-white border border-gray-300 rounded-lg cursor-pointer hover:shadow-sm"
+                    :class="[
+                        'flex justify-between items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:shadow-sm',
+                        addedInfluencerIds?.includes(influencer.influencerId)
+                            ? 'bg-indigo-50'
+                            : 'bg-white',
+                    ]"
                     @click="$emit('add-influencer', influencer)"
                 >
                     <!-- 프로필 + 태그 -->
@@ -73,7 +78,7 @@
                                     : '/tomato.png'
                             "
                             alt="profile"
-                            class="w-12 h-12 rounded-full object-cover border"
+                            class="w-12 h-12 rounded-full object-cover"
                         />
                         <div>
                             <div class="font-semibold text-black">
@@ -125,6 +130,7 @@ defineProps({
     filterOptions: Array,
     getRecommendationsByCampaignId: Function,
     isLoading: Boolean,
+    addedInfluencerIds: Array,
 });
 
 defineEmits(['add-influencer']);

@@ -26,7 +26,9 @@ const formatNumber = (val) => {
         <div class="flex flex-col items-center col-span-1">
             <div class="w-28 h-28 rounded-full overflow-hidden mb-8">
                 <img
-                    :src="influencer.imageUrl || kittyImg"
+                    :src="
+                        influencer.imageUrl?.includes('ggpht') ? influencer.imageUrl : '/tomato.png'
+                    "
                     class="w-full h-full object-cover"
                     alt="프로필 이미지"
                 />

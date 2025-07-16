@@ -33,22 +33,7 @@
     </div>
 
     <div class="border-t border-gray-100 px-4 py-3">
-      <div v-if="attachedFile" class="flex flex-col gap-1 mb-2">
-        <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-700">
-          <Icon icon="codex:file" class="text-sky-500 w-4 h-4" />
-          <span class="truncate max-w-[200px]">{{ attachedFile.name }}</span>
-          <button @click="attachedFile = null" class="text-xs text-red-500 hover:underline">삭제</button>
-        </div>
-        <div v-if="isUploading" class="h-2 bg-blue-100 rounded-full overflow-hidden">
-          <div class="h-full bg-blue-500 transition-all duration-300" :style="{ width: uploadProgress + '%' }"></div>
-        </div>
-      </div>
-
       <div class="flex items-center gap-2">
-        <button @click="triggerFileUpload" class="text-[--color-btn-sky] text-xl">
-          <Icon icon="codex:file" class="w-5 h-5" />
-        </button>
-        <input ref="fileInput" type="file" class="hidden" @change="handleFileChange" />
         <input
           v-model="newMessage"
           @keyup.enter="sendMessage"
@@ -58,7 +43,7 @@
         />
         <button
           @click="sendMessage"
-          :disabled="(!newMessage.trim() && !attachedFile) || isUploading"
+          :disabled="!newMessage.trim()"
           class="px-3 py-2 text-sm rounded-full text-white bg-blue-500 hover:brightness-105 disabled:opacity-40"
         >
           전송
@@ -86,7 +71,7 @@ import api from '@/plugin/axios.js'
 import { useAuthStore } from '@/stores/auth'
 import { fetchChatRoomDetail, inviteChatMembers, searchUser } from '@/features/chat/api'
 import InviteModal from '@/features/chat/components/InviteModal.vue'
-import { useToast } from 'vue-toastification'; // Toast import
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({
   room: { type: Object, required: true },
@@ -102,17 +87,12 @@ const messages = ref([])
 const newMessage = ref('')
 const stompClient = ref(null)
 
-const attachedFile = ref(null)
-const uploadProgress = ref(0)
-const isUploading = ref(false)
-const fileInput = ref(null)
-
 const showInviteModal = ref(false)
 const allUsers = ref([])
 
 const memberList = ref(props.room.participants || [])
 
-const toast = useToast(); // Toast 인스턴스 생성
+const toast = useToast();
 
 const currentMemberIds = computed(() => {
   if (Array.isArray(memberList.value)) {
@@ -175,7 +155,6 @@ const shouldShowDateDivider = (currentMsg, index) => {
   return currentMsg.formattedDate !== prevMsg.formattedDate;
 };
 
-
 const fetchMessages = async () => {
   try {
     const data = await fetchChatRoomDetail(props.room.chatId)
@@ -187,7 +166,7 @@ const fetchMessages = async () => {
     scrollToBottom();
   } catch (err) {
     console.error('채팅방 메시지 불러오기 실패:', err)
-    toast.error('채팅 메시지를 불러오는 데 실패했습니다.'); // Toast 메시지
+    toast.error('채팅 메시지를 불러오는 데 실패했습니다.');
   }
 }
 
@@ -195,7 +174,7 @@ const connectWebSocket = () => {
   const token = authStore.accessToken
   if (!token) {
     console.error('토큰 없음: WebSocket 연결 실패');
-    toast.error('채팅 서버 연결에 필요한 인증 정보가 없습니다.'); // Toast 메시지
+    toast.error('채팅 서버 연결에 필요한 인증 정보가 없습니다.');
     return;
   }
 
@@ -220,7 +199,7 @@ const connectWebSocket = () => {
     },
     onStompError: (frame) => {
       console.error('STOMP 오류 발생:', frame)
-      toast.error('채팅 서버 연결 중 오류가 발생했습니다.'); // 연결 오류 Toast
+      toast.error('채팅 서버 연결 중 오류가 발생했습니다.');
     },
   })
 
@@ -229,12 +208,12 @@ const connectWebSocket = () => {
 }
 
 const sendMessage = () => {
-  if (!newMessage.value.trim() && !attachedFile.value) {
-    toast.warning('전송할 메시지나 파일을 선택해주세요.'); // Toast 메시지
+  if (!newMessage.value.trim()) {
+    toast.warning('메시지를 입력해주세요.');
     return;
   }
   if (!stompClient.value?.connected) {
-    toast.error('채팅 서버에 연결되어 있지 않습니다. 잠시 후 다시 시도해주세요.'); // Toast 메시지
+    toast.error('채팅 서버에 연결되어 있지 않습니다. 잠시 후 다시 시도해주세요.');
     return;
   }
 
@@ -251,7 +230,6 @@ const sendMessage = () => {
   })
 
   newMessage.value = ''
-  attachedFile.value = null
 
   nextTick(() => {
     scrollToBottom();
@@ -274,51 +252,13 @@ const handleInvite = async (invitedIds) => {
   }
 }
 
-const triggerFileUpload = () => fileInput.value?.click()
-
-const handleFileChange = async (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-
-  const MAX_FILE_SIZE_MB = 50;
-  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-    toast.error(`파일 크기가 너무 큽니다. ${MAX_FILE_SIZE_MB}MB 이하의 파일만 업로드할 수 있습니다.`);
-    attachedFile.value = null;
-    fileInput.value.value = '';
-    return;
-  }
-
-  attachedFile.value = file
-  isUploading.value = true
-  uploadProgress.value = 0
-
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    await api.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (e) => {
-        uploadProgress.value = Math.round((e.loaded * 100) / e.total)
-      },
-    })
-    isUploading.value = false
-    toast.success('파일 업로드 완료! 메시지와 함께 전송해주세요.'); // Toast 메시지
-  } catch (err) {
-    console.error('파일 업로드 실패:', err)
-    isUploading.value = false
-    attachedFile.value = null
-    toast.error('파일 업로드에 실패했습니다.'); // Toast 메시지
-  }
-}
-
 const loadAllUsers = async () => {
   try {
     const res = await searchUser('')
     allUsers.value = res.userList
   } catch (err) {
     console.error('사용자 목록 불러오기 실패:', err)
-    toast.error('사용자 목록을 불러오는 데 실패했습니다.'); // Toast 메시지
+    toast.error('사용자 목록을 불러오는 데 실패했습니다.');
   }
 }
 

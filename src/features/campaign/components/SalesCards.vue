@@ -55,12 +55,12 @@
 
         <!-- 상세 정보 -->
         <div class="flex justify-between text-sm text-gray-dark mt-8 mb-3">
-            <div class="flex items-center gap-1 max-w-[40%]">
+            <div class="flex items-center gap-1 max-w-[40%] self-end">
                 <Icon icon="tabler:building" width="24" height="24" class="mr-2" />
                 <span class="truncate">{{ managementOption.clientCompanyName }}</span>
             </div>
 
-            <div class="flex gap-4 items-center truncate max-w-[50%]">
+            <div class="flex flex-col gap-y-2 max-w-[50%] truncate">
                 <div v-if="pageType !== 'campaignResult'" class="flex items-center gap-1 truncate">
                     <Icon icon="mdi:person-tie" width="24" height="24" class="mr-2" />
                     <span>{{ renderListupCount(managementOption.userName) }}</span>
