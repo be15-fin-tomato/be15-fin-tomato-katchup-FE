@@ -212,141 +212,136 @@
                             </table>
                         </div>
                     </div>
+                </div>
 
-                    <div v-if="showRecommendation" class="container mb-10 relative">
+                <div v-if="showRecommendation" class="container mb-10 relative">
+                    <button
+                        class="absolute top-3 right-3 text-gray-400 hover:text-black z-10"
+                        @click="showRecommendation = false"
+                    >
+                        <Icon icon="flowbite:close-outline" width="28" height="28" />
+                    </button>
+
+                    <AIInfluencerCard
+                        :influencers="recommendedInfluencerList"
+                        :filterOptions="filterOptions"
+                        :getRecommendationsByCampaignId="getRecommendationsByCampaignId"
+                        :isLoading="recommendLoading"
+                        :addedInfluencerIds="addedInfluencers.map((i) => i.influencerId)"
+                        @add-influencer="addInfluencer"
+                    />
+                </div>
+                <div class="container">
+                    <h2 class="text-lg font-bold text-black mb-2">인플루언서 검색</h2>
+                    <div class="blue-line mb-4"></div>
+                    <InfluencerCategory
+                        :categories="categoryList"
+                        :selectedCategory="selectedCategory"
+                        @update:selected="handleCategoryChange"
+                    />
+
+                    <div class="flex gap-2 mb-6 items-center">
+                        <input
+                            v-model="searchQuery"
+                            class="input-form-box w-[300px]"
+                            placeholder="Search"
+                        />
                         <button
-                            class="absolute top-3 right-3 text-gray-400 hover:text-black z-10"
-                            @click="showRecommendation = false"
+                            class="bg-[#A6C8FF] text-white text-sm h-[40px] px-6 rounded"
+                            @click="handleSearchClick"
                         >
-                            <Icon icon="flowbite:close-outline" width="28" height="28" />
+                            찾기
                         </button>
-
-                        <AIInfluencerCard
-                            :influencers="recommendedInfluencerList"
-                            :filterOptions="filterOptions"
-                            :getRecommendationsByCampaignId="getRecommendationsByCampaignId"
-                            :isLoading="recommendLoading"
-                            :addedInfluencerIds="addedInfluencers.map((i) => i.influencerId)"
-                            @add-influencer="addInfluencer"
-                        />
                     </div>
-
-                    <div class="container">
-                        <h2 class="text-lg font-bold text-black mb-2">인플루언서 검색</h2>
-                        <div class="blue-line mb-4"></div>
-                        <InfluencerCategory
-                            :categories="categoryList"
-                            @update:selected="selectedCategory = $event"
-                        />
-
-                        <div class="flex gap-2 mb-6 items-center">
-                            <input
-                                v-model="searchQuery"
-                                class="input-form-box w-[300px]"
-                                placeholder="Search"
-                            />
-                            <button class="bg-[#A6C8FF] text-white text-sm h-[40px] px-6 rounded">
-                                찾기
-                            </button>
-                        </div>
-                        <div class="overflow-y-auto max-h-[400px]">
-                            <template v-if="influencerLoading">
-                                <div
-                                    v-for="n in 6"
-                                    :key="'skeleton-influencer-' + n"
-                                    class="flex justify-between items-center mb-4 p-4 bg-white border rounded animate-pulse"
-                                >
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 rounded-full bg-gray-300"></div>
-                                        <div class="space-y-2">
-                                            <div class="w-40 h-4 bg-gray-200 rounded"></div>
-                                            <div class="w-32 h-3 bg-gray-200 rounded"></div>
-                                            <div class="flex gap-2">
-                                                <div class="w-12 h-3 bg-gray-200 rounded"></div>
-                                                <div class="w-16 h-3 bg-gray-200 rounded"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col gap-2">
-                                        <div class="w-20 h-4 bg-gray-300 rounded"></div>
-                                        <div class="w-20 h-4 bg-gray-300 rounded"></div>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <!-- 실제 인플루언서 데이터 렌더링 -->
-                            <template v-else>
-                                <div
-                                    v-for="influencer in influencerList"
-                                    :key="influencer.influencerId"
-                                    :class="[
-                                        'flex justify-between items-center mb-4 p-4 border rounded cursor-pointer hover:shadow',
-                                        addedInfluencers.some(
-                                            (i) => i.influencerId === influencer.influencerId,
-                                        )
-                                            ? 'bg-indigo-50 border-indigo-300'
-                                            : 'bg-white border-gray-medium',
-                                    ]"
-                                    @click="addInfluencer(influencer)"
-                                >
-                                    <div class="flex items-center gap-4">
-                                        <img
-                                            :src="
-                                                influencer.youtube?.thumbnailUrl?.includes('ggpht')
-                                                    ? influencer.youtube?.thumbnailUrl
-                                                    : '/tomato.png'
-                                            "
-                                            alt="profile"
-                                            class="w-12 h-12 rounded-full object-cover"
-                                        />
-                                        <div>
-                                            <div class="font-semibold text-black">
-                                                {{ influencer.youtube?.name || '해당 없음' }}
-                                                <span class="text-xs text-gray-500"
-                                                    >({{ influencer.name }})</span
-                                                >
-                                            </div>
-                                            <div class="font-semibold text-gray-500">
-                                                @{{ influencer.instagram?.name || '해당 없음' }}
-                                            </div>
-                                            <div class="flex flex-wrap gap-2 mt-1">
-                                                <span
-                                                    v-for="tag in influencer.tags ?? []"
-                                                    :key="tag.categoryId"
-                                                    :class="`${tagStyle(tag.categoryName)} px-2 py-1 rounded-full text-xs`"
-                                                >
-                                                    #{{ tag.categoryName }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-4 items-center">
-                                        <div class="flex items-center gap-1 text-sm">
-                                            <Icon
-                                                icon="logos:youtube-icon"
-                                                width="18"
-                                                height="18"
-                                            />
-                                            <span>{{
-                                                formatCount(influencer.youtube?.subscriber) ||
-                                                '해당 없음'
-                                            }}</span>
-                                        </div>
-                                        <div class="flex items-center gap-1 text-sm">
-                                            <Icon
-                                                icon="skill-icons:instagram"
-                                                width="18"
-                                                height="18"
-                                            />
-                                            <span>{{
-                                                formatCount(influencer.instagram?.follower) ||
-                                                '해당 없음'
-                                            }}</span>
+                    <div class="overflow-y-auto max-h-[400px]">
+                        <template v-if="influencerLoading">
+                            <div
+                                v-for="n in 6"
+                                :key="'skeleton-influencer-' + n"
+                                class="flex justify-between items-center mb-4 p-4 bg-white border rounded animate-pulse"
+                            >
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gray-300"></div>
+                                    <div class="space-y-2">
+                                        <div class="w-40 h-4 bg-gray-200 rounded"></div>
+                                        <div class="w-32 h-3 bg-gray-200 rounded"></div>
+                                        <div class="flex gap-2">
+                                            <div class="w-12 h-3 bg-gray-200 rounded"></div>
+                                            <div class="w-16 h-3 bg-gray-200 rounded"></div>
                                         </div>
                                     </div>
                                 </div>
-                            </template>
-                        </div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="w-20 h-4 bg-gray-300 rounded"></div>
+                                    <div class="w-20 h-4 bg-gray-300 rounded"></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- 실제 인플루언서 데이터 렌더링 -->
+                        <template v-else>
+                            <div
+                                v-for="influencer in influencerList"
+                                :key="influencer.influencerId"
+                                :class="[
+                                    'flex justify-between items-center mb-4 p-4 border rounded cursor-pointer hover:shadow',
+                                    addedInfluencers.some(
+                                        (i) => i.influencerId === influencer.influencerId,
+                                    )
+                                        ? 'bg-indigo-50 border-indigo-300'
+                                        : 'bg-white border-gray-medium',
+                                ]"
+                                @click="addInfluencer(influencer)"
+                            >
+                                <div class="flex items-center gap-4">
+                                    <img
+                                        :src="
+                                            influencer.youtube?.thumbnailUrl?.includes('ggpht')
+                                                ? influencer.youtube?.thumbnailUrl
+                                                : '/tomato.png'
+                                        "
+                                        alt="profile"
+                                        class="w-12 h-12 rounded-full object-cover"
+                                    />
+                                    <div>
+                                        <div class="font-semibold text-black">
+                                            {{ influencer.youtube?.name || '해당 없음' }}
+                                            <span class="text-xs text-gray-500"
+                                                >({{ influencer.name }})</span
+                                            >
+                                        </div>
+                                        <div class="font-semibold text-gray-500">
+                                            @{{ influencer.instagram?.name || '해당 없음' }}
+                                        </div>
+                                        <div class="flex flex-wrap gap-2 mt-1">
+                                            <span
+                                                v-for="tag in influencer.tags ?? []"
+                                                :key="tag.categoryId"
+                                                :class="`${tagStyle(tag.categoryName)} px-2 py-1 rounded-full text-xs`"
+                                            >
+                                                #{{ tag.categoryName }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-center">
+                                    <div class="flex items-center gap-1 text-sm">
+                                        <Icon icon="logos:youtube-icon" width="18" height="18" />
+                                        <span>{{
+                                            formatCount(influencer.youtube?.subscriber) ||
+                                            '해당 없음'
+                                        }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-sm">
+                                        <Icon icon="skill-icons:instagram" width="18" height="18" />
+                                        <span>{{
+                                            formatCount(influencer.instagram?.follower) ||
+                                            '해당 없음'
+                                        }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -470,13 +465,15 @@ const recommendedInfluencerList = ref([]);
 const addedInfluencers = ref([]);
 const showModal = ref(false);
 const searchQuery = ref('');
-const selectedCategory = ref('전체');
 const selectedCampaignId = ref(null);
 const influencerList = ref([]);
 const showRecommendation = ref(false);
 const campaignLoading = ref(false); // 캠페인 리스트 로딩
 const influencerLoading = ref(false); // 인플루언서 리스트 로딩
 const recommendLoading = ref(false); // AI 추천 로딩
+const categoryList = ref([]);
+const selectedCategory = ref('전체');
+const categoryNameToIdMap = ref({});
 
 const categoryMap = {
     전체: 'ALL',
@@ -492,7 +489,6 @@ const categoryMap = {
     '건강/운동': 'Health & Fitness',
     키즈: 'Family & Kids',
 };
-const categoryList = ref([]);
 const id = route.params.id;
 
 const reverseCategoryMap = Object.fromEntries(
@@ -534,13 +530,6 @@ const openSearchPopup = (targetObj, key, type, extendKey = null) => {
     };
 };
 
-const handleAddToListup = (payload) => {
-    console.log('캠페인:', payload.campaignName);
-    console.log('상품:', payload.productName);
-    console.log(payload);
-    // TODO: 실제 리스트업 처리 로직
-};
-
 const toggleTag = (tag) => {
     const index = TAGS.indexOf(tag) + 1;
     if (selectedTags.value.includes(index)) {
@@ -566,26 +555,50 @@ const formatCount = (value) => {
     return (num / 10000).toFixed(1).replace(/\.0$/, '') + '만'; // 소수점 첫째자리, .0 제거
 };
 
-async function loadInfluencers() {
+const handleSearchClick = () => {
+    const categoryName = selectedCategory.value ?? '전체';
+    const map = categoryNameToIdMap?.value ?? {};
+
+    const categoryId = map[categoryName] ?? null;
+
+    loadInfluencers(categoryId);
+};
+
+const loadInfluencers = async (categoryId = null) => {
     influencerLoading.value = true;
     try {
-        const res = await fetchInfluencerList({ page: 0, size: 50 });
-        const rawList = res.data.data.data;
-
-        if (selectedCategory.value === '전체') {
-            influencerList.value = rawList;
-        } else {
-            const selectedEngCategory = categoryMap[selectedCategory.value];
-            influencerList.value = rawList.filter((influencer) =>
-                influencer.tags?.some((tag) => tag.categoryName === selectedEngCategory),
-            );
+        const params = {
+            page: 0,
+            size: 50,
+        };
+        if (categoryId && categoryId !== 0) {
+            params.categoryIds = [categoryId];
         }
+
+        if (searchQuery.value.trim()) {
+            params.influencerName = searchQuery.value.trim();
+        }
+
+        const res = await fetchInfluencerList(params);
+        influencerList.value = res.data.data.data;
     } catch (e) {
-        console.error(e);
+        toast.error(e.data.message || '인플루언서를 불러오는데 실패하였습니다.');
     } finally {
         influencerLoading.value = false;
     }
-}
+};
+
+const handleCategoryChange = (categoryName) => {
+    if (!categoryName) {
+        selectedCategory.value = '전체';
+        loadInfluencers();
+        return;
+    }
+
+    selectedCategory.value = categoryName;
+    const categoryId = categoryNameToIdMap.value[categoryName] ?? 0;
+    loadInfluencers(categoryId);
+};
 let initialized = false;
 
 const campaignStatus = {
@@ -606,7 +619,7 @@ const fetchCampaigns = async () => {
         });
         campaignList.value = res.data.data.campaignList;
     } catch (e) {
-        console.error(e);
+        toast.error(e.response.data.message || '캠페인 요청에 실패하였습니다.');
     } finally {
         campaignLoading.value = false;
     }
@@ -669,15 +682,22 @@ watch(
 onMounted(async () => {
     campaignLoading.value = true;
     influencerLoading.value = true;
-    categoryList.value = ['전체'];
     filters.clientCompany = null;
     filters.campaign = null;
     const categoryRes = await fetchCategoryList();
     const rawCategories = categoryRes.data.data;
-    categoryList.value = [
-        '전체',
-        ...rawCategories.map((cat) => reverseCategoryMap[cat.categoryName] || cat.categoryName),
-    ];
+
+    const displayCategories = ['전체'];
+    const nameToId = {};
+
+    rawCategories.forEach((cat) => {
+        const korName = reverseCategoryMap[cat.categoryName] || cat.categoryName;
+        displayCategories.push(korName);
+        nameToId[korName] = cat.categoryId;
+    });
+
+    categoryList.value = displayCategories;
+    categoryNameToIdMap.value = nameToId;
     await loadInfluencers();
 
     if (id) {
@@ -719,7 +739,7 @@ onMounted(async () => {
 
             showModal.value = false;
         } catch (e) {
-            console.error('리스트업 상세 조회 실패', e);
+            toast.error(e.response.data.message || '리스트업 상세 조회에 실패하였습니다.');
         }
     }
     await fetchCampaigns();
