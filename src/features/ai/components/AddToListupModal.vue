@@ -8,13 +8,14 @@
                 <label class="block text-sm font-medium mb-1">캠페인 명</label>
                 <div class="flex gap-2">
                     <input
+                        :disabled="isEditing"
                         :value="selectedCampaign?.name ?? ''"
                         type="text"
-                        class="input-form-box flex-1"
+                        :class="['input-form-box flex-1', isEditing ? 'bg-gray-100' : 'bg-white']"
                         readonly
                     />
                     <button
-                        type="button"
+                        v-show="!isEditing"
                         class="px-3 py-1 bg-blue-500 text-white rounded"
                         @click="openSearchPopup('selectedCampaign', 'pipeline')"
                     >
@@ -45,7 +46,7 @@
                     >
                         <img
                             :src="
-                                influencer.youtube?.thumbnailUrl
+                                influencer.youtube?.thumbnailUrl?.includes('ggpht')
                                     ? influencer.youtube?.thumbnailUrl
                                     : '/tomato.png'
                             "

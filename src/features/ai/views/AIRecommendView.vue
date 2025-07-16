@@ -180,7 +180,8 @@
                                                 "
                                                 :disabled="recommendLoading"
                                                 :class="{
-                                                    'opacity-50 cursor-not-allowed': isLoading,
+                                                    'opacity-50 cursor-not-allowed':
+                                                        recommendLoading,
                                                 }"
                                             >
                                                 AI 추천 받기
@@ -264,7 +265,11 @@
                             >
                                 <div class="flex items-center gap-4">
                                     <img
-                                        :src="influencer.youtube?.thumbnailUrl"
+                                        :src="
+                                            influencer.youtube?.thumbnailUrl?.includes('ggpht')
+                                                ? influencer.youtube?.thumbnailUrl
+                                                : '/tomato.png'
+                                        "
                                         alt="profile"
                                         class="w-12 h-12 rounded-full object-cover"
                                     />
@@ -336,8 +341,6 @@ const route = useRoute();
 const filters = reactive({
     clientCompany: null,
     campaign: null,
-    name: '',
-    company: '',
 });
 
 const filterOptions = reactive([
@@ -599,6 +602,7 @@ const getRecommendationsByCampaignId = async () => {
     try {
         recommendLoading.value = true;
         showRecommendation.value = true;
+        recommendedInfluencerList.value = [];
         const dto = mapFiltersToRequest(filterOptions);
         const campaignId = selectedCampaignId.value;
 
@@ -630,8 +634,10 @@ watch(
 onMounted(async () => {
     campaignLoading.value = true;
     influencerLoading.value = true;
+    categoryList.value = ['전체'];
+    filters.clientCompany = null;
+    filters.campaign = null;
     const categoryRes = await fetchCategoryList();
-    await fetchCampaigns();
     const rawCategories = categoryRes.data.data;
     categoryList.value = [
         '전체',
@@ -681,6 +687,7 @@ onMounted(async () => {
             console.error('리스트업 상세 조회 실패', e);
         }
     }
+    await fetchCampaigns();
     initialized = true;
 });
 </script>
