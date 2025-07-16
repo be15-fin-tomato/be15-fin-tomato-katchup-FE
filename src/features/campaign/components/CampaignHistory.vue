@@ -105,7 +105,7 @@ const goToDetail = async (item) => {
   if (step === '기회인지') return;
 
   if (step === '리스트업') {
-    await router.push('/influencer/recommendation');
+    await router.push(`/influencer/recommendation/${id}`);
     return;
   }
 
