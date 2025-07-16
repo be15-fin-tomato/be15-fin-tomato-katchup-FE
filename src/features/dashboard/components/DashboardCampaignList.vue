@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { fetchCampaignListByInfluencer } from '@/features/dashboard/api.js';
 import instagramPlaceholderImage from '@/assets/images/instagram-default-thumbnail.png';
-import defaultPlaceholderImage from '@/assets/images/logofinal.png';
+import defaultPlaceholderImage from '@/assets/images/mock/물토마토.png';
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router';
 
@@ -102,65 +102,74 @@ const goToCampaignDashboard = () => {
     <h2 class="dashboard-title">진행 캠페인</h2>
     <div
       v-if="campaignList.length > 0"
-      class="flex border border-gray-medium rounded-xl overflow-hidden min-h-[200px]"
+      class="flex border border-gray-medium rounded-xl"
     >
       <!-- 캠페인 리스트 -->
-      <div class="w-1/3 border-r border-gray-medium p-4 flex flex-col gap-2">
-        <button
-          v-for="item in campaignList"
-          :key="item.campaignId"
-          @click="selectedId = item.campaignId"
-          :class="[
-            'text-left text-md border border-gray-medium rounded-lg px-3 py-2',
-            selectedId === item.campaignId ? 'bg-btn-sky font-bold' : 'bg-white hover:bg-btn-sky'
-          ]"
-        >
-          [{{ item.clientCompanyName }}] {{ getCampaignTitle(item) }}
+      <div class="w-[40%] overflow-y-auto max-h-[250px] border-r border-gray-medium">
+        <div class="p-4 flex flex-col gap-2">
+          <button
+            v-for="item in campaignList"
+            :key="item.campaignId"
+            @click="selectedId = item.campaignId"
+            :class="[
+              'text-left text-sm font-bold border border-gray-medium rounded-lg px-3 py-1.5',
+              selectedId === item.campaignId ? 'bg-btn-sky/70 font-bold' : 'bg-white hover:bg-btn-sky/20'            ]"
+          >
+          <p>[{{ item.clientCompanyName }}] {{ getCampaignTitle(item) }}</p>
         </button>
       </div>
+    </div>
 
       <!-- 캠페인 상세 정보 -->
-      <div v-if="selectedCampaign" class="flex p-8 gap-10 overflow-hidden hover:shadow-lg rounded-xl transition cursor-pointer flex-1">
-        <div v-if="selectedCampaign.youtubeLink && extractYoutubeVideoId(selectedCampaign.youtubeLink)" class="mb-6">
+      <div v-if="selectedCampaign" class="flex gap-2 overflow-hidden w-[60%] items-center px-4">
+        <div
+          v-if="selectedCampaign.youtubeLink && extractYoutubeVideoId(selectedCampaign.youtubeLink)"
+        >
           <iframe
             :src="getEmbeddedYoutubeUrl(selectedCampaign)"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
-            class="w-[400px] h-[250px] rounded object-cover"
+            class="w-[405px] h-[230px] rounded object-cover"
           ></iframe>
         </div>
-        <div v-else-if="selectedCampaign.instagramLink" class="mb-6">
+        <div v-else-if="selectedCampaign.instagramLink">
           <a :href="selectedCampaign.instagramLink" target="_blank" rel="noopener noreferrer" class="block">
-            <img :src="instagramPlaceholderImage" alt="instagram-post" class="w-[400px] h-[250px] rounded-md object-cover border border-gray-medium" />
+            <img :src="instagramPlaceholderImage" alt="instagram-post" class="w-[400px] h-[250px] rounded object-cover border border-gray-medium" />
           </a>
         </div>
-        <div v-else class="mb-6">
-          <img :src="defaultPlaceholderImage" alt="No Post" class="w-full h-[250px] rounded object-cover" />
+        <div v-else>
+          <img :src="defaultPlaceholderImage" alt="No Post" class="w-[400px] h-[250px] rounded object-cover" />
         </div>
 
-        <div class="flex flex-col gap-2 justify-end mb-6">
+        <div class="flex flex-col gap-2 justify-end p-3 mt-22">
           <div class="flex items-center gap-2">
-            <Icon icon="tabler:building" width="24" height="24" />
-            <div class="font-bold text-lg">고객사 : {{ getClientCompanyName(selectedCampaign) }}</div>
+            <Icon icon="tabler:building" class="w-5 h-5" />
+            <div class="font-bold text-sm truncate max-w-[300px]" :title="getClientCompanyName(selectedCampaign)">
+              고객사 : {{ getClientCompanyName(selectedCampaign) }}
+            </div>
           </div>
           <div class="flex items-center gap-2">
-            <Icon icon="tabler:ad" width="24" height="24" />
-            <div class="font-bold text-lg">캠페인명 : {{ getPostTitle(selectedCampaign) }}</div>
+            <Icon icon="tabler:ad" class="w-5 h-5" />
+            <div class="font-bold text-sm truncate max-w-[300px]" :title="getPostTitle(selectedCampaign)">
+              캠페인명 : {{ getPostTitle(selectedCampaign) }}
+            </div>
           </div>
           <div class="flex items-center gap-2">
-            <Icon icon="icon-park:ad-product" width="24" height="24" />
-            <div class="font-bold text-lg">상품명 : {{ getProductName(selectedCampaign) }}</div>
+            <Icon icon="icon-park:ad-product" class="w-5 h-5" />
+            <div class="font-bold text-sm truncate max-w-[300px]" :title="getProductName(selectedCampaign)">
+              상품명 : {{ getProductName(selectedCampaign) }}
+            </div>
           </div>
 
-          <div class="flex gap-3 mt-3">
+          <div class="flex gap-1 mt-3">
             <button
-              class="text-lg bg-btn-yellow w-44 h-12 rounded-lg hover:bg-btn-yellow/70"
+              class="btn-create"
               @click="handlePostLinkClick(selectedCampaign)"
             >
               게시물 바로가기
             </button>
             <button
-              class="text-lg bg-btn-yellow w-44 h-12 rounded-lg hover:bg-btn-yellow/70"
+              class="btn-create"
               @click="goToCampaignDashboard"
             >
               성과 대시보드
@@ -169,7 +178,7 @@ const goToCampaignDashboard = () => {
         </div>
       </div>
       <div v-else class="flex-1 flex items-center justify-center text-gray-dark">
-        진행 완료된 캠페인이 없습니다.
+        캠페인 상세 정보를 불러올 수 없습니다.
       </div>
     </div>
     <div v-else class="text-gray-medium">
