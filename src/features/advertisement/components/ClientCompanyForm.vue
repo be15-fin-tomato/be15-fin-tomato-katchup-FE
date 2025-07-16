@@ -283,12 +283,12 @@ watch(isAddingEmployee, (val) => {
           </label>
           <div class="flex gap-2">
             <input type="text" :value="form.user.map((u) => u.name).join(', ')" readonly class="input-form-box flex-1" />
-            <button class="border bg-gray-300 rounded px-3 py-1 text-sm shadow" @click="openUserSearch" v-if="isEditing">검색</button>
+            <button class="btn-open-popup" @click="openUserSearch" v-if="isEditing">검색</button>
           </div>
           <label class="input-form-label">주소</label>
           <div class="flex gap-2">
             <input type="text" v-model="form.address1" readonly class="input-form-box flex-1 bg-gray-100" />
-            <button class="border bg-gray-300 rounded px-3 py-1 text-sm shadow" @click="openPostcodeSearch" v-if="isEditing">검색</button>
+            <button class="btn-open-popup" @click="openPostcodeSearch" v-if="isEditing">검색</button>
           </div>
           <input class="input-form-box" v-model="form.address2" :disabled="!isEditing" id="detailAddress" />
         </div>
