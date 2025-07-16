@@ -68,7 +68,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="width: 280px; height: 265px; overflow: visible;">
+  <div style="width: 280px; height: 265px; overflow: visible;" >
     <Doughnut :data="chartData" :options="chartOptions" :key="chartKey" />
   </div>
 </template>

@@ -4,6 +4,9 @@ import Filtering from '@/features/user/components/Filtering.vue';
 import EmailCard from '@/features/user/components/EmailCard.vue';
 import PagingBar from '@/components/common/PagingBar.vue';
 import { fetchSatisfactionList } from '@/features/user/api';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const currentPage = ref(1);
 const pageSize = 10;
@@ -12,9 +15,10 @@ const totalCount = ref(0);
 const emailList = ref([]);
 
 const searchModel = ref({
-  searchType: 'all',
-  keyword: '',
+  searchType: route.query.searchType ?? 'all',
+  keyword: route.query.keyword ?? '',
   user: null,
+  isReacted: route.query.isReacted ?? null,
   sort: 'date',
   sortOrder: 'asc',
 });
@@ -25,6 +29,7 @@ const loadEmailList = async () => {
       searchType: searchModel.value.searchType,
       keyword: searchModel.value.keyword,
       userName: searchModel.value.user?.name ?? '',
+      isReacted: searchModel.value.isReacted,
       page: currentPage.value,
       size: pageSize,
     });
@@ -42,14 +47,13 @@ const handleSearch = (filters) => {
   loadEmailList();
 };
 
-watch(() => currentPage.value, () => {
+watch(currentPage, () => {
   loadEmailList();
 });
 
 onMounted(() => {
   loadEmailList();
 });
-
 </script>
 
 <template>
@@ -61,8 +65,9 @@ onMounted(() => {
 
     <div class="flex flex-col flex-1 container bg-white">
       <div class="page-header">
-        <div class="page-title">만족도 조사
-          <span class="cnt-search  text-gray-500">
+        <div class="page-title">
+          만족도 조사
+          <span class="cnt-search text-gray-500">
             (검색 결과: {{ totalCount }}건)
           </span>
         </div>
@@ -72,7 +77,7 @@ onMounted(() => {
       <div class="grid grid-cols-2 gap-x-9 gap-y-9 px-1">
         <EmailCard
           v-for="(email, index) in emailList"
-          :key="index"
+          :key="email.satisfactionId"
           :emailList="{
             satisfaction_id: email.satisfactionId,
             client_name: email.clientManagerName,
@@ -83,6 +88,8 @@ onMounted(() => {
             campaign_name: email.campaignName,
             email_status: email.emailStatus
           }"
+          :id="`email-${email.satisfactionId}`"
+          :class="highlightedId == email.satisfactionId ? 'border-4 border-indigo-400' : ''"
           @refreshList="loadEmailList"
         />
       </div>
