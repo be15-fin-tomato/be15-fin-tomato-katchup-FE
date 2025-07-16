@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
-import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 
 import DashboardBase from '@/features/dashboard/components/DashboardBase.vue'
@@ -86,24 +85,11 @@ const summaryData = computed(() => {
 const goToPlatform = (platform) => {
   router.push(`/influencer/dashboard/${platform}?id=${influencerId}`)
 }
-
-const goToList = () => {
-  router.push(`/influencer/list`)
-}
 </script>
 
 <template>
   <div class="w-full min-h-screen flex items-center justify-center">
     <div v-if="dashboard" class="w-full">
-      <div class="flex justify-end">
-        <button
-          @click="goToList"
-          class="flex items-center gap-2 px-4 py-2 mb-5 bg-btn-blue text-white font-bold rounded-md"
-        >
-          나가기
-          <Icon icon="tabler:door-exit" width="24" height="24" />
-        </button>
-      </div>
 
       <DashboardHeader :influencer="influencer" />
 

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 
 import DashboardBase from '@/features/dashboard/components/DashboardBase.vue'
@@ -22,18 +21,18 @@ const toast = useToast()
 
 const dashboard = ref(null)
 const influencer = ref(null)
-const satisfaction = ref(0)
+const satisfaction = ref(null)
 const topVideos = ref([])
 const influencerId = route.query.id
 
 onMounted(async () => {
   try {
     const [youtubeRes, instagramRes, influencerRes, satisfactionRes, topVideoRes] = await Promise.all([
-      fetchYoutubeInfo(influencerId),    // YouTube 대시보드 데이터
+      fetchYoutubeInfo(influencerId),
       fetchInstagramInfo(influencerId),
-      fetchInfluencerDetail(influencerId), // 인플루언서 프로필 정보
-      fetchSatisfaction(influencerId), // 인플루언서 평균 만족도
-      fetchTopVideos(influencerId), // 인플루언서 인기 동영상
+      fetchInfluencerDetail(influencerId),
+      fetchSatisfaction(influencerId),
+      fetchTopVideos(influencerId),
     ])
 
     const youtubeRawData = youtubeRes?.data?.data?.[0];
@@ -88,14 +87,15 @@ onMounted(async () => {
     };
 
     influencer.value = influencerData;
-    satisfaction.value = satisfactionData ?? 0;
+    satisfaction.value = satisfactionData;
     topVideos.value = topVideoListData;
+    console.info(satisfaction.value);
 
   } catch (err) {
     toast.error('데이터를 불러오지 못했습니다.');
     console.error('💥 YouTube Dashboard Error:', err);
     dashboard.value = null;
-    satisfaction.value = 0;
+    satisfaction.value = null;
     topVideos.value = [];
   }
 });
@@ -123,24 +123,11 @@ const summaryData = computed(() => {
 const goToPlatform = (platform) => {
   router.push(`/influencer/dashboard/${platform}?id=${influencerId}`);
 };
-
-const goToList = () => {
-  router.push(`/influencer/list`);
-}
 </script>
 
 <template>
   <div class="w-full min-h-screen flex items-center justify-center">
     <div v-if="dashboard" class="w-full">
-      <div class="flex justify-end">
-        <button
-          @click="goToList"
-          class="flex items-center gap-2 px-4 py-2 mb-5 bg-btn-blue text-white font-bold rounded-md"
-        >
-          나가기
-          <Icon icon="tabler:door-exit" width="24" height="24" />
-        </button>
-      </div>
 
       <DashboardHeader :influencer="influencer" />
 
@@ -153,9 +140,12 @@ const goToList = () => {
       />
 
       <PopularPosts :platform="'youtube'" :items="topVideos" />
+
       <DashboardCampaignList :influencer-id="influencerId" />
+
     </div>
 
     <div v-else class="flex justify-center items-center w-full h-full">Loading...</div>
+
   </div>
 </template>
