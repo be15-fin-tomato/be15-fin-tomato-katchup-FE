@@ -211,4 +211,19 @@
     border-radius: 6px;
   }
 
+  /* === 슬라이드 스루 : 마우스 호버 시 텍스트가 왼쪽으로 슬라이드 === */
+  .slide-text-container {
+    @apply overflow-hidden whitespace-nowrap relative;
+    transform: translateX(0);
+  }
+
+  .slide-text-content {
+    @apply inline-block;
+  }
+
+  .slide-text-container:hover .slide-text-content {
+    @apply transition-transform duration-1000 ease-in-out;
+    transform: translateX(calc(279px - 100%));
+  }
+
 }

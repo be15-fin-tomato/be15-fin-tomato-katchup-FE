@@ -25,7 +25,10 @@ const chartTitle = computed(() => props.platform === 'instagram' ? '팔로워 �
     <p class="dashboard-title">{{ chartTitle }}</p>
 
     <div class="flex justify-center items-center">
-      <div class="relative">
+      <div
+          v-if="series && (totalMale.value > 0 || totalFemale.value > 0 || totalOther.value > 0)"
+           class="relative"
+      >
         <ApexCharts
           type="pie"
           width="300"
@@ -38,6 +41,9 @@ const chartTitle = computed(() => props.platform === 'instagram' ? '팔로워 �
             stroke: { show: false },
           }"
         />
+      </div>
+      <div v-else>
+        <p class="text-gray-medium py-25">데이터가 부족하여 그래프를 생성할 수 없습니다.</p>
       </div>
     </div>
   </div>

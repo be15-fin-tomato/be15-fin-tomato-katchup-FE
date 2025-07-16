@@ -64,7 +64,7 @@ const getKey = (item) => {
 <template>
   <div class="dashboard-section">
     <p class="dashboard-title">{{ platform === 'instagram' ? '인기 게시글' : '인기 동영상' }}</p>
-    <div class="grid grid-cols-4 gap-4">
+    <div v-if="filteredItems.length > 0" class="grid grid-cols-4 gap-4 overflow-x-auto">
       <div
         v-for="item in filteredItems"
         :key="getKey(item)"
@@ -81,6 +81,10 @@ const getKey = (item) => {
           <span>{{ formatDate(getUploadDay(item)) }}</span>
         </div>
       </div>
+    </div>
+
+    <div v-else class="text-gray-medium">
+      인기 콘텐츠를 불러올 수 없습니다.
     </div>
   </div>
 </template>

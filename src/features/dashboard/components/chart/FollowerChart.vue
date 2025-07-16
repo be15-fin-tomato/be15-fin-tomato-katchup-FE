@@ -50,17 +50,17 @@ const chartTitle = computed(() => {
     <p class="dashboard-title">
       {{ chartTitle }}
     </p>
-    <div class="flex flex-wrap justify-around p-5">
+    <div class="flex flex-wrap justify-between px-5">
       <div class="flex flex-col items-center justify-center border border-gray-dark rounded-xl shadow-lg">
-        <span class="bg-btn-yellow/90 px-30 py-3 text-xl rounded-t-xl">일간</span>
+        <span class="bg-btn-yellow/90 px-25 py-3 text-xl rounded-t-xl">일간</span>
         <span class="p-15 text-3xl">{{ dailyChange > 0 ? '+' : '' }}{{ dailyChange.toLocaleString() }}</span>
       </div>
       <div class="flex flex-col items-center justify-center border border-gray-dark rounded-xl shadow-lg">
-        <span class="bg-btn-yellow/90 px-30 py-3 text-xl rounded-t-xl">주간</span>
+        <span class="bg-btn-yellow/90 px-25 py-3 text-xl rounded-t-xl">주간</span>
         <span class="p-15 text-3xl">{{ weeklyChange > 0 ? '+' : '' }}{{ weeklyChange.toLocaleString() }}</span>
       </div>
       <div class="flex flex-col items-center justify-center border border-gray-dark rounded-xl shadow-lg">
-        <span class="bg-btn-yellow/90 px-30 py-3 text-xl rounded-t-xl">월간</span>
+        <span class="bg-btn-yellow/90 px-25 py-3 text-xl rounded-t-xl">월간</span>
         <span class="p-15 text-3xl">{{ monthlyChange > 0 ? '+' : '' }}{{ monthlyChange.toLocaleString() }}</span>
       </div>
     </div>
