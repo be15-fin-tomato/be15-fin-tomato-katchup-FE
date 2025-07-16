@@ -106,13 +106,15 @@
 import { ref, onMounted } from 'vue';
 import { TAG_COLOR_MAP, TAGS } from '@/constants/tags';
 import { searchUser } from '@/features/chat/api.js';
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({ initialData: Object });
 const emit = defineEmits(['close', 'save']);
 
+const toast = useToast();
+
 const form = ref({
     name: '',
-    email: '',
     genderDisplay: '',
     manager: '',
     national: '',
@@ -147,12 +149,11 @@ const fetchManagers = async () => {
 const handleSave = async () => {
     if (
         !form.value.name ||
-        !form.value.email ||
         !form.value.genderDisplay ||
         !form.value.national ||
         form.value.price === ''
     ) {
-        alert('모든 필수 정보를 입력해주세요.');
+        toast.warn('모든 필수 정보를 입력해주세요.');
         return;
     }
 
@@ -179,7 +180,6 @@ const handleSave = async () => {
     const payload = {
         ...(props.initialData && { influencerId: props.initialData.influencerId }),
         name: form.value.name,
-        email: form.value.email,
         gender: genderApiValue,
         price: form.value.price,
         national: form.value.national,
@@ -195,7 +195,6 @@ onMounted(() => {
     if (props.initialData) {
         Object.assign(form.value, {
             name: props.initialData.name || '',
-            email: props.initialData.email || '',
             genderDisplay: (() => {
                 switch (props.initialData.gender) {
                     case 'M':
