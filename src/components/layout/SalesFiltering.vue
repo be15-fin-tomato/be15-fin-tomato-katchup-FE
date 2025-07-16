@@ -58,16 +58,12 @@
                     <option value="title">제목</option>
                 </select>
 
-                <button
-                    @click="toggleSortOrder"
-                    type="button"
-                    class="w-[40px] h-[40px] bg-btn-gray rounded-md flex items-center justify-center"
-                >
-                    <span v-if="localValue.sortOrder === 'asc'">
-                        <img src="@/assets/icons/sort.svg" alt="sort" class="w-5 select-none" />
-                    </span>
-                    <span v-else>⬇</span>
-                </button>
+                <div>
+                    <select v-model="localValue.sortOrder" class="input-form-box">
+                        <option value="desc">내림차순</option>
+                        <option value="asc">오름차순</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -117,9 +113,6 @@ const emitSearch = () => {
     };
     emit('search', searchParams);
 };
-const toggleSortOrder = () => {
-    localValue.sortOrder = localValue.sortOrder === 'asc' ? 'desc' : 'asc';
-};
 
 const openUserSearch = () => {
     const popup = window.open(
@@ -142,7 +135,7 @@ function defaultSearch() {
         userId: null,
         filter: '',
         sort: 'date',
-        sortOrder: 'asc',
+        sortOrder: 'desc',
     };
 }
 </script>

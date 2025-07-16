@@ -28,7 +28,7 @@ const searchFilters = ref({
     userId: null,
     filter: '',
     sort: 'date',
-    sortOrder: 'asc',
+    sortOrder: 'desc',
 });
 
 // 목록 불러오기
