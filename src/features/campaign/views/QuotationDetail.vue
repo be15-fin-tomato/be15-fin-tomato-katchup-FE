@@ -180,7 +180,7 @@ const groups = [
         type: 'single',
         fields: [
             { key: 'content', label: '내용', type: 'textarea' },
-            { key: 'notes', label: '비고', type: 'textarea' },
+            { key: 'notes', label: '피드백', type: 'textarea' },
         ],
     },
 ];
