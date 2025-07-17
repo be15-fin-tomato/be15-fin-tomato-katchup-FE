@@ -190,7 +190,7 @@ const connectWebSocket = () => {
     return;
   }
 
-  const socket = new SockJS(`https://localhost:8080/ws?token=${token}`)
+  const socket = new SockJS(`https://api.tomato-katchup.xyz/api/v1/ws?token=${token}`)
   const client = new Client({
     webSocketFactory: () => socket,
     connectHeaders: {
