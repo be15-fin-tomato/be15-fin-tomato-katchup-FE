@@ -300,7 +300,7 @@ const handleOpenRoom = async (chatId) => {
 
     const chatRoomMeta = props.chatRooms.find(room => room.id === chatId);
     if (!roomDetail || !roomDetail.messages || !chatRoomMeta) {
-      toast.error('채팅방 정보를 불러오는데 실패했습니다.');
+      toast.error('채팅방 정보를 불러오는데 실패했습니다');
       return;
     }
 
