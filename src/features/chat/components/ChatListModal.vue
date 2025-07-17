@@ -197,18 +197,25 @@ const filteredSearchUsers = computed(() => {
   return usersToFilter.filter(user => user.name.toLowerCase().includes(searchTerm));
 });
 
-// formatTime 함수를 한국 시간으로 포맷하도록 수정
+// formatTime 함수를 Intl.DateTimeFormat을 사용하는 최신 코드로 변경합니다.
 const formatTime = (isoString) => {
   if (!isoString) return '';
-  const date = new Date(isoString);
-  // 한국어 로케일을 사용하여 오전/오후 HH:MM 형식으로 시간 포맷팅
-  return date.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const date = new Date(isoString); // MongoDB에서 넘어온 UTC ISO 문자열을 Date 객체로 파싱
+
+  // Intl.DateTimeFormat을 사용하여 한국 시간대(Asia/Seoul)로 포맷
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true, // 오전/오후 사용
+    timeZone: 'Asia/Seoul' // 명시적으로 한국 시간대 지정
+  });
+  return formatter.format(date);
 };
 
 
 const openCreateModal = () => {
   showCreateModal.value = true;
-  memberSearch.value = '';
+  newRoomName.value = '';
   selectedMembers.value = [];
 }
 
@@ -286,6 +293,7 @@ const filteredRooms = computed(() => {
   }
 
   return [...rooms].sort((a, b) => {
+    // lastSentAt이 null인 경우를 대비하여 0으로 처리 (가장 오래된 것으로 간주)
     const timeA = a.lastSentAt ? new Date(a.lastSentAt).getTime() : 0;
     const timeB = b.lastSentAt ? new Date(b.lastSentAt).getTime() : 0;
     return timeB - timeA;
@@ -347,5 +355,4 @@ const handleMouseLeave = () => {
 </script>
 
 <style scoped>
-
 </style>
