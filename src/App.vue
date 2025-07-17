@@ -81,12 +81,15 @@ onMounted(async () => {
 
     // 알림 권한 요청
     if ('Notification' in window) {
-        if (Notification.permission === 'default') {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                console.warn('알림 권한 거부됨');
-            }
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          console.warn('알림 권한 거부됨');
         }
+      } else if (Notification.permission === 'denied') {
+        console.warn('알림 권한이 브라우저에서 차단되어 있습니다. 설정에서 허용으로 바꿔주세요.');
+        return;
+      }
     }
 
     // Firebase 초기화 및 토큰 요청
@@ -115,8 +118,8 @@ onMounted(async () => {
                 });
             }
         });
-    } catch (err) {
-        console.error('FCM 초기화 또는 토큰 요청 오류:', err);
+    } catch {
+        console.error('FCM 초기화 또는 토큰 요청 오류:');
     }
 
     await fetchInitialChatRooms();
