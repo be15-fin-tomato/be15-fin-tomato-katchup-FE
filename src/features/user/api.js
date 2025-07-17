@@ -79,11 +79,15 @@ export const deleteAllNotifications = async () => {
   await api.delete('/notification/all');
 };
 
-
 /* 알림 SSE 구독 */
 export const subscribeNotificationSse = ({ onMessage, onConnect }) => {
-  const eventSource = new EventSourcePolyfill(`${import.meta.env.VITE_API_BASE_URL}/sse/subscribe`, {
-    withCredentials: true
+  const baseURL =
+    import.meta.env.MODE === 'development'
+      ? import.meta.env.VITE_API_BASE_URL
+      : 'https://api.tomato-katchup.xyz/api/v1';
+
+  const eventSource = new EventSourcePolyfill(`${baseURL}/sse/subscribe`, {
+    withCredentials: true,
   });
 
   eventSource.onopen = (event) => {
@@ -102,9 +106,9 @@ export const subscribeNotificationSse = ({ onMessage, onConnect }) => {
       console.error('알림 파싱 실패:', e, event.data);
     }
   });
+
   return eventSource;
 };
-
 
 /* 만족도 조사 페이지 목록 조회 */
 export const fetchSatisfactionList = (params) => {
