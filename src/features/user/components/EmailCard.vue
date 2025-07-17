@@ -80,11 +80,7 @@ const handleClick = async () => {
                 <!-- 이미지 + 인플루언서/담당자 -->
                 <div>
                     <!--          <img src="/tomato.png" width="100" alt="기본이미지" />-->
-                    <img
-                        src="/src/assets/images/default-profile.png"
-                        width="100"
-                        alt="기본이미지"
-                    />
+                    <img src="/tomato.png" width="100" alt="기본이미지" />
                     <div class="mt-3 text-sm text-gray-700">
                         <div class="flex items-center gap-2 text-gray-400 mb-3">
                             <Icon icon="stash:star-duotone" width="20" height="20" />
