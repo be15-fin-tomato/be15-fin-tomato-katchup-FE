@@ -178,13 +178,12 @@ const handleDeleteCompany = async () => {
 };
 </script>
 
-
 <template>
+  <!-- 상단 고객사 상세 -->
   <div class="flex justify-center">
     <div class="flex-1 flex flex-col gap-8">
-      <!-- 컨테이너 시작 -->
       <div class="container">
-        <!-- 헤더 영역 -->
+        <!-- 헤더 -->
         <div class="page-header">
           <div class="page-title">고객사 상세</div>
           <div class="flex items-center gap-3">
@@ -207,7 +206,7 @@ const handleDeleteCompany = async () => {
         </div>
         <div class="blue-line"></div>
 
-        <!-- 폼 컴포넌트 -->
+        <!-- 폼 -->
         <ClientCompanyForm
           v-if="clientData && users.length > 0"
           :isEditing="isEditing"
@@ -220,244 +219,227 @@ const handleDeleteCompany = async () => {
     </div>
   </div>
 
-  <!-- 캠페인 진행 현황 + (스크롤) -->
-  <div class="w-full flex justify-center px-4 mt-12">
-    <div class="container bg-white pt-4 pb-6">
-      <p class="font-bold mb-2">캠페인 진행 현황 ({{ campaignList.length }})</p>
-      <div class="blue-line mb-4" />
-      <div class="max-h-[500px] overflow-y-auto pr-2">
-        <PipelineCard :campaigns="campaignList" />
-      </div>
+  <!-- 캠페인 진행 현황 -->
+  <div class="container bg-white pt-4 pb-6 mt-12">
+    <p class="font-bold mb-2">캠페인 진행 현황 ({{ campaignList.length }})</p>
+    <div class="blue-line mb-4" />
+    <div class="max-h-[500px] overflow-y-auto pr-2">
+      <PipelineCard :campaigns="campaignList" />
     </div>
   </div>
 
   <!-- 캠페인 계약 목록 -->
-  <div class="w-full flex justify-center px-4 mt-12">
-    <div class="container bg-white pt-4 pb-6">
-      <p class="font-bold mb-2">캠페인 계약 목록</p>
-      <div class="blue-line mb-4" />
+  <div class="container bg-white pt-4 pb-6 mt-12">
+    <p class="font-bold mb-2">캠페인 계약 목록</p>
+    <div class="blue-line mb-4" />
 
-      <div class="max-h-[400px] overflow-y-auto pr-2">
-        <table class="w-full table-auto border-collapse text-sm">
-          <thead class="text-white text-center text-sm">
-          <tr class="bg-btn-blue rounded-lg overflow-hidden">
-            <th class="px-4 py-2 rounded-l-lg">캠페인명</th>
-            <th class="px-4 py-2">상품명</th>
-            <th class="px-4 py-2">인플루언서</th>
-            <th class="px-4 py-2">수익</th>
-            <th class="px-4 py-2">기간</th>
-            <th class="px-4 py-2 rounded-r-lg">성과</th>
-          </tr>
-          </thead>
-
-          <!-- 본문 -->
-          <tbody>
-          <tr
-            v-for="(c, i) in contractList"
-            :key="i"
-            class="h-[46px] text-center border-b border-gray-200 even:bg-gray-50"
-          >
-            <td class="px-4 whitespace-nowrap">{{ c.campaignName }}</td>
-            <td class="px-4 whitespace-nowrap">{{ c.productName }}</td>
-            <td class="px-4 whitespace-nowrap">{{ c.influencerName }}</td>
-            <td class="px-4 whitespace-nowrap">
-              {{ typeof c.revenue === 'number' ? `${c.revenue.toLocaleString()} ₩` : c.revenue }}
-            </td>
-            <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
-            <td class="px-4 whitespace-nowrap">
-              <RouterLink
-                :to="`/campaign/dashboard/${c.pipelineInfluencerId}`"
-                class="text-primary underline hover:font-medium"
-              >
-                보러가기
-              </RouterLink>
-            </td>
-          </tr>
-          <tr v-if="contractList.length === 0">
-            <td colspan="6" class="py-4 text-center text-gray-500">
-              조회된 계약 정보가 없습니다.
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="max-h-[400px] overflow-y-auto pr-2">
+      <table class="w-full table-auto border-collapse text-sm">
+        <thead class="text-white text-center text-sm">
+        <tr class="bg-btn-blue rounded-lg overflow-hidden">
+          <th class="px-4 py-2 rounded-l-lg">캠페인명</th>
+          <th class="px-4 py-2">상품명</th>
+          <th class="px-4 py-2">인플루언서</th>
+          <th class="px-4 py-2">수익</th>
+          <th class="px-4 py-2">기간</th>
+          <th class="px-4 py-2 rounded-r-lg">성과</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr
+          v-for="(c, i) in contractList"
+          :key="i"
+          class="h-[46px] text-center border-b border-gray-200 even:bg-gray-50"
+        >
+          <td class="px-4 whitespace-nowrap">{{ c.campaignName }}</td>
+          <td class="px-4 whitespace-nowrap">{{ c.productName }}</td>
+          <td class="px-4 whitespace-nowrap">{{ c.influencerName }}</td>
+          <td class="px-4 whitespace-nowrap">
+            {{ typeof c.revenue === 'number' ? `${c.revenue.toLocaleString()} ₩` : c.revenue }}
+          </td>
+          <td class="px-4 whitespace-nowrap">{{ c.period }}</td>
+          <td class="px-4 whitespace-nowrap">
+            <RouterLink
+              :to="`/campaign/dashboard/${c.pipelineInfluencerId}`"
+              class="text-primary underline hover:font-medium"
+            >
+              보러가기
+            </RouterLink>
+          </td>
+        </tr>
+        <tr v-if="contractList.length === 0">
+          <td colspan="6" class="py-4 text-center text-gray-500">
+            조회된 계약 정보가 없습니다.
+          </td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <!-- 커뮤니케이션 이력 -->
-  <div class="w-full flex justify-center px-4 mt-12">
-    <div class="container bg-white pt-4 pb-6">
-      <p class="font-bold mb-2">커뮤니케이션 이력</p>
-      <div class="blue-line mb-4" />
+  <div class="container bg-white pt-4 pb-6 mt-12">
+    <p class="font-bold mb-2">커뮤니케이션 이력</p>
+    <div class="blue-line mb-4" />
 
-      <div class="grid grid-cols-4 gap-6">
+    <div class="grid grid-cols-4 gap-6">
+      <!-- 왼쪽: 캠페인 목록 -->
+      <div class="col-span-1 flex flex-col gap-2 max-h-[500px] overflow-y-auto pr-1">
+        <button
+          class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3
+               flex items-center justify-center text-center h-12 min-h-12"
+          :class="{
+          'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A] font-semibold': selectedCampaignId === null,
+          'border-[var(--color-gray-medium)] text-gray-800': selectedCampaignId !== null,
+        }"
+          @click="selectedCampaignId = null"
+        >
+          전체
+        </button>
 
-        <div class="col-span-1 flex flex-col gap-2 max-h-[500px] overflow-y-auto pr-1">
-          <button
-            class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3
-                 flex items-center justify-center text-center
-                 h-12 min-h-12"
+        <button
+          v-for="c in campaignList"
+          :key="c.id"
+          class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3
+               flex items-center justify-center text-center truncate h-12 min-h-12"
+          :class="{
+          'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A] font-semibold': selectedCampaignId === c.id,
+          'border-[var(--color-gray-medium)] text-gray-800': selectedCampaignId !== c.id,
+        }"
+          @click="selectCampaign(c.id)"
+          :title="c.title"
+        >
+          <div class="truncate overflow-hidden text-ellipsis whitespace-nowrap px-2">
+            {{ c.title }}
+          </div>
+        </button>
+
+        <p v-if="campaignList.length === 0" class="text-center text-gray-500 text-sm mt-4">
+          조회된 캠페인이 없습니다.
+        </p>
+      </div>
+
+      <!-- 중앙: 이력 목록 -->
+      <div class="col-span-1 space-y-2 max-h-[500px] overflow-y-auto pr-1" :key="selectedCampaignId">
+        <button
+          v-for="item in filteredHistories"
+          :key="item.id"
+          @click="selectedMsg = item"
+          class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3"
+          :class="{
+          'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A]':
+            selectedMsg && selectedMsg.id === item.id,
+          'border-[var(--color-gray-medium)] text-gray-800':
+            !selectedMsg || selectedMsg.id !== item.id,
+        }"
+        >
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-semibold text-sm">{{ item.category }}</span>
+            <span class="text-xs text-gray-500">{{ item.createdAt }}</span>
+          </div>
+          <p class="text-sm font-medium mb-1">{{ item.title }}</p>
+          <p class="text-xs text-gray-500">
+            <template v-if="item.writer || item.department">
+              {{ item.writer }}<span v-if="item.writer && item.department"> / </span>{{ item.department }}
+            </template>
+            <template v-else>정보 없음</template>
+          </p>
+        </button>
+
+        <p v-if="filteredHistories.length === 0" class="text-center text-gray-500 text-sm mt-4">
+          조회된 커뮤니케이션 이력이 없습니다.
+        </p>
+      </div>
+
+      <!-- 오른쪽: 상세 보기 -->
+      <div
+        v-if="selectedMsg"
+        class="col-span-2 border rounded-lg shadow-sm bg-white space-y-3 max-h-[500px] overflow-y-auto px-8 py-4"
+        style="border-color: var(--color-gray-medium)"
+      >
+        <!-- 제목 -->
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-2">
+          <span
+            class="px-3 py-1 rounded-full text-white text-xs font-semibold shadow-sm"
             :class="{
-                    'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A] font-semibold':
-                        selectedCampaignId === null,
-                    'border-[var(--color-gray-medium)] text-gray-800': selectedCampaignId !== null,
-                }"
-            @click="selectedCampaignId = null"
+              'bg-pipeline-proposal': selectedMsg.category === '제안',
+              'bg-pipeline-negotiation': selectedMsg.category === '협상',
+              'bg-pipeline-contract': selectedMsg.category === '계약',
+              'bg-pipeline-quotation': selectedMsg.category === '견적',
+              'bg-pipeline-list-up': selectedMsg.category === '리스트업',
+              'bg-pipeline-chance': selectedMsg.category === '기회인지',
+              'bg-pipeline-revenue': selectedMsg.category === '매출',
+            }"
           >
-            전체
-          </button>
+            {{ selectedMsg.category }}
+          </span>
+            <h3 class="text-base font-bold text-[#1A1A1A] truncate self-center">
+              {{ selectedMsg.title }}
+            </h3>
+          </div>
+          <div class="text-xs text-gray-400 whitespace-nowrap text-right self-center">
+            작성일 : {{ selectedMsg.createdAt }}
+          </div>
+        </div>
 
-          <button
-            v-for="c in campaignList"
-            :key="c.id"
-            class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3
-                 flex items-center justify-center text-center
-                 truncate h-12 min-h-12"
-            :class="{
-                    'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A] font-semibold':
-                        selectedCampaignId === c.id,
-                    'border-[var(--color-gray-medium)] text-gray-800': selectedCampaignId !== c.id,
-                }"
-            @click="selectCampaign(c.id)"
-            :title="c.title"
-          >
-            <div class="truncate overflow-hidden text-ellipsis whitespace-nowrap px-2">
-              {{ c.title }}
-            </div>
-          </button>
-          <p v-if="campaignList.length === 0" class="text-center text-gray-500 text-sm mt-4">
-            조회된 캠페인이 없습니다.
+        <hr style="border-color: var(--color-gray-medium)" />
+
+        <div class="w-full">
+          <h4 class="text-sm font-medium text-gray-600 mb-1">담당자</h4>
+          <p class="text-sm text-gray-800">
+            <template v-if="selectedMsg.writer || selectedMsg.department">
+              {{ selectedMsg.writer }}
+              <span v-if="selectedMsg.writer && selectedMsg.department"> / </span>
+              {{ selectedMsg.department }}
+            </template>
+            <template v-else>정보 없음</template>
           </p>
         </div>
 
-        <!-- 중앙: 이력 목록 -->
-        <div class="col-span-1 space-y-2 max-h-[500px] overflow-y-auto pr-1"
-             :key="selectedCampaignId"
-        >
-          <button
-            v-for="item in filteredHistories"
-            :key="item.id"
-            @click="selectedMsg = item"
-            class="w-full text-left rounded-lg text-sm font-medium border transition-all duration-150 hover:bg-gray-100 px-4 py-3"
-            :class="{
-                    'bg-[#e6f0ff] border-[#5b8cff] text-[#00274A]':
-                        selectedMsg && selectedMsg.id === item.id,
-                    'border-[var(--color-gray-medium)] text-gray-800':
-                        !selectedMsg || selectedMsg.id !== item.id
-                }"
+        <div class="w-full">
+          <h4 class="text-sm font-medium text-gray-600 mb-1">내용</h4>
+          <div
+            class="rounded px-3 py-2 bg-gray-50 text-sm text-gray-700 whitespace-pre-line w-full text-left"
+            style="border: 1px solid var(--color-gray-medium)"
           >
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-semibold text-sm">{{ item.category }}</span>
-              <span class="text-xs text-gray-500">{{ item.createdAt }}</span>
-            </div>
+            {{ selectedMsg.content || '내용 없음' }}
+          </div>
+        </div>
 
-            <p class="text-sm font-medium mb-1">{{ item.title }}</p>
+        <div class="w-full">
+          <h4 class="text-sm font-medium text-gray-600 mb-1">피드백</h4>
+          <div
+            class="rounded px-3 py-2 bg-gray-50 text-sm text-gray-700 whitespace-pre-line w-full text-left"
+            style="border: 1px solid var(--color-gray-medium)"
+          >
+            {{ selectedMsg.feedback || '피드백 없음' }}
+          </div>
+        </div>
 
-            <p class="text-xs text-gray-500">
-              <template v-if="item.writer || item.department">
-                {{ item.writer }}<span v-if="item.writer && item.department"> / </span>{{ item.department }}
-              </template>
-              <template v-else>
-                정보 없음
-              </template>
-            </p>
-
+        <div v-if="selectedMsg.file" class="w-full">
+          <h4 class="text-sm font-medium text-gray-600 mb-1">첨부파일</h4>
+          <button
+            class="flex items-center gap-2 px-3 py-2 border rounded text-sm text-gray-700 hover:bg-[#f5faff] transition"
+            style="border: 1px solid var(--color-gray-medium)"
+            @click="openPdfViewer(selectedMsg.file)"
+          >
+            <Icon icon="material-symbols:attach-file" width="18" height="18" />
+            {{ selectedMsg.file }}
           </button>
-          <p v-if="filteredHistories.length === 0" class="text-center text-gray-500 text-sm mt-4">
-            조회된 커뮤니케이션 이력이 없습니다.
-          </p>
         </div>
+      </div>
 
-        <div
-          v-if="selectedMsg"
-          class="col-span-2 border rounded-lg shadow-sm bg-white space-y-3 max-h-[500px] overflow-y-auto px-8 py-4"
-          style="border-color: var(--color-gray-medium)">
-
-          <!-- 제목 + 작성일 -->
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex items-center gap-2">
-    <span
-      class="px-3 py-1 rounded-full text-white text-xs font-semibold shadow-sm"
-      :class="{
-        'bg-pipeline-proposal': selectedMsg.category === '제안',
-        'bg-pipeline-negotiation': selectedMsg.category === '협상',
-        'bg-pipeline-contract': selectedMsg.category === '계약',
-        'bg-pipeline-quotation': selectedMsg.category === '견적',
-        'bg-pipeline-list-up': selectedMsg.category === '리스트업',
-        'bg-pipeline-chance': selectedMsg.category === '기회인지',
-        'bg-pipeline-revenue': selectedMsg.category === '매출',
-      }"
-    >
-      {{ selectedMsg.category }}
-    </span>
-              <!-- 제목 -->
-              <h3 class="text-base font-bold text-[#1A1A1A] truncate self-center">
-                {{ selectedMsg.title }}
-              </h3>
-            </div>
-            <div class="text-xs text-gray-400 whitespace-nowrap text-right self-center">
-              작성일 : {{ selectedMsg.createdAt }}
-            </div>
-          </div>
-
-
-          <hr style="border-color: var(--color-gray-medium)" />
-
-          <div class="w-full">
-            <h4 class="text-sm font-medium text-gray-600 mb-1">담당자</h4>
-            <p class="text-sm text-gray-800">
-              <template v-if="selectedMsg.writer || selectedMsg.department">
-                {{ selectedMsg.writer }} <span v-if="selectedMsg.writer && selectedMsg.department">/</span> {{ selectedMsg.department }}
-              </template>
-              <template v-else>
-                정보 없음
-              </template>
-            </p>
-          </div>
-
-          <div class="w-full">
-            <h4 class="text-sm font-medium text-gray-600 mb-1">내용</h4>
-            <div
-              class="rounded px-3 py-2 bg-gray-50 text-sm text-gray-700 whitespace-pre-line w-full text-left"
-              style="border: 1px solid var(--color-gray-medium)"
-            >
-              {{ selectedMsg.content || '내용 없음' }}
-            </div>
-          </div>
-
-          <div class="w-full">
-            <h4 class="text-sm font-medium text-gray-600 mb-1">피드백</h4>
-            <div
-              class="rounded px-3 py-2 bg-gray-50 text-sm text-gray-700 whitespace-pre-line w-full text-left"
-              style="border: 1px solid var(--color-gray-medium)"
-            >
-              {{ selectedMsg.feedback || '피드백 없음' }}
-            </div>
-          </div>
-
-          <div v-if="selectedMsg.file" class="w-full">
-            <h4 class="text-sm font-medium text-gray-600 mb-1">첨부파일</h4>
-            <button
-              class="flex items-center gap-2 px-3 py-2 border rounded text-sm text-gray-700 hover:bg-[#f5faff] transition"
-              style="border: 1px solid var(--color-gray-medium)"
-              @click="openPdfViewer(selectedMsg.file)"
-            >
-              <Icon icon="material-symbols:attach-file" width="18" height="18" />
-              {{ selectedMsg.file }}
-            </button>
-          </div>
-        </div>
-
-        <div
-          v-else
-          class="col-span-2 flex items-center justify-center text-gray-400 border rounded py-24 max-h-[500px]"
-        >
-          목록에서 항목을 선택해 주세요
-        </div>
+      <div
+        v-else
+        class="col-span-2 flex items-center justify-center text-gray-400 border rounded py-24 max-h-[500px]"
+      >
+        목록에서 항목을 선택해 주세요
       </div>
     </div>
   </div>
 
+  <!-- PDF 모달 -->
   <PdfViewerModal
     v-if="isPdfModalOpen"
     :pdf-url="`/pdf/${selectedPdfFile}`"
