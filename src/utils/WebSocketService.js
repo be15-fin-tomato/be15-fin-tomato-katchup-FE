@@ -5,7 +5,7 @@ import { Client } from '@stomp/stompjs'
 let stompClient = null
 
 export const connectWebSocket = (roomId, onMessage, token) => {
-  const socket = new SockJS('https://api.tomato-katchup.xyz/api/v1/ws')
+  const socket = new SockJS('https://api.tomato-katchup.xyz/api/v1/ws-stomp')
   stompClient = new Client({
     webSocketFactory: () => socket,
     connectHeaders: {
