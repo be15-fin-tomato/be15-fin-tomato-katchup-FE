@@ -20,6 +20,7 @@ import DetailReferenceList from '@/features/campaign/components/DetailReferenceL
 import { validateRequiredFields } from '@/features/campaign/utils/validator.js';
 import { useToast } from 'vue-toastification';
 import { structuredForm } from '@/features/campaign/utils/structedForm.js';
+import { fetchCampaignListByInfluencer } from '@/features/dashboard/api.js';
 
 const router = useRouter();
 const toast = useToast();
@@ -115,7 +116,7 @@ const groups = [
         type: 'single',
         fields: [
             { key: 'content', label: '내용', type: 'textarea' },
-            { key: 'notes', label: '비고', type: 'textarea' },
+            { key: 'notes', label: '피드백', type: 'textarea' },
         ],
     },
 ];
@@ -321,13 +322,23 @@ watch(
 
         if (influencers[0] && !influencers[0].platform) {
             const ids = influencers.map((i) => i.id);
+
             try {
                 const res = await fetchInfluencerDetail(ids);
-                const detailed = Array.isArray(res)
-                    ? res.map(normalizeInfluencer)
-                    : [normalizeInfluencer(res)];
+                const responseArray = Array.isArray(res) ? res : [res];
 
-                // 👉 form.influencer의 strength/note 병합
+                const enrichedRawList = await Promise.all(
+                    responseArray.map(async (raw) => {
+                        const campaignRes = await fetchCampaignListByInfluencer(raw.influencerId);
+
+                        raw.campaignRecord = campaignRes.data.data ?? [];
+
+                        return raw;
+                    }),
+                );
+
+                const detailed = enrichedRawList.map(normalizeInfluencer);
+
                 const enriched = detailed.map((inf) => {
                     const origin = influencers.find((i) => i.id === inf.influencerId);
                     return {
@@ -344,7 +355,7 @@ watch(
                 }));
                 openIndexes.value = enriched.map((_, i) => i);
             } catch (e) {
-                toast.error(e.response.data.message || '인플루언서 상세 조회에 실패하였습니다.');
+                toast.error(e.response?.data?.message || '인플루언서 상세 조회에 실패하였습니다.');
             }
         }
 

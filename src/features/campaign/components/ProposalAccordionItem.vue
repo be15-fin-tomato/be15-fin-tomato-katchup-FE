@@ -42,12 +42,12 @@ const formatNumber = (val) => {
                         class="hover:underline cursor-pointer"
                     >
                         <a
-                            :href="item.url"
+                            :href="`/campaign/${item.campaignId}`"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="block text-left"
                         >
-                            {{ item.name }}
+                            {{ item.campaignName }}
                         </a>
                     </li>
                 </ul>
@@ -168,7 +168,7 @@ const formatNumber = (val) => {
                     />
                 </div>
                 <div>
-                    <label class="text-sm font-medium">비고</label>
+                    <label class="text-sm font-medium">피드백</label>
                     <textarea
                         v-model="influencer.note"
                         class="border-gray-medium input-form-box mt-1"

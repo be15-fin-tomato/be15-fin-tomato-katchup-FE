@@ -1205,7 +1205,7 @@ const proposalDetail = {
     ],
     status: '보류',
     content: '내용~',
-    notes: '비고고',
+    notes: '피드백고',
     opinions: [],
 };
 
@@ -1635,18 +1635,18 @@ const eventList = [
         hexCode: '#f97316',
     },
     {
-      title: '출장',
-      scheduleDate: '2025-06-19',
-      startTime: '09:00:00',
-      endTime: '18:00:00',
-      hexCode: '#FFD863',
+        title: '출장',
+        scheduleDate: '2025-06-19',
+        startTime: '09:00:00',
+        endTime: '18:00:00',
+        hexCode: '#FFD863',
     },
     {
-      title: '외출',
-      scheduleDate: '2025-06-19',
-      startTime: '09:00:00',
-      endTime: '18:00:00',
-      hexCode: '#83D4FF',
+        title: '외출',
+        scheduleDate: '2025-06-19',
+        startTime: '09:00:00',
+        endTime: '18:00:00',
+        hexCode: '#83D4FF',
     },
 ];
 
