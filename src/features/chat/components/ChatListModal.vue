@@ -48,7 +48,7 @@
         </div>
         <div class="flex flex-col items-end gap-1 min-w-[64px]">
           <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400">{{ room.time }}</span>
+            <span class="text-xs text-gray-400">{{ formatTime(room.lastSentAt) }}</span>
             <button
               @click.stop="confirmLeave(room)"
               class="text-gray-400 hover:text-gray-600 text-xl"
@@ -197,15 +197,25 @@ const filteredSearchUsers = computed(() => {
   return usersToFilter.filter(user => user.name.toLowerCase().includes(searchTerm));
 });
 
-const formatTime = (timestamp) => {
-  if (!timestamp) return ''
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
+// formatTime 함수를 Intl.DateTimeFormat을 사용하는 최신 코드로 변경합니다.
+const formatTime = (isoString) => {
+  if (!isoString) return '';
+  const date = new Date(isoString); // MongoDB에서 넘어온 UTC ISO 문자열을 Date 객체로 파싱
+
+  // Intl.DateTimeFormat을 사용하여 한국 시간대(Asia/Seoul)로 포맷
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true, // 오전/오후 사용
+    timeZone: 'Asia/Seoul' // 명시적으로 한국 시간대 지정
+  });
+  return formatter.format(date);
+};
+
 
 const openCreateModal = () => {
   showCreateModal.value = true;
-  memberSearch.value = '';
+  newRoomName.value = '';
   selectedMembers.value = [];
 }
 
@@ -283,6 +293,7 @@ const filteredRooms = computed(() => {
   }
 
   return [...rooms].sort((a, b) => {
+    // lastSentAt이 null인 경우를 대비하여 0으로 처리 (가장 오래된 것으로 간주)
     const timeA = a.lastSentAt ? new Date(a.lastSentAt).getTime() : 0;
     const timeB = b.lastSentAt ? new Date(b.lastSentAt).getTime() : 0;
     return timeB - timeA;
@@ -344,5 +355,4 @@ const handleMouseLeave = () => {
 </script>
 
 <style scoped>
-
 </style>

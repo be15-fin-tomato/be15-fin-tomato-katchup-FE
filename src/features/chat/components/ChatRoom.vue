@@ -122,16 +122,17 @@ const formatMessageTime = (isoString) => {
     datePrefix = `${messageDate.getFullYear()}년 ${messageDate.getMonth() + 1}월 ${messageDate.getDate()}일`;
   }
 
-  let hours = messageDate.getHours();
-  const minutes = messageDate.getMinutes();
-  const ampm = hours >= 12 ? '오후' : '오전';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+  // 이 부분을 수정합니다: Intl.DateTimeFormat을 사용하여 한국 시간대로 포맷
+  const formattedTime = new Intl.DateTimeFormat('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true, // 오전/오후 사용
+    timeZone: 'Asia/Seoul' // 명시적으로 한국 시간대 지정
+  }).format(messageDate);
 
   return {
     formattedDate: datePrefix,
-    formattedTime: `${ampm} ${hours}:${formattedMinutes}`
+    formattedTime: formattedTime // 수정된 포맷된 시간 반환
   };
 };
 
