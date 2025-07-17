@@ -104,10 +104,7 @@ const currentMemberIds = computed(() => {
 const formatMessageTime = (isoString) => {
   if (!isoString) return { formattedDate: '', formattedTime: '' };
 
-  // 백엔드에서 LocalDateTime (KST) 문자열을 받았다고 가정합니다.
-  // 이 문자열을 Date 객체로 파싱합니다.
   const messageDate = new Date(isoString);
-
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
@@ -122,30 +119,21 @@ const formatMessageTime = (isoString) => {
   } else if (messageDay.getTime() === yesterdayDay.getTime()) {
     datePrefix = '어제';
   } else {
-    // 한국어 로케일을 사용하여 요일을 포함한 날짜 포맷팅
-    // month: 'numeric'은 '1월'이 아닌 '1'로 표시
-    const options = {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      weekday: 'long' // 요일 포함
-    };
-    datePrefix = messageDate.toLocaleDateString('ko-KR', options);
+    datePrefix = `${messageDate.getFullYear()}년 ${messageDate.getMonth() + 1}월 ${messageDate.getDate()}일`;
   }
 
-  // 한국어 로케일을 사용하여 오전/오후 HH:MM 형식으로 시간 포맷팅
-  const formattedTime = messageDate.toLocaleTimeString('ko-KR', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true // 오전/오후 표시
-  });
+  let hours = messageDate.getHours();
+  const minutes = messageDate.getMinutes();
+  const ampm = hours >= 12 ? '오후' : '오전';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
 
   return {
     formattedDate: datePrefix,
-    formattedTime: formattedTime
+    formattedTime: `${ampm} ${hours}:${formattedMinutes}`
   };
 };
-
 
 const formattedMessages = computed(() => {
   return messages.value.map(msg => {
@@ -232,7 +220,7 @@ const sendMessage = () => {
   const messagePayload = {
     chatId: props.room.chatId,
     senderId: currentUserId.value,
-    senderName: currentUserName.value, // 프론트에서 senderName을 직접 포함하여 보냄
+    senderName: currentUserName.value,
     message: newMessage.value,
   }
 
