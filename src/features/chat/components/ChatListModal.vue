@@ -48,7 +48,7 @@
         </div>
         <div class="flex flex-col items-end gap-1 min-w-[64px]">
           <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400">{{ room.time }}</span>
+            <span class="text-xs text-gray-400">{{ formatTime(room.lastSentAt) }}</span>
             <button
               @click.stop="confirmLeave(room)"
               class="text-gray-400 hover:text-gray-600 text-xl"
@@ -197,11 +197,14 @@ const filteredSearchUsers = computed(() => {
   return usersToFilter.filter(user => user.name.toLowerCase().includes(searchTerm));
 });
 
-const formatTime = (timestamp) => {
-  if (!timestamp) return ''
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
+// formatTime 함수를 한국 시간으로 포맷하도록 수정
+const formatTime = (isoString) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  // 한국어 로케일을 사용하여 오전/오후 HH:MM 형식으로 시간 포맷팅
+  return date.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
 
 const openCreateModal = () => {
   showCreateModal.value = true;
