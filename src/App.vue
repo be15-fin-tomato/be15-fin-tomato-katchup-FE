@@ -70,60 +70,70 @@ const openChatRoom = (room) => {
 };
 
 onMounted(async () => {
-    // 서비스워커 등록
-    if ('serviceWorker' in navigator) {
-        try {
-            await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        } catch (err) {
-            console.error('서비스워커 등록 실패:', err);
-        }
-    }
-
-    // 알림 권한 요청
-    if ('Notification' in window) {
-      if (Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          console.warn('알림 권한 거부됨');
-        }
-      } else if (Notification.permission === 'denied') {
-        console.warn('알림 권한이 브라우저에서 차단되어 있습니다. 설정에서 허용으로 바꿔주세요.');
-        return;
-      }
-    }
-
-    // Firebase 초기화 및 토큰 요청
+  // 서비스워커 등록
+  if ('serviceWorker' in navigator) {
     try {
-        const app = initializeApp(firebaseConfig);
-        const messaging = getMessaging(app);
+      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    } catch (err) {
+      console.error('서비스워커 등록 실패:', err);
+    }
+  }
 
-        const swReg = await navigator.serviceWorker.getRegistration();
-        const token = await getToken(messaging, {
-            vapidKey:
-                'BMMLYnvnj3Oy3KwROAo87cxni1ViBbTQZoyBn3roEbEDh7nEWQ1cteqhlBPv_X6vYCRTIia3S4Q4S5YMamfnz9M',
-            serviceWorkerRegistration: swReg || undefined,
-        });
+  // 알림 권한 요청
+  if ('Notification' in window) {
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.warn('알림 권한 거부됨');
+      }
+    } else if (Notification.permission === 'denied') {
+      console.warn('알림 권한이 브라우저에서 차단되어 있습니다. 설정에서 허용으로 바꿔주세요.');
+      return;
+    }
+  }
 
-        if (token) {
-            await registerFcmToken(token);
-        }
+  // Firebase 초기화 및 FCM 토큰 요청
+  try {
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
 
-        // 포그라운드 알림 수신 및 직접 Notification 표시
-        onMessage(messaging, (payload) => {
-            if (Notification.permission === 'granted' && payload.notification) {
-                const { title, body } = payload.notification;
-                new Notification(title, {
-                    body,
-                    icon: '/tomato.png',
-                });
-            }
-        });
-    } catch {
-        console.error('FCM 초기화 또는 토큰 요청 오류:');
+    const swReg = await navigator.serviceWorker.getRegistration();
+    if (!swReg) {
+      console.warn('Service Worker가 등록되지 않았습니다.');
     }
 
-    await fetchInitialChatRooms();
+    const token = await getToken(messaging, {
+      vapidKey: 'BMMLYnvnj3Oy3KwROAo87cxni1ViBbTQZoyBn3roEbEDh7nEWQ1cteqhlBPv_X6vYCRTIia3S4Q4S5YMamfnz9M',
+      serviceWorkerRegistration: swReg || undefined,
+    });
+
+    if (token) {
+      await registerFcmToken(token);
+    } else {
+      console.warn('FCM 토큰을 가져오지 못했습니다.');
+    }
+
+    // 포그라운드 알림 수신
+    onMessage(messaging, (payload) => {
+      if (Notification.permission === 'granted' && payload.notification) {
+        const { title, body } = payload.notification;
+        try {
+          new Notification(title, {
+            body,
+            icon: '/tomato.png',
+          });
+        } catch (e) {
+          console.warn('Notification 표시 중 오류:', e);
+        }
+      }
+    });
+  } catch (e) {
+    console.error('FCM 초기화 또는 토큰 요청 오류:', e);
+  }
+
+  await fetchInitialChatRooms();
 });
+
 </script>
 
 <template>
