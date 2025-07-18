@@ -7,15 +7,25 @@ firebase.initializeApp({
   messagingSenderId: "101664121020",
   projectId: "tomato-katchup",
   appId: "1:101664121020:web:525beb263a7bbdbc7530b9",
-  authDomain:"tomato-katchup.firebaseapp.com",
+  authDomain: "tomato-katchup.firebaseapp.com",
 });
 
-const messaging = firebase.messaging();
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
 
-messaging.onBackgroundMessage(payload => {
-  console.log('📦 백그라운드 메시지 수신:', payload);
-  self.registration.showNotification(payload.notification.title, {
-    body: payload.notification.body,
-    icon: '/tomato.png',
-  });
+  // 브라우저가 자동 생성한 알림에는 data.url이 없을 수도 있음
+  const targetUrl = 'https://tomato-katchup.xyz/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      for (const client of windowClients) {
+        if (client.url === targetUrl && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
 });
