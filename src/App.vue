@@ -107,7 +107,6 @@ const handleChatRoomsUpdated = async () => {
 
 const openChatRoom = (room) => {
   selectedRoom.value = room;
-  isChatListVisible.value = false;
 };
 
 const handleRoomLastSentAtUpdate = ({ chatId, lastSentAt }) => {
@@ -128,18 +127,21 @@ const toggleChatListVisibility = async () => {
 const handleGlobalClick = (event) => {
   const clickedElement = event.target;
 
-  if (chatListModalRef.value && chatListModalRef.value.$el.contains(clickedElement)) {
-    return;
-  }
-
   if (chatRoomRef.value && chatRoomRef.value.$el.contains(clickedElement)) {
     return;
   }
 
+  if (chatListModalRef.value && chatListModalRef.value.$el.contains(clickedElement)) {
+    nextTick(() => {
+      if (selectedRoom.value && chatRoomRef.value && chatRoomRef.value.$el.contains(clickedElement)) {
+      } else {
+      }
+    });
+    return;
+  }
   if (chatFloatingButtonRef.value && chatFloatingButtonRef.value.$el.contains(clickedElement)) {
     return;
   }
-
   if (isChatListVisible.value) {
     isChatListVisible.value = false;
   }
