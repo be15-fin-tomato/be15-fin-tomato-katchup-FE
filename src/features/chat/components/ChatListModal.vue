@@ -184,7 +184,6 @@ watch(() => props.chatRooms, (newRooms) => {
   } else {
     console.log('  No chat rooms or chatRooms array is empty.');
   }
-  console.log('-----------------------------------------');
 }, { immediate: true, deep: true });
 
 watch(memberSearch, async (newKeyword) => {
@@ -211,15 +210,32 @@ const filteredSearchUsers = computed(() => {
 
 const formatTime = (isoString) => {
   if (!isoString) return '';
-  const date = new Date(isoString); // MongoDB에서 넘어온 UTC ISO 문자열을 Date 객체로 파싱
+  const date = new Date(isoString);
 
-  const formatter = new Intl.DateTimeFormat('ko-KR', {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const messageDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  let datePrefix = '';
+
+  if (messageDateOnly.getTime() === today.getTime()) {
+    datePrefix = '오늘';
+  } else if (messageDateOnly.getTime() === yesterday.getTime()) {
+    datePrefix = '어제';
+  } else {
+    datePrefix = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+  }
+
+  const timeFormatter = new Intl.DateTimeFormat('ko-KR', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
     timeZone: 'Asia/Seoul'
   });
-  return formatter.format(date);
+  const formattedTime = timeFormatter.format(date);
+
+  return `${datePrefix} ${formattedTime}`;
 };
 
 
@@ -308,10 +324,9 @@ const filteredRooms = computed(() => {
   });
 
   return [...rooms].sort((a, b) => {
-    // lastSentAt이 null인 경우를 대비하여 0으로 처리 (가장 오래된 것으로 간주)
     const timeA = a.lastSentAt ? new Date(a.lastSentAt).getTime() : 0;
     const timeB = b.lastSentAt ? new Date(b.lastSentAt).getTime() : 0;
-    return timeB - timeA; // 내림차순 정렬 (최신이 위로)
+    return timeB - timeA;
   });
 });
 
