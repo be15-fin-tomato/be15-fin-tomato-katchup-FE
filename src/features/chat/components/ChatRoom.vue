@@ -241,7 +241,7 @@ const sendMessage = () => {
   const messageText = newMessage.value.trim();
   const sentAtTime = new Date().toISOString();
 
-  const tempMessageId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; // 고유한 임시 ID 생성
+  const tempMessageId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   messages.value.push({
     messageId: tempMessageId,
     chatId: props.room.chatId,

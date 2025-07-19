@@ -13,6 +13,7 @@
     <ChatFloatingButton
       @toggle="toggleChatListVisibility"
       :unreadCount="totalUnreadMessages"
+      ref="chatFloatingButtonRef"
     />
 
     <ChatListModal
@@ -127,22 +128,28 @@ const toggleChatListVisibility = async () => {
 const handleGlobalClick = (event) => {
   const clickedElement = event.target;
 
+  if (chatListModalRef.value && chatListModalRef.value.$el.contains(clickedElement)) {
+    return;
+  }
+
+  if (chatRoomRef.value && chatRoomRef.value.$el.contains(clickedElement)) {
+    return;
+  }
+
   if (chatFloatingButtonRef.value && chatFloatingButtonRef.value.$el.contains(clickedElement)) {
     return;
   }
-  if (isChatListVisible.value && chatListModalRef.value && !chatListModalRef.value.$el.contains(clickedElement)) {
+
+  if (isChatListVisible.value) {
     isChatListVisible.value = false;
   }
-  if (selectedRoom.value && chatRoomRef.value && !chatRoomRef.value.$el.contains(clickedElement)) {
-    if (!isChatListVisible.value) {
-      selectedRoom.value = null;
-    }
+  if (selectedRoom.value) {
+    selectedRoom.value = null;
   }
 };
 
-
 onMounted(async () => {
-  document.addEventListener('click', handleGlobalClick);
+  document.addEventListener('click', handleGlobalClick, true);
 
   if ('serviceWorker' in navigator) {
     try {
@@ -203,7 +210,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleGlobalClick);
+  document.removeEventListener('click', handleGlobalClick, true);
 });
 </script>
 
