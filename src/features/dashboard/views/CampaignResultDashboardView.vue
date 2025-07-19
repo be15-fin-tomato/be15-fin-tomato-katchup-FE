@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'; // onUnmounted 추가
 import { useRoute } from 'vue-router';
 
 import YoutubeAnalyticsChart from '@/features/dashboard/components/chart/YoutubeAnalyticsChart.vue';
@@ -35,6 +35,32 @@ const activePeriod = ref('주간');
 const isLoading = ref(true);
 const isError = ref(false);
 const revenueSummaryData = ref(null);
+
+// AI 스피너 관련 변수 추가
+const aiSpinnerMessage = ref('데이터를 분석 중입니다');
+const spinnerInterval = ref(null);
+const spinnerDots = ref('');
+
+const animateSpinner = () => {
+  spinnerInterval.value = setInterval(() => {
+    if (spinnerDots.value.length < 3) {
+      spinnerDots.value += '.';
+    } else {
+      spinnerDots.value = '';
+    }
+  }, 300); // 0.3초마다 점 추가/리셋
+};
+
+// 로딩 완료 또는 에러 시 스피너 애니메이션 중지
+const stopSpinner = () => {
+  if (spinnerInterval.value) {
+    clearInterval(spinnerInterval.value);
+    spinnerInterval.value = null;
+    spinnerDots.value = ''; // 점 초기화
+  }
+};
+
+
 const generateMockWeeklyData = (totalViews, publishedAt) => {
   if (!publishedAt || totalViews === undefined || totalViews === null || totalViews === 0) {
     return [];
@@ -124,12 +150,15 @@ const generateMockWeeklyData = (totalViews, publishedAt) => {
 const fetchAll = async () => {
   isLoading.value = true;
   isError.value = false;
+  animateSpinner(); // 로딩 시작 시 스피너 애니메이션 시작
+
   try {
     const currentId = campaignId.value;
 
     if (!currentId) {
       isError.value = true;
       isLoading.value = false;
+      stopSpinner(); // 로딩 종료 시 스피너 애니메이션 중지
       return;
     }
 
@@ -180,6 +209,7 @@ const fetchAll = async () => {
     } else {
       isError.value = true;
       isLoading.value = false;
+      stopSpinner(); // 로딩 종료 시 스피너 애니메이션 중지
       return;
     }
 
@@ -277,10 +307,12 @@ const fetchAll = async () => {
     console.error("Error in fetchAll:", err);
   } finally {
     isLoading.value = false;
+    stopSpinner(); // 로딩 종료 시 스피너 애니메이션 중지
   }
 };
 
 onMounted(fetchAll);
+onUnmounted(stopSpinner); // 컴포넌트 언마운트 시 스피너 애니메이션 중지
 
 watch(campaignId, (newId, oldId) => {
   if (newId !== oldId) {
@@ -326,7 +358,10 @@ const summary = computed(() => {
 
 <template>
   <div class="w-full min-h-screen flex flex-col">
-    <div v-if="isLoading" class="flex justify-center items-center w-full h-full text-lg text-blue-600 py-20">데이터를 불러오는 중입니다...</div>
+    <div v-if="isLoading" class="flex flex-col justify-center items-center w-full h-full text-lg text-blue-600 py-20">
+      <p class="text-xl font-semibold mb-4">{{ aiSpinnerMessage }}{{ spinnerDots }}</p>
+      <p class="text-gray-600">최적의 성과 분석을 위해 데이터를 꼼꼼히 살피고 있어요.</p>
+    </div>
 
     <div v-else-if="isError" class="flex justify-center items-center w-full h-full text-lg text-red-500 py-20">
       데이터를 불러오지 못했습니다. 오류가 발생했습니다.
