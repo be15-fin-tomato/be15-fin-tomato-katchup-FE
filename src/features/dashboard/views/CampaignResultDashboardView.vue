@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import YoutubeAnalyticsChart from '@/features/dashboard/components/chart/YoutubeAnalyticsChart.vue';
@@ -35,25 +35,51 @@ const activePeriod = ref('주간');
 const isLoading = ref(true);
 const isError = ref(false);
 const revenueSummaryData = ref(null);
+
+const aiSpinnerMessages = [
+  "데이터를 분석 중입니다",
+  "최신 성과를 집계 중입니다",
+  "복합적인 요소를 검토 중입니다",
+  "인사이트를 추출하고 있습니다"
+];
+const currentSpinnerMessageIndex = ref(0);
+let messageIntervalId = null;
+
+const startMessageCycle = () => {
+  if (messageIntervalId) {
+    clearInterval(messageIntervalId);
+  }
+  messageIntervalId = setInterval(() => {
+    currentSpinnerMessageIndex.value = (currentSpinnerMessageIndex.value + 1) % aiSpinnerMessages.length;
+  }, 3000);
+};
+
+const stopMessageCycle = () => {
+  if (messageIntervalId) {
+    clearInterval(messageIntervalId);
+    messageIntervalId = null;
+    currentSpinnerMessageIndex.value = 0;
+  }
+};
+
+
 const generateMockWeeklyData = (totalViews, publishedAt) => {
   if (!publishedAt || totalViews === undefined || totalViews === null || totalViews === 0) {
     return [];
   }
 
   const publishedDate = new Date(publishedAt);
-  publishedDate.setHours(0, 0, 0, 0); // 날짜 정확도를 위해 시간 초기화
+  publishedDate.setHours(0, 0, 0, 0);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 영상 업로드일로부터 현재까지 며칠이 지났는지 계산 (게시일 포함)
   const timeDiff = today.getTime() - publishedDate.getTime();
   const daysPassedIncludingToday = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1;
 
-  // 차트에 표시할 데이터 길이: 영상 업로드 후 최대 7일, 또는 현재까지의 일수 중 작은 값
   const dataLength = Math.min(daysPassedIncludingToday, 7);
 
-  if (dataLength <= 0) { // 게시일이 미래이거나 계산 오류 등으로 0일 이하가 되면 빈 배열 반환
+  if (dataLength <= 0) {
     return [];
   }
 
@@ -124,12 +150,15 @@ const generateMockWeeklyData = (totalViews, publishedAt) => {
 const fetchAll = async () => {
   isLoading.value = true;
   isError.value = false;
+  startMessageCycle();
+
   try {
     const currentId = campaignId.value;
 
     if (!currentId) {
       isError.value = true;
       isLoading.value = false;
+      stopMessageCycle();
       return;
     }
 
@@ -180,6 +209,7 @@ const fetchAll = async () => {
     } else {
       isError.value = true;
       isLoading.value = false;
+      stopMessageCycle();
       return;
     }
 
@@ -192,7 +222,7 @@ const fetchAll = async () => {
           statistics: {
             commentCount: youtubeContentApiData.metrics?.commentCount || 0,
             likeCount: youtubeContentApiData.metrics?.likeCount || 0,
-            viewCount: youtubeContentApiData.metrics?.viewCount || 0, // 중요: 총 조회수
+            viewCount: youtubeContentApiData.metrics?.viewCount || 0,
             clickCount: youtubeContentApiData.metrics?.clickCount || (100 + (parseInt(currentId) * 5))
           },
           title: youtubeContentApiData.videoTitle || "영상 제목 (API에 없음)",
@@ -204,7 +234,6 @@ const fetchAll = async () => {
       }
     } catch (contentError) {
       youtubeMeta.value = null;
-      console.error("Error fetching campaign content:", contentError);
     }
 
     try {
@@ -216,7 +245,6 @@ const fetchAll = async () => {
       }
     } catch (revenueError) {
       revenueSummaryData.value = null;
-      console.error("Error fetching campaign revenue:", revenueError);
     }
 
     try {
@@ -259,28 +287,27 @@ const fetchAll = async () => {
     } catch (searchError) {
       naverSearchDataRows.value = [];
       googleTrendsData.value = null;
-      console.error("Error fetching search data:", searchError);
     }
 
-    // youtubeMeta가 설정된 후에 주간 데이터 생성
     if (youtubeMeta.value && youtubeMeta.value.statistics?.viewCount !== undefined) {
       youtubeAnalyticsRows.value = generateMockWeeklyData(
         youtubeMeta.value.statistics.viewCount,
         youtubeMeta.value.publishedAt
       );
     } else {
-      youtubeAnalyticsRows.value = []; // 데이터가 없거나 조회수가 없으면 빈 배열
+      youtubeAnalyticsRows.value = [];
     }
 
   } catch (err) {
     isError.value = true;
-    console.error("Error in fetchAll:", err);
   } finally {
     isLoading.value = false;
+    stopMessageCycle();
   }
 };
 
 onMounted(fetchAll);
+onUnmounted(stopMessageCycle);
 
 watch(campaignId, (newId, oldId) => {
   if (newId !== oldId) {
@@ -326,7 +353,11 @@ const summary = computed(() => {
 
 <template>
   <div class="w-full min-h-screen flex flex-col">
-    <div v-if="isLoading" class="flex justify-center items-center w-full h-full text-lg text-blue-600 py-20">데이터를 불러오는 중입니다...</div>
+    <div v-if="isLoading" class="flex flex-col justify-center items-center w-full h-full text-lg text-blue-600 py-20">
+      <div class="ai-spinner mb-4"></div>
+      <p class="text-xl font-semibold mb-2 text-gray-800">{{ aiSpinnerMessages[currentSpinnerMessageIndex] }}</p>
+      <p class="text-gray-600 text-base">최적의 성과 분석을 위해 데이터를 꼼꼼히 살피고 있어요.</p>
+    </div>
 
     <div v-else-if="isError" class="flex justify-center items-center w-full h-full text-lg text-red-500 py-20">
       데이터를 불러오지 못했습니다. 오류가 발생했습니다.

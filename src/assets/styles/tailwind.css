@@ -228,4 +228,11 @@
     transform: translateX(calc(279px - 100%));
   }
 
+  .ai-spinner {
+    @apply w-[50px] h-[50px] rounded-full;
+    border: 4px solid rgba(0, 123, 255, 0.2);
+    border-top: 4px solid #007bff;
+    animation: spin 1s linear infinite, glow 1.5s ease-in-out infinite alternate;
+  }
+
 }
