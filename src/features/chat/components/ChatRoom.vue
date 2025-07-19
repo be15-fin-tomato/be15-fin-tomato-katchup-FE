@@ -177,7 +177,6 @@ const fetchMessages = async () => {
 const connectWebSocket = () => {
   const token = authStore.accessToken
   if (!token) {
-    console.error('토큰 없음: WebSocket 연결 실패');
     toast.error('채팅 서버 연결에 필요한 인증 정보가 없습니다.');
     return;
   }
@@ -193,7 +192,6 @@ const connectWebSocket = () => {
       Authorization: `Bearer ${token}`,
     },
     onConnect: () => {
-      console.log('🟢 WebSocket 연결 성공')
       client.subscribe(`/topic/room.${props.room.chatId}`, (msg) => {
         const body = JSON.parse(msg.body)
 
@@ -208,7 +206,6 @@ const connectWebSocket = () => {
             lastSentAt: body.sentAt
           });
         } else {
-          console.log(`[ChatRoom] Message with ID ${body.messageId} already exists. Skipping add.`);
         }
 
         nextTick(() => {
@@ -217,11 +214,9 @@ const connectWebSocket = () => {
       })
     },
     onStompError: (frame) => {
-      console.error('STOMP 오류 발생:', frame)
       toast.error('채팅 서버 연결 중 오류가 발생했습니다.');
     },
     onDisconnect: () => {
-      console.log('🔴 WebSocket 연결 해제됨');
     }
   })
 
@@ -286,7 +281,6 @@ const handleInvite = async (invitedIds) => {
     memberList.value = Array.from(updatedMembers);
 
   } catch (e) {
-    console.error('초대 실패:', e)
     toast.error('멤버 초대 중 오류가 발생했습니다.');
   }
 }
@@ -296,7 +290,6 @@ const loadAllUsers = async () => {
     const res = await searchUser('')
     allUsers.value = res.userList
   } catch (err) {
-    console.error('사용자 목록 불러오기 실패:', err)
     toast.error('사용자 목록을 불러오는 데 실패했습니다.');
   }
 }
@@ -316,7 +309,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stompClient.value?.deactivate()
-  console.log('🔴 WebSocket 연결 해제 완료 (onBeforeUnmount)')
 })
 </script>
 
