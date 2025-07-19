@@ -182,7 +182,6 @@ watch(() => props.chatRooms, (newRooms) => {
       console.log(`  Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
     });
   } else {
-    console.log('  No chat rooms or chatRooms array is empty.');
   }
 }, { immediate: true, deep: true });
 
@@ -212,20 +211,10 @@ const formatTime = (isoString) => {
   if (!isoString) return '';
   const date = new Date(isoString);
 
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  const messageDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-  let datePrefix = '';
-
-  if (messageDateOnly.getTime() === today.getTime()) {
-    datePrefix = '오늘';
-  } else if (messageDateOnly.getTime() === yesterday.getTime()) {
-    datePrefix = '어제';
-  } else {
-    datePrefix = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-  }
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 월은 0부터 시작
+  const day = date.getDate().toString().padStart(2, '0');
+  const formattedDate = `${year}.${month}.${day}`;
 
   const timeFormatter = new Intl.DateTimeFormat('ko-KR', {
     hour: 'numeric',
@@ -235,9 +224,8 @@ const formatTime = (isoString) => {
   });
   const formattedTime = timeFormatter.format(date);
 
-  return `${datePrefix} ${formattedTime}`;
+  return `${formattedDate} ${formattedTime}`;
 };
-
 
 const openCreateModal = () => {
   showCreateModal.value = true;
@@ -317,8 +305,6 @@ const filteredRooms = computed(() => {
       return titleMatch || memberMatch;
     });
   }
-
-  console.log('--- ChatList: Filtering and Sorting Rooms ---');
   rooms.forEach(room => {
     console.log(`  Before sort: Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
   });
@@ -383,6 +369,5 @@ const handleMouseLeave = () => {
 };
 
 </script>
-
 <style scoped>
 </style>

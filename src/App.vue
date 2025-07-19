@@ -10,6 +10,7 @@ import ChatListModal from '@/features/chat/components/ChatListModal.vue';
 import ChatRoom from '@/features/chat/components/ChatRoom.vue';
 import { fetchChatRoomList } from '@/features/chat/api';
 import Header from '@/components/layout/Header.vue';
+import { useAuthStore } from '@/stores/auth'; // useAuthStore 임포트 추가
 
 const route = useRoute();
 const isNoLayout = computed(() => route.meta.useLayout === 'none');
@@ -22,9 +23,12 @@ const firebaseConfig = {
   appId: '1:101664121020:web:525beb263a7bbdbc7530b9',
 };
 
+const authStore = useAuthStore();
+const currentUserId = computed(() => authStore.userId);
+
 const isChatListVisible = ref(false);
 const selectedRoom = ref(null);
-const chatRooms = ref([]); // ChatListModal에 전달될 채팅방 목록
+const chatRooms = ref([]);
 
 const totalUnreadMessages = computed(() => {
   return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
@@ -69,14 +73,17 @@ const openChatRoom = (room) => {
 };
 
 const handleRoomLastSentAtUpdate = ({ chatId, lastSentAt }) => {
-  console.log(`--- App.vue: Received lastSentAt update from ChatRoom ---`);
-  console.log(`  Chat ID: ${chatId}, New lastSentAt: ${lastSentAt}`);
 
   const roomIndex = chatRooms.value.findIndex(room => room.id === chatId);
   if (roomIndex !== -1) {
     chatRooms.value[roomIndex].lastSentAt = lastSentAt;
     chatRooms.value = [...chatRooms.value];
-  } else {
+  }
+};
+const toggleChatListVisibility = async () => {
+  isChatListVisible.value = !isChatListVisible.value;
+  if (isChatListVisible.value) {
+    await fetchInitialChatRooms();
   }
 };
 
@@ -90,7 +97,6 @@ onMounted(async () => {
     }
   }
 
-  // 알림 권한 요청
   if ('Notification' in window) {
     if (Notification.permission === 'default') {
       const permission = await Notification.requestPermission();
@@ -102,8 +108,6 @@ onMounted(async () => {
       return;
     }
   }
-
-  // Firebase 초기화 및 FCM 토큰 요청
   try {
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
@@ -136,13 +140,13 @@ onMounted(async () => {
           console.warn('Notification 표시 중 오류:', e);
         }
       }
+      console.log('--- App.vue: FCM message received in foreground. Refetching chat rooms. ---');
       fetchInitialChatRooms();
     });
   } catch (e) {
     console.error('FCM 초기화 또는 토큰 요청 오류:', e);
   }
 
-  await fetchInitialChatRooms();
 });
 
 </script>
@@ -160,8 +164,8 @@ onMounted(async () => {
     </div>
 
     <ChatFloatingButton
-      @toggle="isChatListVisible = !isChatListVisible"
-      :unreadCount="totalUnreadMessages"
+      @toggle="toggleChatListVisibility"
+    :unreadCount="totalUnreadMessages"
     />
 
     <ChatListModal
