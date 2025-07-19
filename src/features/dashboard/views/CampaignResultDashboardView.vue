@@ -204,6 +204,12 @@ const fetchAll = async () => {
         subscribers: 0,
         thumbnail: `https://via.placeholder.com/130?text=${currentCampaign.influencerName}`,
         tags: [],
+        youtube: {
+          accountId: null,
+          name: null,
+          subscriber: null,
+          thumbnailUrl: null
+        }
       };
 
     } else {
@@ -229,6 +235,11 @@ const fetchAll = async () => {
           description: youtubeContentApiData.videoDescription || "영상 설명 (API에 없음)",
           publishedAt: youtubeContentApiData.publishedAt || "2025-05-18T00:00:00Z"
         };
+
+        if (influencer.value && youtubeMeta.value.thumbnail) {
+          influencer.value.youtube.thumbnailUrl = youtubeMeta.value.thumbnail;
+        }
+
       } else {
         youtubeMeta.value = null;
       }

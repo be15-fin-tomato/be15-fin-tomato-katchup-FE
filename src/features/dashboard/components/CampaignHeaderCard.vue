@@ -13,18 +13,14 @@ const props = defineProps({
 const router = useRouter();
 const toast = useToast();
 
-// Computed 속성: 캠페인 이름 (없으면 '-')
 const campaignTitle = computed(() => props.campaign?.name ?? '-');
-// Computed 속성: 클라이언트 회사 이름 (없으면 '-')
 const clientCompany = computed(() => props.campaign?.clientCompanyName ?? '-');
-// Computed 속성: 제품 이름 (없으면 '-')
 const productName = computed(() => props.campaign?.productName ?? '-');
 
-// Computed 속성: 캠페인 등록 날짜를 'YYYY-MM-DD' 형식으로 표시
 const displayDate = computed(() => {
   const date = props.campaign?.registrationDate;
   if (date) {
-    return date.split('T')[0]; // 날짜 부분만 추출
+    return date.split('T')[0];
   }
   return '-';
 });
