@@ -1,5 +1,42 @@
+<template>
+  <div v-if="isNoLayout">
+    <router-view />
+  </div>
+  <div v-else>
+    <div class="w-full min-h-screen bg-background flex flex-col font-sans">
+      <Header />
+      <div class="flex flex-1 flex-col p-16 mt-10">
+        <router-view class="flex-1 w-full" />
+      </div>
+    </div>
+
+    <ChatFloatingButton
+      @toggle="toggleChatListVisibility"
+      :unreadCount="totalUnreadMessages"
+    />
+
+    <ChatListModal
+      v-if="isChatListVisible"
+      :chatRooms="chatRooms"
+      @close="isChatListVisible = false"
+      @open-room="openChatRoom"
+      @room-opened="handleRoomOpened"
+      @chat-rooms-changed="handleChatRoomsUpdated"
+      ref="chatListModalRef"
+    />
+
+    <ChatRoom
+      v-if="selectedRoom"
+      :room="selectedRoom"
+      @close="selectedRoom = null"
+      @room-updated-last-sent-at="handleRoomLastSentAtUpdate"
+      ref="chatRoomRef"
+    />
+  </div>
+</template>
+
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { registerFcmToken } from '@/features/user/api.js';
 import { initializeApp } from 'firebase/app';
@@ -10,7 +47,7 @@ import ChatListModal from '@/features/chat/components/ChatListModal.vue';
 import ChatRoom from '@/features/chat/components/ChatRoom.vue';
 import { fetchChatRoomList } from '@/features/chat/api';
 import Header from '@/components/layout/Header.vue';
-import { useAuthStore } from '@/stores/auth'; // useAuthStore 임포트 추가
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const isNoLayout = computed(() => route.meta.useLayout === 'none');
@@ -30,6 +67,10 @@ const isChatListVisible = ref(false);
 const selectedRoom = ref(null);
 const chatRooms = ref([]);
 
+const chatListModalRef = ref(null);
+const chatRoomRef = ref(null);
+const chatFloatingButtonRef = ref(null);
+
 const totalUnreadMessages = computed(() => {
   return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
 });
@@ -46,14 +87,10 @@ const fetchInitialChatRooms = async () => {
       lastSentAt: room.lastSentAt ?? null,
       unreadCount: room.unreadCount ?? 0,
     }));
-    chatRooms.value.forEach(room => {
-      console.log(`  Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
-    });
   } catch (e) {
     console.error('초기 채팅방 목록 불러오기 실패', e);
   }
 };
-
 
 const handleRoomOpened = (chatId) => {
   const roomIndex = chatRooms.value.findIndex((room) => room.id === chatId);
@@ -73,13 +110,13 @@ const openChatRoom = (room) => {
 };
 
 const handleRoomLastSentAtUpdate = ({ chatId, lastSentAt }) => {
-
   const roomIndex = chatRooms.value.findIndex(room => room.id === chatId);
   if (roomIndex !== -1) {
     chatRooms.value[roomIndex].lastSentAt = lastSentAt;
     chatRooms.value = [...chatRooms.value];
   }
 };
+
 const toggleChatListVisibility = async () => {
   isChatListVisible.value = !isChatListVisible.value;
   if (isChatListVisible.value) {
@@ -87,8 +124,26 @@ const toggleChatListVisibility = async () => {
   }
 };
 
+const handleGlobalClick = (event) => {
+  const clickedElement = event.target;
+
+  if (chatFloatingButtonRef.value && chatFloatingButtonRef.value.$el.contains(clickedElement)) {
+    return;
+  }
+  if (isChatListVisible.value && chatListModalRef.value && !chatListModalRef.value.$el.contains(clickedElement)) {
+    isChatListVisible.value = false;
+  }
+  if (selectedRoom.value && chatRoomRef.value && !chatRoomRef.value.$el.contains(clickedElement)) {
+    if (!isChatListVisible.value) {
+      selectedRoom.value = null;
+    }
+  }
+};
+
+
 onMounted(async () => {
-  // 서비스워커 등록
+  document.addEventListener('click', handleGlobalClick);
+
   if ('serviceWorker' in navigator) {
     try {
       await navigator.serviceWorker.register('/firebase-messaging-sw.js');
@@ -140,51 +195,17 @@ onMounted(async () => {
           console.warn('Notification 표시 중 오류:', e);
         }
       }
-      console.log('--- App.vue: FCM message received in foreground. Refetching chat rooms. ---');
       fetchInitialChatRooms();
     });
   } catch (e) {
     console.error('FCM 초기화 또는 토큰 요청 오류:', e);
   }
-
 });
 
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleGlobalClick);
+});
 </script>
-
-<template>
-  <div v-if="isNoLayout">
-    <router-view />
-  </div>
-  <div v-else>
-    <div class="w-full min-h-screen bg-background flex flex-col font-sans">
-      <Header />
-      <div class="flex flex-1 flex-col p-16 mt-10">
-        <router-view class="flex-1 w-full" />
-      </div>
-    </div>
-
-    <ChatFloatingButton
-      @toggle="toggleChatListVisibility"
-    :unreadCount="totalUnreadMessages"
-    />
-
-    <ChatListModal
-      v-if="isChatListVisible"
-      :chatRooms="chatRooms"
-      @close="isChatListVisible = false"
-      @open-room="openChatRoom"
-      @room-opened="handleRoomOpened"
-      @chat-rooms-changed="handleChatRoomsUpdated"
-    />
-
-    <ChatRoom
-      v-if="selectedRoom"
-      :room="selectedRoom"
-      @close="selectedRoom = null"
-      @room-updated-last-sent-at="handleRoomLastSentAtUpdate"
-    />
-  </div>
-</template>
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
