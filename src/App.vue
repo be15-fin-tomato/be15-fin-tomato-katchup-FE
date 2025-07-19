@@ -23,7 +23,7 @@
       @open-room="openChatRoom"
       @room-opened="handleRoomOpened"
       @chat-rooms-changed="handleChatRoomsUpdated"
-      ref="chatListModalRef"
+      :chatFloatingButtonRef="chatFloatingButtonRef" ref="chatListModalRef"
     />
 
     <ChatRoom
@@ -48,7 +48,7 @@ import ChatListModal from '@/features/chat/components/ChatListModal.vue';
 import ChatRoom from '@/features/chat/components/ChatRoom.vue';
 import { fetchChatRoomList } from '@/features/chat/api';
 import Header from '@/components/layout/Header.vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } => '@/stores/auth';
 
 const route = useRoute();
 const isNoLayout = computed(() => route.meta.useLayout === 'none');
@@ -70,7 +70,7 @@ const chatRooms = ref([]);
 
 const chatListModalRef = ref(null);
 const chatRoomRef = ref(null);
-const chatFloatingButtonRef = ref(null);
+const chatFloatingButtonRef = ref(null); // ChatFloatingButton의 ref 선언
 
 const totalUnreadMessages = computed(() => {
   return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
@@ -89,6 +89,7 @@ const fetchInitialChatRooms = async () => {
       unreadCount: room.unreadCount ?? 0,
     }));
   } catch (e) {
+    console.error('Failed to fetch initial chat rooms:', e); // 에러 로깅 추가
   }
 };
 
@@ -124,12 +125,11 @@ const toggleChatListVisibility = async () => {
 };
 
 onMounted(async () => {
-  // document.addEventListener('click', handleGlobalClick, true); // 이벤트 리스너도 제거합니다.
-
   if ('serviceWorker' in navigator) {
     try {
       await navigator.serviceWorker.register('/firebase-messaging-sw.js');
     } catch (err) {
+      console.error('Service Worker registration failed:', err); // 에러 로깅 추가
     }
   }
 
@@ -137,8 +137,10 @@ onMounted(async () => {
     if (Notification.permission === 'default') {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
+        console.warn('Notification permission not granted.'); // 경고 로깅 추가
       }
     } else if (Notification.permission === 'denied') {
+      console.warn('Notification permission denied.'); // 경고 로깅 추가
       return;
     }
   }
@@ -148,6 +150,7 @@ onMounted(async () => {
 
     const swReg = await navigator.serviceWorker.getRegistration();
     if (!swReg) {
+      console.warn('Service Worker registration not found for FCM.'); // 경고 로깅 추가
     }
 
     const token = await getToken(messaging, {
@@ -158,6 +161,7 @@ onMounted(async () => {
     if (token) {
       await registerFcmToken(token);
     } else {
+      console.warn('FCM token not available.');
     }
 
     onMessage(messaging, (payload) => {
@@ -169,6 +173,7 @@ onMounted(async () => {
             icon: '/tomato.png',
           });
         } catch (e) {
+          console.error('Error showing notification:', e);
         }
       }
       fetchInitialChatRooms();
