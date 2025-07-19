@@ -25,28 +25,16 @@ const campaignId = computed(() => route.params.id || '1');
 const campaign = ref(null);
 const influencer = ref(null);
 const youtubeAnalyticsRows = ref([]);
-const youtubeMeta = ref(null); // 이 youtubeMeta에 publishedAt과 viewCount가 중요합니다.
+const youtubeMeta = ref(null);
 const naverSearchDataRows = ref([]);
 const googleTrendsData = ref(null);
 
 const activeMetric = ref('조회수');
-const activePeriod = ref('주간'); // 주간으로 고정
+const activePeriod = ref('주간');
 
 const isLoading = ref(true);
 const isError = ref(false);
 const revenueSummaryData = ref(null);
-
-// --- 모의 데이터 생성 함수 (상승세 패턴으로 다시 수정) ---
-
-/**
- * 총 조회수와 게시일을 기반으로 가짜 주간 데이터를 생성합니다.
- * 영상 게시일로부터 정확히 7일간의 데이터를 현실적인 분포와 변동성을 반영하여 생성합니다.
- * 영상이 업로드된 지 7일이 채 안 되었다면, 현재까지의 일수만큼만 데이터를 생성합니다.
- *
- * @param {number} totalViews - 영상의 총 조회수 (전체 기간 조회수)
- * @param {string} publishedAt - 영상의 게시일 문자열 (예: "2025-05-18T00:00:00Z")
- * @returns {Array<Object>} 각 날짜별 조회수, 댓글, 좋아요, 클릭수를 포함하는 배열
- */
 const generateMockWeeklyData = (totalViews, publishedAt) => {
   if (!publishedAt || totalViews === undefined || totalViews === null || totalViews === 0) {
     return [];
@@ -70,25 +58,14 @@ const generateMockWeeklyData = (totalViews, publishedAt) => {
   }
 
   const rows = [];
+  const viewsForThisPeriod = totalViews;
 
-  // 데이터 분배 로직 (상승세 후 완만한 변화, 랜덤 변동성 추가)
-  // `totalViews`는 영상 전체 기간의 총 조회수이므로, 이 `dataLength` 기간에 해당하는
-  // 조회수를 적절히 가정해야 합니다. (예: 총 조회수의 80%)
-  // 여기서는 이 `totalViews`가 차트에 보여줄 '7일간의 예상 총 조회수'로 가정하고 분배합니다.
-  const viewsForThisPeriod = totalViews; // 7일간의 총 조회수를 totalViews로 직접 사용
+  const baseDistributionPattern = [0.08, 0.12, 0.18, 0.17, 0.16, 0.15, 0.14];
 
-  // 7일치 가중치: [1일차, 2일차, ..., 7일차]
-  // 첫날보다 둘째, 셋째 날이 더 높고, 이후 서서히 완만해지거나 소폭 상승하는 패턴
-  // 합계가 1.0이 되도록 조정
-  const baseDistributionPattern = [0.08, 0.12, 0.18, 0.17, 0.16, 0.15, 0.14]; // 합계: 1.0 (대략)
-
-  // `dataLength`에 맞춰 가중치를 조정 (예: 4일치만 필요하면 앞의 4개 가중치만 사용하고 합이 1이 되도록 재조정)
   let actualPattern = baseDistributionPattern.slice(0, dataLength);
   const sumActualPattern = actualPattern.reduce((sum, weight) => sum + weight, 0);
 
-  // 가중치 합이 0이거나 NaN이면 방어
   if (sumActualPattern === 0 || isNaN(sumActualPattern)) {
-    // 이 경우, 최소한의 데이터를 균등하게라도 배분
     for (let i = 0; i < dataLength; i++) {
       const currentDay = new Date(publishedDate);
       currentDay.setDate(publishedDate.getDate() + i);
@@ -102,20 +79,19 @@ const generateMockWeeklyData = (totalViews, publishedAt) => {
     }
     return rows;
   }
-  actualPattern = actualPattern.map(weight => weight / sumActualPattern); // 합이 1이 되도록 정규화
+  actualPattern = actualPattern.map(weight => weight / sumActualPattern);
 
   let dailyViews = [];
   let currentViewsSum = 0;
 
   for (let i = 0; i < dataLength; i++) {
     const currentDay = new Date(publishedDate);
-    currentDay.setDate(publishedDate.getDate() + i); // 게시일로부터 i일 후의 날짜
+    currentDay.setDate(publishedDate.getDate() + i);
 
     let dayViewAmount = Math.floor(viewsForThisPeriod * actualPattern[i]);
 
-    // 랜덤 변동성 추가 (±8% 범위로 더욱 축소하여 완만한 상승세를 명확히 표현)
-    dayViewAmount = Math.floor(dayViewAmount * (1 + (Math.random() - 0.5) * 0.16)); // -8% ~ +8%
-    if (dayViewAmount < 0) dayViewAmount = 0; // 음수 방지
+    dayViewAmount = Math.floor(dayViewAmount * (1 + (Math.random() - 0.5) * 0.16));
+    if (dayViewAmount < 0) dayViewAmount = 0;
 
     dailyViews.push({
       date: `${currentDay.getMonth() + 1}/${currentDay.getDate()}`,
@@ -124,22 +100,20 @@ const generateMockWeeklyData = (totalViews, publishedAt) => {
     currentViewsSum += dayViewAmount;
   }
 
-  // 총합 보존: 계산된 일별 조회수의 합이 viewsForThisPeriod와 정확히 일치하도록 마지막 날 조정
   const diff = viewsForThisPeriod - currentViewsSum;
   if (dataLength > 0) {
     dailyViews[dataLength - 1].views += diff;
     if (dailyViews[dataLength - 1].views < 0) dailyViews[dataLength - 1].views = 0;
   }
 
-  // 최종 rows 배열 생성 (views와 함께 다른 지표들 추가)
   for (const dayData of dailyViews) {
     const views = dayData.views;
     rows.push({
       date: dayData.date,
       views: views,
-      comments: Math.floor(views * (0.0001 + (Math.random() * 0.00005))), // 0.01% ~ 0.015%
-      likes: Math.floor(views * (0.001 + (Math.random() * 0.0002))),     // 0.1% ~ 0.12%
-      clicks: Math.floor(views * (0.05 + (Math.random() * 0.01))),       // 5% ~ 6%
+      comments: Math.floor(views * (0.0001 + (Math.random() * 0.00005))),
+      likes: Math.floor(views * (0.001 + (Math.random() * 0.0002))),
+      clicks: Math.floor(views * (0.05 + (Math.random() * 0.01))),
     });
   }
 
@@ -223,7 +197,7 @@ const fetchAll = async () => {
           },
           title: youtubeContentApiData.videoTitle || "영상 제목 (API에 없음)",
           description: youtubeContentApiData.videoDescription || "영상 설명 (API에 없음)",
-          publishedAt: youtubeContentApiData.publishedAt || "2025-05-18T00:00:00Z" // **예시: 2025년 5월 18일로 강제 설정 (실제 API 값 사용 권장)**
+          publishedAt: youtubeContentApiData.publishedAt || "2025-05-18T00:00:00Z"
         };
       } else {
         youtubeMeta.value = null;
