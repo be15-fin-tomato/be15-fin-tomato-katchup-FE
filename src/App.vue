@@ -1,377 +1,189 @@
 <template>
-  <div
-    class="fixed bottom-24 right-6 w-[420px] max-h-[600px]
-       bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col font-[Pretendard]">
-
-    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-      <h2 class="text-lg font-bold text-[--color-click]">채팅 리스트</h2>
-      <button
-        @click="openCreateModal"
-        class="text-[--color-request] text-2xl hover:brightness-110"
-      >+</button>
-    </div>
-
-    <div class="px-6 py-3 border-b border-gray-100">
-      <input
-        v-model="search"
-        type="text"
-        placeholder="제목, 이름 검색"
-        class="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[--color-request]"
-      />
-    </div>
-
-    <ul class="flex-1 overflow-y-auto divide-y divide-gray-100 px-1">
-      <li
-        v-for="room in filteredRooms"
-        :key="room.id"
-        class="flex justify-between items-center px-5 py-4 hover:bg-gray-50 transition relative cursor-pointer"
-        @click="handleOpenRoom(room.id)"
-      >
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-sm">
-            {{ room.name?.charAt(0) || '?' }}
-          </div>
-          <div class="flex flex-col">
-            <div
-              :data-room-id="room.id"
-              class="flex items-center gap-2 font-semibold text-[--color-click] text-sm"
-              @mouseenter="handleMouseEnter($event, room.id, room.name)"
-              @mouseleave="handleMouseLeave"
-            >
-              <span class="truncate max-w-[150px] inline-block">{{ room.name }}</span>
-              <span class="text-gray-400 text-xs flex items-center gap-1">👥 {{ room.members ?? '-' }}</span>
-            </div>
-            <p class="text-xs text-gray-500 truncate max-w-[240px]">
-              {{ room.lastMessage }}
-            </p>
-          </div>
-        </div>
-        <div class="flex flex-col items-end gap-1 min-w-[64px]">
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400">{{ formatTime(room.lastSentAt) }}</span>
-            <button
-              @click.stop="confirmLeave(room)"
-              class="text-gray-400 hover:text-gray-600 text-xl"
-            >⋯</button>
-          </div>
-          <span
-            v-if="room.unreadCount > 0"
-            class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full"
-          >
-            {{ room.unreadCount }}
-          </span>
-        </div>
-      </li>
-    </ul>
-
-    <div class="p-3 border-t border-gray-100 text-center">
-      <button
-        class="w-8 h-8 rounded-full bg-[--color-request] text-white text-xl shadow hover:brightness-110 transition"
-        @click="openCreateModal"
-      >+</button>
-    </div>
-
-    <div
-      v-if="showCreateModal"
-      class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-     w-[360px] bg-white shadow-lg border rounded-xl p-6 z-[999]"
-    >
-      <h3 class="text-md font-semibold mb-4">새 채팅방 만들기</h3>
-      <input
-        v-model="newRoomName"
-        type="text"
-        placeholder="채팅방 이름을 입력하세요 (선택 사항)"
-        class="w-full mb-3 px-3 py-2 border border-gray-300 rounded text-sm"
-      />
-      <input
-        v-model="memberSearch"
-        type="text"
-        placeholder="이름 검색"
-        class="w-full mb-3 px-3 py-2 border border-gray-300 rounded text-sm"
-      />
-      <ul class="max-h-40 overflow-y-auto mb-4 pr-1">
-        <li
-          v-for="member in filteredSearchUsers"
-          :key="member.id"
-          class="flex justify-between items-center py-1 px-2 hover:bg-gray-100 rounded"
-        >
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-white font-bold">
-              {{ member.name.charAt(0) }}
-            </div>
-            <span class="text-sm">{{ member.name }}</span>
-          </div>
-          <input type="checkbox" v-model="selectedMembers" :value="member.id" />
-        </li>
-      </ul>
-      <div class="flex justify-end gap-2">
-        <button class="px-4 py-2 text-sm border rounded" @click="closeCreateModal">취소</button>
-        <button class="px-4 py-2 text-sm border rounded" @click="handleCreate">생성</button>
-      </div>
-    </div>
-
-    <div
-      v-if="selectedRoomToLeave"
-      class="absolute inset-0 bg-white bg-opacity-90 flex justify-center items-center z-10"
-    >
-      <div class="bg-white border rounded-xl p-6 shadow-lg text-center">
-        <p class="mb-6">
-          <strong class="font-semibold">{{ selectedRoomToLeave.name }}</strong>
-          채팅방에서 나가시겠습니까?
-        </p>
-        <div class="flex justify-center gap-3">
-          <button class="px-4 py-2 text-sm border border-gray-300 rounded" @click="selectedRoomToLeave = null">
-            취소
-          </button>
-          <button class="px-4 py-2 text-sm border border-gray-300 rounded" @click="leaveRoom">
-            나가기
-          </button>
-        </div>
-      </div>
-    </div>
+  <div v-if="isNoLayout">
+    <router-view />
   </div>
-
-  <teleport to="body">
-    <div
-      v-if="showTooltip && tooltipContent"
-      :style="tooltipStyle"
-      class="fixed px-4 py-2 bg-gray-100 text-gray-800 text-sm rounded-lg shadow-md z-[1000] whitespace-nowrap pointer-events-none border border-gray-200"
-    >
-      {{ tooltipContent }}
+  <div v-else>
+    <div class="w-full min-h-screen bg-background flex flex-col font-sans">
+      <Header />
+      <div class="flex flex-1 flex-col p-16 mt-10">
+        <router-view class="flex-1 w-full" />
+      </div>
     </div>
-  </teleport>
+
+    <ChatFloatingButton
+      @toggle="toggleChatListVisibility"
+      :unreadCount="totalUnreadMessages"
+      ref="chatFloatingButtonRef"
+    />
+
+    <ChatListModal
+      v-if="isChatListVisible"
+      :chatRooms="chatRooms"
+      @close="isChatListVisible = false"
+      @open-room="openChatRoom"
+      @room-opened="handleRoomOpened"
+      @chat-rooms-changed="handleChatRoomsUpdated"
+      ref="chatListModalRef"
+    />
+
+    <ChatRoom
+      v-if="selectedRoom"
+      :room="selectedRoom"
+      @close="selectedRoom = null"
+      @room-updated-last-sent-at="handleRoomLastSentAtUpdate"
+      ref="chatRoomRef"
+    />
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
-import { exitChatRoom, fetchChatRoomDetail, createChatRoom, searchUser } from '@/features/chat/api'
-import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'vue-toastification';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { registerFcmToken } from '@/features/user/api.js';
+import { initializeApp } from 'firebase/app';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
-const props = defineProps({
-  chatRooms: {
-    type: Array,
-    default: () => []
-  }
-})
+import ChatFloatingButton from '@/components/common/ChatFloatingButton.vue';
+import ChatListModal from '@/features/chat/components/ChatListModal.vue';
+import ChatRoom from '@/features/chat/components/ChatRoom.vue';
+import { fetchChatRoomList } from '@/features/chat/api';
+import Header from '@/components/layout/Header.vue';
+import { useAuthStore } from '@/stores/auth';
 
-const emit = defineEmits(['close', 'open-room', 'invite-user', 'room-opened', 'chat-rooms-changed'])
+const route = useRoute();
+const isNoLayout = computed(() => route.meta.useLayout === 'none');
 
-const search = ref('')
-const showCreateModal = ref(false)
-const selectedRoomToLeave = ref(null)
-const newRoomName = ref('')
-const memberSearch = ref('')
-const selectedMembers = ref([])
-
-const allSearchUsers = ref([]);
+const firebaseConfig = {
+  apiKey: 'AIzaSyBOnX8kKdcvIdtdwJ2O4-mbQwxaQGuZtwA',
+  authDomain: 'tomato-katchup.firebaseapp.com',
+  projectId: 'tomato-katchup',
+  messagingSenderId: '101664121020',
+  appId: '1:101664121020:web:525beb263a7bbdbc7530b9',
+};
 
 const authStore = useAuthStore();
 const currentUserId = computed(() => authStore.userId);
 
-const showTooltip = ref(false);
-const tooltipContent = ref('');
-const tooltipStyle = ref({});
+const isChatListVisible = ref(false);
+const selectedRoom = ref(null);
+const chatRooms = ref([]);
 
-const toast = useToast();
+const chatListModalRef = ref(null);
+const chatRoomRef = ref(null);
+const chatFloatingButtonRef = ref(null);
 
-watch(() => props.chatRooms, (newRooms) => {
-  if (newRooms && newRooms.length > 0) {
-  } else {
-  }
-}, { immediate: true, deep: true });
-
-watch(memberSearch, async (newKeyword) => {
-  try {
-    const result = await searchUser(newKeyword);
-    allSearchUsers.value = result?.userList || [];
-  } catch (error) {
-    allSearchUsers.value = [];
-    toast.error('사용자 검색에 실패했습니다.');
-  }
-}, { immediate: true });
-
-const filteredSearchUsers = computed(() => {
-  const usersToFilter = allSearchUsers.value.filter(
-    user => user.id !== currentUserId.value
-  );
-
-  if (!memberSearch.value) return usersToFilter;
-
-  const searchTerm = memberSearch.value.toLowerCase();
-  return usersToFilter.filter(user => user.name.toLowerCase().includes(searchTerm));
+const totalUnreadMessages = computed(() => {
+  return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
 });
 
-const formatTime = (isoString) => {
-  if (!isoString) return '';
-  const date = new Date(isoString);
-  const now = new Date();
-
-  const isToday = date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  const isYesterday = date.getDate() === yesterday.getDate() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getFullYear() === yesterday.getFullYear();
-
-  let formattedDate;
-  if (isToday) {
-    formattedDate = '오늘';
-  } else if (isYesterday) {
-    formattedDate = '어제';
-  } else {
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    formattedDate = `${month}.${day}`;
+const fetchInitialChatRooms = async () => {
+  try {
+    const res = await fetchChatRoomList();
+    chatRooms.value = res.map((room) => ({
+      id: room.chatId,
+      name: room.name,
+      members: room.participants?.length ?? 0,
+      participants: room.participants || [],
+      lastMessage: room.lastMessage ?? '',
+      lastSentAt: room.lastSentAt ?? null,
+      unreadCount: room.unreadCount ?? 0,
+    }));
+  } catch (e) {
   }
-
-  const timeFormatter = new Intl.DateTimeFormat('ko-KR', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Seoul'
-  });
-  const formattedTime = timeFormatter.format(date);
-
-  return `${formattedDate} ${formattedTime}`;
 };
 
-const openCreateModal = () => {
-  showCreateModal.value = true;
-  newRoomName.value = '';
-  selectedMembers.value = [];
-}
+const handleRoomOpened = (chatId) => {
+  const roomIndex = chatRooms.value.findIndex((room) => room.id === chatId);
+  if (roomIndex !== -1) {
+    chatRooms.value[roomIndex].unreadCount = 0;
+    chatRooms.value = [...chatRooms.value];
+  }
+};
 
-const closeCreateModal = () => {
-  showCreateModal.value = false;
-  newRoomName.value = '';
-  selectedMembers.value = [];
-  memberSearch.value = '';
-}
+const handleChatRoomsUpdated = async () => {
+  await fetchInitialChatRooms();
+};
 
-const handleCreate = async () => {
-  if (selectedMembers.value.length === 0) {
-    toast.warning('채팅방에 참여할 멤버를 한 명 이상 선택해주세요.');
-    return;
+const openChatRoom = (room) => {
+  selectedRoom.value = room;
+};
+
+const handleRoomLastSentAtUpdate = ({ chatId, lastSentAt }) => {
+  const roomIndex = chatRooms.value.findIndex(room => room.id === chatId);
+  if (roomIndex !== -1) {
+    chatRooms.value[roomIndex].lastSentAt = lastSentAt;
+    chatRooms.value = [...chatRooms.value];
+  }
+};
+
+const toggleChatListVisibility = async () => {
+  isChatListVisible.value = !isChatListVisible.value;
+  if (isChatListVisible.value) {
+    await fetchInitialChatRooms();
+  }
+};
+
+onMounted(async () => {
+  // document.addEventListener('click', handleGlobalClick, true); // 이벤트 리스너도 제거합니다.
+
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    } catch (err) {
+    }
   }
 
-  let participantIds = [...selectedMembers.value];
-
-  if (currentUserId.value && !participantIds.includes(currentUserId.value)) {
-    participantIds.push(currentUserId.value);
-  }
-
-  try {
-    await createChatRoom(newRoomName.value, participantIds);
-    toast.success('채팅방이 성공적으로 생성되었습니다!');
-
-    closeCreateModal();
-    emit('chat-rooms-changed');
-
-  } catch (error) {
-    toast.error('채팅방 생성에 실패했습니다.');
-  }
-}
-
-const confirmLeave = (room) => {
-  selectedRoomToLeave.value = room
-}
-
-const leaveRoom = async () => {
-  if (!selectedRoomToLeave.value) return;
-
-  const userId = authStore.userId;
-
-  if (!userId) {
-    toast.error('로그인 정보가 없어 채팅방을 나갈 수 없습니다.');
-    return;
-  }
-
-  try {
-    await exitChatRoom(selectedRoomToLeave.value.id, userId);
-    selectedRoomToLeave.value = null;
-    toast.info('채팅방을 나갔습니다.');
-
-    emit('chat-rooms-changed');
-  } catch (error) {
-    toast.error('채팅방 나가기에 실패했습니다.');
-    throw error;
-  }
-}
-
-const filteredRooms = computed(() => {
-  let rooms = props.chatRooms;
-
-  if (search.value) {
-    const keyword = search.value.toLowerCase();
-    rooms = rooms.filter((room) => {
-      const titleMatch = room.name?.toLowerCase().includes(keyword);
-      const memberMatch = room.participants?.some(p => p.name?.toLowerCase().includes(keyword));
-      return titleMatch || memberMatch;
-    });
-  }
-
-  return [...rooms].sort((a, b) => {
-    const timeA = a.lastSentAt ? new Date(a.lastSentAt).getTime() : 0;
-    const timeB = b.lastSentAt ? new Date(b.lastSentAt).getTime() : 0;
-    return timeB - timeA;
-  });
-});
-
-const handleOpenRoom = async (chatId) => {
-  try {
-    const roomDetail = await fetchChatRoomDetail(chatId);
-
-    emit('room-opened', chatId);
-
-    const chatRoomMeta = props.chatRooms.find(room => room.id === chatId);
-    if (!roomDetail || !roomDetail.messages || !chatRoomMeta) {
-      toast.error('채팅방 정보를 불러오는데 실패했습니다');
+  if ('Notification' in window) {
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+      }
+    } else if (Notification.permission === 'denied') {
       return;
     }
+  }
+  try {
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
 
-    emit('open-room', {
-      chatId: roomDetail.chatId,
-      messages: roomDetail.messages,
-      chatRoomName: chatRoomMeta?.name ?? '채팅방',
-      participants: chatRoomMeta.participants
+    const swReg = await navigator.serviceWorker.getRegistration();
+    if (!swReg) {
+    }
+
+    const token = await getToken(messaging, {
+      vapidKey: 'BMMLYnvnj3Oy3KwROAo87cxni1ViBbTQZoyBn3roEbEDh7nEWQ1cteqhlBPv_X6vYCRTIia3S4Q4S5YMamfnz9M',
+      serviceWorkerRegistration: swReg || undefined,
     });
 
-  } catch (e) {
-    toast.error('채팅방을 여는 데 실패했습니다.');
-  }
-}
-
-const handleMouseEnter = (event, roomId, content) => {
-  const targetElement = event.currentTarget;
-  const rect = targetElement.getBoundingClientRect();
-
-  tooltipContent.value = content;
-  showTooltip.value = true;
-
-  nextTick(() => {
-    const tooltipElement = document.querySelector('.fixed.px-4.py-2.bg-gray-100');
-    if (tooltipElement) {
-      const tooltipWidth = tooltipElement.offsetWidth;
-      const tooltipHeight = tooltipElement.offsetHeight;
-
-      tooltipStyle.value = {
-        left: `${rect.left + rect.width / 2 - tooltipWidth / 2}px`,
-        top: `${rect.top - tooltipHeight - 8}px`,
-      };
+    if (token) {
+      await registerFcmToken(token);
+    } else {
     }
-  });
-};
 
-const handleMouseLeave = () => {
-  showTooltip.value = false;
-  tooltipContent.value = '';
-  tooltipStyle.value = {};
-};
+    onMessage(messaging, (payload) => {
+      if (Notification.permission === 'granted' && payload.notification) {
+        const { title, body } = payload.notification;
+        try {
+          new Notification(title, {
+            body,
+            icon: '/tomato.png',
+          });
+        } catch (e) {
+        }
+      }
+      fetchInitialChatRooms();
+    });
+  } catch (e) {
+  }
+});
 
+onBeforeUnmount(() => {
+});
 </script>
+
 <style scoped>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+* {
+  font-family: 'Pretendard Variable', sans-serif;
+}
 </style>
