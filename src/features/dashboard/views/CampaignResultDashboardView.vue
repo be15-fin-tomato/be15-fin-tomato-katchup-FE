@@ -206,13 +206,13 @@ const fetchAll = async () => {
         tags: [],
         youtube: {
           accountId: null,
-          name: null,
+          name: currentCampaign.influencerName,
           subscriber: null,
           thumbnailUrl: null
         }
       };
 
-    console.log('1. Dashboard: influencer 초기화 후', influencer.value);
+      console.log('1. Dashboard: campaign 및 influencer 초기화 후', { campaign: campaign.value, influencer: influencer.value });
 
     } else {
       isError.value = true;
@@ -238,18 +238,20 @@ const fetchAll = async () => {
           publishedAt: youtubeContentApiData.publishedAt || "2025-05-18T00:00:00Z"
         };
 
-      console.log('2. Dashboard: youtubeMeta.thumbnail 값', youtubeMeta.value.thumbnail);
-
-        if (influencer.value && youtubeMeta.value.thumbnail) {
-          influencer.value.youtube.thumbnailUrl = youtubeMeta.value.thumbnail;
+        if (influencer.value) {
+          influencer.value.thumbnail = youtubeContentApiData.channelThumbnailUrl; // 채널 썸네일로 업데이트
+          influencer.value.youtube.thumbnailUrl = youtubeContentApiData.channelThumbnailUrl; // youtube 객체 내 썸네일도 업데이트
+          // influencer.value.youtube.subscriber는 CampaignContentResponse에 직접적으로 없으므로 여기선 업데이트 안함
         }
 
-      console.log('3. Dashboard: influencer.youtube.thumbnailUrl 할당 후', influencer.value.youtube.thumbnailUrl);
+        console.log('2. Dashboard: youtubeMeta 값 설정 후', youtubeMeta.value);
+        console.log('3. Dashboard: influencer.youtube.thumbnailUrl 및 influencer.thumbnail 할당 후', { influencerThumbnail: influencer.value.thumbnail, youtubeThumbnailUrl: influencer.value.youtube.thumbnailUrl });
 
       } else {
         youtubeMeta.value = null;
       }
     } catch (contentError) {
+      console.error('Error fetching youtube content data:', contentError);
       youtubeMeta.value = null;
     }
 
@@ -261,6 +263,7 @@ const fetchAll = async () => {
         revenueSummaryData.value = null;
       }
     } catch (revenueError) {
+      console.error('Error fetching revenue data:', revenueError);
       revenueSummaryData.value = null;
     }
 
@@ -302,6 +305,7 @@ const fetchAll = async () => {
       }
 
     } catch (searchError) {
+      console.error('Error fetching search ratio data:', searchError);
       naverSearchDataRows.value = [];
       googleTrendsData.value = null;
     }
@@ -316,6 +320,7 @@ const fetchAll = async () => {
     }
 
   } catch (err) {
+    console.error('Error in fetchAll:', err);
     isError.value = true;
   } finally {
     isLoading.value = false;
