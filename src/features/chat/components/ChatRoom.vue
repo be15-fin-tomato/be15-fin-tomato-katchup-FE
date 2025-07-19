@@ -11,9 +11,10 @@
     </div>
 
     <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4 bg-[#f8fafc]">
-      <div v-for="(msg, index) in formattedMessages" :key="msg.messageId || index"> <div v-if="shouldShowDateDivider(msg, index)" class="text-center text-xs text-gray-500 my-2">
-        {{ msg.formattedDate }}
-      </div>
+      <div v-for="(msg, index) in formattedMessages" :key="msg.messageId || index">
+        <div v-if="shouldShowDateDivider(msg, index)" class="text-center text-xs text-gray-500 my-2">
+          {{ msg.formattedDate }}
+        </div>
 
         <div
           :class="['flex flex-col', msg.mine ? 'items-end ml-auto pr-2' : 'items-start']"
@@ -74,7 +75,7 @@ import { useToast } from 'vue-toastification';
 const props = defineProps({
   room: { type: Object, required: true },
 })
-const emit = defineEmits(['close', 'room-updated-last-sent-at']); // 새로운 emit 이벤트 추가
+const emit = defineEmits(['close', 'room-updated-last-sent-at']);
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.userId)
@@ -165,14 +166,10 @@ const fetchMessages = async () => {
     }))
     if (messages.value.length > 0) {
       const lastMsg = messages.value[messages.value.length - 1];
-      console.log(`--- ChatRoom: Initial messages loaded for room ${props.room.chatId} ---`);
-      console.log(`  Last message sent at: ${lastMsg.sentAt}`);
-      console.log('----------------------------------------------------');
     }
     await nextTick();
     scrollToBottom();
   } catch (err) {
-    console.error('채팅방 메시지 불러오기 실패:', err)
     toast.error('채팅 메시지를 불러오는 데 실패했습니다.');
   }
 }
@@ -206,13 +203,12 @@ const connectWebSocket = () => {
             ...body,
             mine: body.senderId === currentUserId.value,
           });
-          console.log(`--- ChatRoom: Emitting room-updated-last-sent-at (WebSocket received) ---`);
-          console.log(`  Chat ID: ${props.room.chatId}, New lastSentAt: ${body.sentAt}`);
-          console.log('--------------------------------------------------------------------');
           emit('room-updated-last-sent-at', {
             chatId: props.room.chatId,
             lastSentAt: body.sentAt
           });
+        } else {
+          console.log(`[ChatRoom] Message with ID ${body.messageId} already exists. Skipping add.`);
         }
 
         nextTick(() => {
@@ -242,19 +238,37 @@ const sendMessage = () => {
     return;
   }
 
+  const messageText = newMessage.value.trim();
+  const sentAtTime = new Date().toISOString();
+
+  const tempMessageId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; // 고유한 임시 ID 생성
+  messages.value.push({
+    messageId: tempMessageId,
+    chatId: props.room.chatId,
+    senderId: currentUserId.value,
+    senderName: currentUserName.value,
+    message: messageText,
+    sentAt: sentAtTime,
+    mine: true,
+  });
+
+  newMessage.value = '';
+
   const messagePayload = {
     chatId: props.room.chatId,
     senderId: currentUserId.value,
     senderName: currentUserName.value,
-    message: newMessage.value,
+    message: messageText,
   }
 
   stompClient.value.publish({
     destination: '/app/chat.sendMessage',
     body: JSON.stringify(messagePayload),
   })
-
-  newMessage.value = ''
+  emit('room-updated-last-sent-at', {
+    chatId: props.room.chatId,
+    lastSentAt: sentAtTime
+  });
 
   nextTick(() => {
     scrollToBottom();
