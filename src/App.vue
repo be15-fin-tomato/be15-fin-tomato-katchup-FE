@@ -23,7 +23,8 @@
       @open-room="openChatRoom"
       @room-opened="handleRoomOpened"
       @chat-rooms-changed="handleChatRoomsUpdated"
-      :chatFloatingButtonRef="chatFloatingButtonRef" ref="chatListModalRef"
+      :chatFloatingButtonRef="chatFloatingButtonRef"
+      ref="chatListModalRef"
     />
 
     <ChatRoom
@@ -48,7 +49,7 @@ import ChatListModal from '@/features/chat/components/ChatListModal.vue';
 import ChatRoom from '@/features/chat/components/ChatRoom.vue';
 import { fetchChatRoomList } from '@/features/chat/api';
 import Header from '@/components/layout/Header.vue';
-import { useAuthStore } => '@/stores/auth';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const isNoLayout = computed(() => route.meta.useLayout === 'none');
@@ -70,7 +71,7 @@ const chatRooms = ref([]);
 
 const chatListModalRef = ref(null);
 const chatRoomRef = ref(null);
-const chatFloatingButtonRef = ref(null); // ChatFloatingButton의 ref 선언
+const chatFloatingButtonRef = ref(null);
 
 const totalUnreadMessages = computed(() => {
   return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
@@ -89,7 +90,7 @@ const fetchInitialChatRooms = async () => {
       unreadCount: room.unreadCount ?? 0,
     }));
   } catch (e) {
-    console.error('Failed to fetch initial chat rooms:', e); // 에러 로깅 추가
+    // 에러 처리
   }
 };
 
@@ -129,7 +130,7 @@ onMounted(async () => {
     try {
       await navigator.serviceWorker.register('/firebase-messaging-sw.js');
     } catch (err) {
-      console.error('Service Worker registration failed:', err); // 에러 로깅 추가
+      // 에러 처리
     }
   }
 
@@ -137,10 +138,9 @@ onMounted(async () => {
     if (Notification.permission === 'default') {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        console.warn('Notification permission not granted.'); // 경고 로깅 추가
+        // 권한 거부 처리
       }
     } else if (Notification.permission === 'denied') {
-      console.warn('Notification permission denied.'); // 경고 로깅 추가
       return;
     }
   }
@@ -150,7 +150,7 @@ onMounted(async () => {
 
     const swReg = await navigator.serviceWorker.getRegistration();
     if (!swReg) {
-      console.warn('Service Worker registration not found for FCM.'); // 경고 로깅 추가
+      // 서비스 워커 미등록 처리
     }
 
     const token = await getToken(messaging, {
@@ -161,7 +161,7 @@ onMounted(async () => {
     if (token) {
       await registerFcmToken(token);
     } else {
-      console.warn('FCM token not available.');
+      // 토큰 없음 처리
     }
 
     onMessage(messaging, (payload) => {
@@ -173,12 +173,13 @@ onMounted(async () => {
             icon: '/tomato.png',
           });
         } catch (e) {
-          console.error('Error showing notification:', e);
+          // 알림 표시 에러 처리
         }
       }
       fetchInitialChatRooms();
     });
   } catch (e) {
+    // Firebase 초기화 또는 FCM 설정 에러 처리
   }
 });
 
