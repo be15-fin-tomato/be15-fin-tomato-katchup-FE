@@ -15,58 +15,69 @@ const route = useRoute();
 const isNoLayout = computed(() => route.meta.useLayout === 'none');
 
 const firebaseConfig = {
-    apiKey: 'AIzaSyBOnX8kKdcvIdtdwJ2O4-mbQwxaQGuZtwA',
-    authDomain: 'tomato-katchup.firebaseapp.com',
-    projectId: 'tomato-katchup',
-    messagingSenderId: '101664121020',
-    appId: '1:101664121020:web:525beb263a7bbdbc7530b9',
+  apiKey: 'AIzaSyBOnX8kKdcvIdtdwJ2O4-mbQwxaQGuZtwA',
+  authDomain: 'tomato-katchup.firebaseapp.com',
+  projectId: 'tomato-katchup',
+  messagingSenderId: '101664121020',
+  appId: '1:101664121020:web:525beb263a7bbdbc7530b9',
 };
 
 const isChatListVisible = ref(false);
 const selectedRoom = ref(null);
-const chatRooms = ref([]);
+const chatRooms = ref([]); // ChatListModal에 전달될 채팅방 목록
 
 const totalUnreadMessages = computed(() => {
-    return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
+  return chatRooms.value.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
 });
 
 const fetchInitialChatRooms = async () => {
-    try {
-        const res = await fetchChatRoomList();
-        chatRooms.value = res.map((room) => ({
-            id: room.chatId,
-            name: room.name,
-            members: room.participants?.length ?? 0,
-            participants: room.participants || [],
-            lastMessage: room.lastMessage ?? '',
-            time: formatTime(room.lastSentAt),
-            unreadCount: room.unreadCount ?? 0,
-        }));
-    } catch (e) {
-        console.error('초기 채팅방 목록 불러오기 실패', e);
-    }
+  try {
+    const res = await fetchChatRoomList();
+    chatRooms.value = res.map((room) => ({
+      id: room.chatId,
+      name: room.name,
+      members: room.participants?.length ?? 0,
+      participants: room.participants || [],
+      lastMessage: room.lastMessage ?? '',
+      lastSentAt: room.lastSentAt ?? null,
+      unreadCount: room.unreadCount ?? 0,
+    }));
+    chatRooms.value.forEach(room => {
+      console.log(`  Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
+    });
+  } catch (e) {
+    console.error('초기 채팅방 목록 불러오기 실패', e);
+  }
 };
 
-const formatTime = (timestamp) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
 
 const handleRoomOpened = (chatId) => {
-    const roomIndex = chatRooms.value.findIndex((room) => room.id === chatId);
-    if (roomIndex !== -1) {
-        chatRooms.value[roomIndex].unreadCount = 0;
-    }
+  const roomIndex = chatRooms.value.findIndex((room) => room.id === chatId);
+  if (roomIndex !== -1) {
+    chatRooms.value[roomIndex].unreadCount = 0;
+    chatRooms.value = [...chatRooms.value];
+  }
 };
 
 const handleChatRoomsUpdated = async () => {
-    await fetchInitialChatRooms();
+  await fetchInitialChatRooms();
 };
 
 const openChatRoom = (room) => {
-    selectedRoom.value = room;
-    isChatListVisible.value = false;
+  selectedRoom.value = room;
+  isChatListVisible.value = false;
+};
+
+const handleRoomLastSentAtUpdate = ({ chatId, lastSentAt }) => {
+  console.log(`--- App.vue: Received lastSentAt update from ChatRoom ---`);
+  console.log(`  Chat ID: ${chatId}, New lastSentAt: ${lastSentAt}`);
+
+  const roomIndex = chatRooms.value.findIndex(room => room.id === chatId);
+  if (roomIndex !== -1) {
+    chatRooms.value[roomIndex].lastSentAt = lastSentAt;
+    chatRooms.value = [...chatRooms.value];
+  } else {
+  }
 };
 
 onMounted(async () => {
@@ -113,7 +124,6 @@ onMounted(async () => {
       console.warn('FCM 토큰을 가져오지 못했습니다.');
     }
 
-    // 포그라운드 알림 수신
     onMessage(messaging, (payload) => {
       if (Notification.permission === 'granted' && payload.notification) {
         const { title, body } = payload.notification;
@@ -126,6 +136,7 @@ onMounted(async () => {
           console.warn('Notification 표시 중 오류:', e);
         }
       }
+      fetchInitialChatRooms();
     });
   } catch (e) {
     console.error('FCM 초기화 또는 토큰 요청 오류:', e);
@@ -137,38 +148,43 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div v-if="isNoLayout">
-        <router-view />
+  <div v-if="isNoLayout">
+    <router-view />
+  </div>
+  <div v-else>
+    <div class="w-full min-h-screen bg-background flex flex-col font-sans">
+      <Header />
+      <div class="flex flex-1 flex-col p-16 mt-10">
+        <router-view class="flex-1 w-full" />
+      </div>
     </div>
-    <div v-else>
-        <div class="w-full min-h-screen bg-background flex flex-col font-sans">
-            <Header />
-            <div class="flex flex-1 flex-col p-16 mt-10">
-                <router-view class="flex-1 w-full" />
-            </div>
-        </div>
 
-        <ChatFloatingButton
-            @toggle="isChatListVisible = !isChatListVisible"
-            :unreadCount="totalUnreadMessages"
-        />
+    <ChatFloatingButton
+      @toggle="isChatListVisible = !isChatListVisible"
+      :unreadCount="totalUnreadMessages"
+    />
 
-        <ChatListModal
-            v-if="isChatListVisible"
-            :chatRooms="chatRooms"
-            @close="isChatListVisible = false"
-            @open-room="openChatRoom"
-            @room-opened="handleRoomOpened"
-            @chat-rooms-changed="handleChatRoomsUpdated"
-        />
+    <ChatListModal
+      v-if="isChatListVisible"
+      :chatRooms="chatRooms"
+      @close="isChatListVisible = false"
+      @open-room="openChatRoom"
+      @room-opened="handleRoomOpened"
+      @chat-rooms-changed="handleChatRoomsUpdated"
+    />
 
-        <ChatRoom v-if="selectedRoom" :room="selectedRoom" @close="selectedRoom = null" />
-    </div>
+    <ChatRoom
+      v-if="selectedRoom"
+      :room="selectedRoom"
+      @close="selectedRoom = null"
+      @room-updated-last-sent-at="handleRoomLastSentAtUpdate"
+    />
+  </div>
 </template>
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
 * {
-    font-family: 'Pretendard Variable', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 </style>

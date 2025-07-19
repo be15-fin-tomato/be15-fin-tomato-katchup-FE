@@ -1,7 +1,7 @@
 <template>
   <div class="fixed bottom-10 right-10 w-[480px] h-[600px] bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col z-50 font-[Pretendard]">
     <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
-      <h2 class="text-lg font-semibold text-[--color-click]">{{ room.chatRoomName || '채팅방' }}</h2>
+      <h2 class="text-lg font-semibold text-[--color-click]">{{ props.room.chatRoomName || '채팅방' }}</h2>
       <div class="flex items-center gap-3">
         <button @click="showInviteModal = true" class="text-[--color-request] text-xl hover:brightness-110">+</button>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition">
@@ -11,10 +11,9 @@
     </div>
 
     <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4 bg-[#f8fafc]">
-      <div v-for="(msg, index) in formattedMessages" :key="index">
-        <div v-if="shouldShowDateDivider(msg, index)" class="text-center text-xs text-gray-500 my-2">
-          {{ msg.formattedDate }}
-        </div>
+      <div v-for="(msg, index) in formattedMessages" :key="msg.messageId || index"> <div v-if="shouldShowDateDivider(msg, index)" class="text-center text-xs text-gray-500 my-2">
+        {{ msg.formattedDate }}
+      </div>
 
         <div
           :class="['flex flex-col', msg.mine ? 'items-end ml-auto pr-2' : 'items-start']"
@@ -54,7 +53,7 @@
     <InviteModal
       v-if="showInviteModal"
       :users="allUsers"
-      :room="room"
+      :room="props.room"
       :excluded-ids="currentMemberIds"
       @invite="handleInvite"
       @close="showInviteModal = false"
@@ -63,11 +62,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
-import api from '@/plugin/axios.js'
 import { useAuthStore } from '@/stores/auth'
 import { fetchChatRoomDetail, inviteChatMembers, searchUser } from '@/features/chat/api'
 import InviteModal from '@/features/chat/components/InviteModal.vue'
@@ -76,10 +74,7 @@ import { useToast } from 'vue-toastification';
 const props = defineProps({
   room: { type: Object, required: true },
 })
-const room = props.room
-// ❌ 이 줄이 문제였습니다: const emit = emits(['close'])
-// ✅ 올바른 Vue 3 Composition API 방식입니다.
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'room-updated-last-sent-at']); // 새로운 emit 이벤트 추가
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.userId)
@@ -92,7 +87,11 @@ const stompClient = ref(null)
 const showInviteModal = ref(false)
 const allUsers = ref([])
 
-const memberList = ref(props.room.participants || [])
+const memberList = ref([]);
+watch(() => props.room.participants, (newParticipants) => {
+  memberList.value = newParticipants || [];
+}, { immediate: true });
+
 
 const toast = useToast();
 
@@ -164,6 +163,12 @@ const fetchMessages = async () => {
       ...m,
       mine: m.senderId === currentUserId.value,
     }))
+    if (messages.value.length > 0) {
+      const lastMsg = messages.value[messages.value.length - 1];
+      console.log(`--- ChatRoom: Initial messages loaded for room ${props.room.chatId} ---`);
+      console.log(`  Last message sent at: ${lastMsg.sentAt}`);
+      console.log('----------------------------------------------------');
+    }
     await nextTick();
     scrollToBottom();
   } catch (err) {
@@ -180,6 +185,10 @@ const connectWebSocket = () => {
     return;
   }
 
+  if (stompClient.value && stompClient.value.connected) {
+    stompClient.value.deactivate();
+  }
+
   const socket = new SockJS(`https://api.tomato-katchup.xyz/api/v1/ws?token=${token}`)
   const client = new Client({
     webSocketFactory: () => socket,
@@ -191,17 +200,21 @@ const connectWebSocket = () => {
       client.subscribe(`/topic/room.${props.room.chatId}`, (msg) => {
         const body = JSON.parse(msg.body)
 
-        // --- 프론트엔드 콘솔 로그 추가 ---
-        console.log('--- Received WebSocket Message ---');
-        console.log('Full Message Body:', body);
-        console.log('Sender Name:', body.senderName); // 수신된 메시지의 senderName 확인
-        console.log('---------------------------------');
-        // ------------------------------------
+        const exists = messages.value.some(m => m.messageId === body.messageId);
+        if (!exists) {
+          messages.value.push({
+            ...body,
+            mine: body.senderId === currentUserId.value,
+          });
+          console.log(`--- ChatRoom: Emitting room-updated-last-sent-at (WebSocket received) ---`);
+          console.log(`  Chat ID: ${props.room.chatId}, New lastSentAt: ${body.sentAt}`);
+          console.log('--------------------------------------------------------------------');
+          emit('room-updated-last-sent-at', {
+            chatId: props.room.chatId,
+            lastSentAt: body.sentAt
+          });
+        }
 
-        messages.value.push({
-          ...body,
-          mine: body.senderId === currentUserId.value,
-        })
         nextTick(() => {
           scrollToBottom();
         });
@@ -211,6 +224,9 @@ const connectWebSocket = () => {
       console.error('STOMP 오류 발생:', frame)
       toast.error('채팅 서버 연결 중 오류가 발생했습니다.');
     },
+    onDisconnect: () => {
+      console.log('🔴 WebSocket 연결 해제됨');
+    }
   })
 
   client.activate()
@@ -219,7 +235,6 @@ const connectWebSocket = () => {
 
 const sendMessage = () => {
   if (!newMessage.value.trim()) {
-    toast.warning('메시지를 입력해주세요.');
     return;
   }
   if (!stompClient.value?.connected) {
@@ -253,7 +268,7 @@ const handleInvite = async (invitedIds) => {
     showInviteModal.value = false
 
     const newlyInvitedMembers = allUsers.value.filter(user => invitedIds.includes(user.id));
-    const updatedMembers = new Set([...memberList.value, ...newlyInvitedMembers]);
+    const updatedMembers = new Set([...memberList.value, ...newlyInvitedMembers.map(m => ({ userId: m.id, name: m.name }))]);
     memberList.value = Array.from(updatedMembers);
 
   } catch (e) {
@@ -287,6 +302,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stompClient.value?.deactivate()
+  console.log('🔴 WebSocket 연결 해제 완료 (onBeforeUnmount)')
 })
 </script>
 
