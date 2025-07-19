@@ -212,6 +212,8 @@ const fetchAll = async () => {
         }
       };
 
+    console.log('1. Dashboard: influencer 초기화 후', influencer.value);
+
     } else {
       isError.value = true;
       isLoading.value = false;
@@ -236,9 +238,13 @@ const fetchAll = async () => {
           publishedAt: youtubeContentApiData.publishedAt || "2025-05-18T00:00:00Z"
         };
 
+      console.log('2. Dashboard: youtubeMeta.thumbnail 값', youtubeMeta.value.thumbnail);
+
         if (influencer.value && youtubeMeta.value.thumbnail) {
           influencer.value.youtube.thumbnailUrl = youtubeMeta.value.thumbnail;
         }
+
+      console.log('3. Dashboard: influencer.youtube.thumbnailUrl 할당 후', influencer.value.youtube.thumbnailUrl);
 
       } else {
         youtubeMeta.value = null;
