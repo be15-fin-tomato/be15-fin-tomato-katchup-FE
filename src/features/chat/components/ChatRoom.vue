@@ -77,7 +77,7 @@ const props = defineProps({
   room: { type: Object, required: true },
 })
 const room = props.room
-const emit = defineEmits(['close'])
+const emit = emits(['close']) // Changed from 'emit' to 'emits' for consistency with Vue 3 setup script
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.userId)
@@ -122,17 +122,16 @@ const formatMessageTime = (isoString) => {
     datePrefix = `${messageDate.getFullYear()}년 ${messageDate.getMonth() + 1}월 ${messageDate.getDate()}일`;
   }
 
-  // 이 부분을 수정합니다: Intl.DateTimeFormat을 사용하여 한국 시간대로 포맷
   const formattedTime = new Intl.DateTimeFormat('ko-KR', {
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true, // 오전/오후 사용
-    timeZone: 'Asia/Seoul' // 명시적으로 한국 시간대 지정
+    hour12: true,
+    timeZone: 'Asia/Seoul'
   }).format(messageDate);
 
   return {
     formattedDate: datePrefix,
-    formattedTime: formattedTime // 수정된 포맷된 시간 반환
+    formattedTime: formattedTime
   };
 };
 
@@ -189,6 +188,14 @@ const connectWebSocket = () => {
       console.log('🟢 WebSocket 연결 성공')
       client.subscribe(`/topic/room.${props.room.chatId}`, (msg) => {
         const body = JSON.parse(msg.body)
+
+        // --- 프론트엔드 콘솔 로그 추가 ---
+        console.log('--- Received WebSocket Message ---');
+        console.log('Full Message Body:', body);
+        console.log('Sender Name:', body.senderName); // 수신된 메시지의 senderName 확인
+        console.log('---------------------------------');
+        // ------------------------------------
+
         messages.value.push({
           ...body,
           mine: body.senderId === currentUserId.value,
