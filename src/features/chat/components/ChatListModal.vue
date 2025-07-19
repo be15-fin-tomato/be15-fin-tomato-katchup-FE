@@ -1,8 +1,9 @@
 <template>
   <div
     class="fixed bottom-24 right-6 w-[420px] max-h-[600px]
-       bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col font-[Pretendard]">
-
+       bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col font-[Pretendard]"
+    ref="chatListModalContentRef"
+  >
     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
       <h2 class="text-lg font-bold text-[--color-click]">채팅 리스트</h2>
       <button
@@ -75,6 +76,7 @@
       v-if="showCreateModal"
       class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
      w-[360px] bg-white shadow-lg border rounded-xl p-6 z-[999]"
+      @click.stop
     >
       <h3 class="text-md font-semibold mb-4">새 채팅방 만들기</h3>
       <input
@@ -113,6 +115,7 @@
     <div
       v-if="selectedRoomToLeave"
       class="absolute inset-0 bg-white bg-opacity-90 flex justify-center items-center z-10"
+      @click.stop
     >
       <div class="bg-white border rounded-xl p-6 shadow-lg text-center">
         <p class="mb-6">
@@ -143,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { exitChatRoom, fetchChatRoomDetail, createChatRoom, searchUser } from '@/features/chat/api'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification';
@@ -152,6 +155,10 @@ const props = defineProps({
   chatRooms: {
     type: Array,
     default: () => []
+  },
+  chatFloatingButtonRef: {
+    type: Object,
+    default: null
   }
 })
 
@@ -174,6 +181,8 @@ const tooltipContent = ref('');
 const tooltipStyle = ref({});
 
 const toast = useToast();
+
+const chatListModalContentRef = ref(null);
 
 watch(() => props.chatRooms, (newRooms) => {
   if (newRooms && newRooms.length > 0) {
@@ -372,6 +381,22 @@ const handleMouseLeave = () => {
   tooltipStyle.value = {};
 };
 
+const handleOutsideClick = (event) => {
+  if (props.chatFloatingButtonRef && props.chatFloatingButtonRef.$el.contains(event.target)) {
+    return;
+  }
+  if (chatListModalContentRef.value && !chatListModalContentRef.value.contains(event.target)) {
+    emit('close');
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleOutsideClick);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleOutsideClick);
+});
 </script>
 <style scoped>
 </style>

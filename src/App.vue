@@ -23,6 +23,7 @@
       @open-room="openChatRoom"
       @room-opened="handleRoomOpened"
       @chat-rooms-changed="handleChatRoomsUpdated"
+      :chatFloatingButtonRef="chatFloatingButtonRef"
       ref="chatListModalRef"
     />
 
@@ -89,6 +90,7 @@ const fetchInitialChatRooms = async () => {
       unreadCount: room.unreadCount ?? 0,
     }));
   } catch (e) {
+    // 에러 처리
   }
 };
 
@@ -124,12 +126,11 @@ const toggleChatListVisibility = async () => {
 };
 
 onMounted(async () => {
-  // document.addEventListener('click', handleGlobalClick, true); // 이벤트 리스너도 제거합니다.
-
   if ('serviceWorker' in navigator) {
     try {
       await navigator.serviceWorker.register('/firebase-messaging-sw.js');
     } catch (err) {
+      // 에러 처리
     }
   }
 
@@ -137,6 +138,7 @@ onMounted(async () => {
     if (Notification.permission === 'default') {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
+        // 권한 거부 처리
       }
     } else if (Notification.permission === 'denied') {
       return;
@@ -148,6 +150,7 @@ onMounted(async () => {
 
     const swReg = await navigator.serviceWorker.getRegistration();
     if (!swReg) {
+      // 서비스 워커 미등록 처리
     }
 
     const token = await getToken(messaging, {
@@ -158,6 +161,7 @@ onMounted(async () => {
     if (token) {
       await registerFcmToken(token);
     } else {
+      // 토큰 없음 처리
     }
 
     onMessage(messaging, (payload) => {
@@ -169,11 +173,13 @@ onMounted(async () => {
             icon: '/tomato.png',
           });
         } catch (e) {
+          // 알림 표시 에러 처리
         }
       }
       fetchInitialChatRooms();
     });
   } catch (e) {
+    // Firebase 초기화 또는 FCM 설정 에러 처리
   }
 });
 
