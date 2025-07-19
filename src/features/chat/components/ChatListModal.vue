@@ -175,6 +175,18 @@ const tooltipStyle = ref({});
 
 const toast = useToast();
 
+watch(() => props.chatRooms, (newRooms) => {
+  console.log('--- ChatList: chatRooms prop updated ---');
+  if (newRooms && newRooms.length > 0) {
+    newRooms.forEach(room => {
+      console.log(`  Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
+    });
+  } else {
+    console.log('  No chat rooms or chatRooms array is empty.');
+  }
+  console.log('-----------------------------------------');
+}, { immediate: true, deep: true });
+
 watch(memberSearch, async (newKeyword) => {
   try {
     const result = await searchUser(newKeyword);
@@ -197,17 +209,15 @@ const filteredSearchUsers = computed(() => {
   return usersToFilter.filter(user => user.name.toLowerCase().includes(searchTerm));
 });
 
-// formatTime 함수를 Intl.DateTimeFormat을 사용하는 최신 코드로 변경합니다.
 const formatTime = (isoString) => {
   if (!isoString) return '';
   const date = new Date(isoString); // MongoDB에서 넘어온 UTC ISO 문자열을 Date 객체로 파싱
 
-  // Intl.DateTimeFormat을 사용하여 한국 시간대(Asia/Seoul)로 포맷
   const formatter = new Intl.DateTimeFormat('ko-KR', {
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true, // 오전/오후 사용
-    timeZone: 'Asia/Seoul' // 명시적으로 한국 시간대 지정
+    hour12: true,
+    timeZone: 'Asia/Seoul'
   });
   return formatter.format(date);
 };
@@ -292,11 +302,16 @@ const filteredRooms = computed(() => {
     });
   }
 
+  console.log('--- ChatList: Filtering and Sorting Rooms ---');
+  rooms.forEach(room => {
+    console.log(`  Before sort: Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
+  });
+
   return [...rooms].sort((a, b) => {
     // lastSentAt이 null인 경우를 대비하여 0으로 처리 (가장 오래된 것으로 간주)
     const timeA = a.lastSentAt ? new Date(a.lastSentAt).getTime() : 0;
     const timeB = b.lastSentAt ? new Date(b.lastSentAt).getTime() : 0;
-    return timeB - timeA;
+    return timeB - timeA; // 내림차순 정렬 (최신이 위로)
   });
 });
 
