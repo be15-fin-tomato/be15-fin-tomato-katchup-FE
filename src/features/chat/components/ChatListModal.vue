@@ -176,11 +176,7 @@ const tooltipStyle = ref({});
 const toast = useToast();
 
 watch(() => props.chatRooms, (newRooms) => {
-  console.log('--- ChatList: chatRooms prop updated ---');
   if (newRooms && newRooms.length > 0) {
-    newRooms.forEach(room => {
-      console.log(`  Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
-    });
   } else {
   }
 }, { immediate: true, deep: true });
@@ -190,7 +186,6 @@ watch(memberSearch, async (newKeyword) => {
     const result = await searchUser(newKeyword);
     allSearchUsers.value = result?.userList || [];
   } catch (error) {
-    console.error('사용자 검색 실패:', error);
     allSearchUsers.value = [];
     toast.error('사용자 검색에 실패했습니다.');
   }
@@ -210,11 +205,28 @@ const filteredSearchUsers = computed(() => {
 const formatTime = (isoString) => {
   if (!isoString) return '';
   const date = new Date(isoString);
+  const now = new Date();
 
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 월은 0부터 시작
-  const day = date.getDate().toString().padStart(2, '0');
-  const formattedDate = `${year}.${month}.${day}`;
+  const isToday = date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  let formattedDate;
+  if (isToday) {
+    formattedDate = '오늘';
+  } else if (isYesterday) {
+    formattedDate = '어제';
+  } else {
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    formattedDate = `${month}.${day}`;
+  }
 
   const timeFormatter = new Intl.DateTimeFormat('ko-KR', {
     hour: 'numeric',
@@ -253,15 +265,13 @@ const handleCreate = async () => {
   }
 
   try {
-    const newChatRoom = await createChatRoom(newRoomName.value, participantIds);
-    console.log('채팅방 생성 성공:', newChatRoom);
+    await createChatRoom(newRoomName.value, participantIds);
     toast.success('채팅방이 성공적으로 생성되었습니다!');
 
     closeCreateModal();
     emit('chat-rooms-changed');
 
   } catch (error) {
-    console.error('채팅방 생성 중 오류 발생:', error);
     toast.error('채팅방 생성에 실패했습니다.');
   }
 }
@@ -276,7 +286,6 @@ const leaveRoom = async () => {
   const userId = authStore.userId;
 
   if (!userId) {
-    console.warn('로그인 정보가 없어 채팅방을 나갈 수 없습니다.');
     toast.error('로그인 정보가 없어 채팅방을 나갈 수 없습니다.');
     return;
   }
@@ -288,7 +297,6 @@ const leaveRoom = async () => {
 
     emit('chat-rooms-changed');
   } catch (error) {
-    console.error('채팅방 나가기 실패:', error);
     toast.error('채팅방 나가기에 실패했습니다.');
     throw error;
   }
@@ -305,9 +313,6 @@ const filteredRooms = computed(() => {
       return titleMatch || memberMatch;
     });
   }
-  rooms.forEach(room => {
-    console.log(`  Before sort: Room ID: ${room.id}, Name: ${room.name}, Last Sent At: ${room.lastSentAt}`);
-  });
 
   return [...rooms].sort((a, b) => {
     const timeA = a.lastSentAt ? new Date(a.lastSentAt).getTime() : 0;
@@ -336,7 +341,6 @@ const handleOpenRoom = async (chatId) => {
     });
 
   } catch (e) {
-    console.error('❌ 채팅방 열기 실패:', e);
     toast.error('채팅방을 여는 데 실패했습니다.');
   }
 }
