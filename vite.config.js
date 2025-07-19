@@ -5,7 +5,6 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools(), tailwindcss()],
   resolve: {
@@ -14,8 +13,7 @@ export default defineConfig({
     },
   },
   define: {
-    // 'global is not defined' 에러 해결을 위해 global 객체를 window로 정의
-    global: 'window', // <-- 이 부분을 수정합니다!
+    global: 'window',
   },
   server: {
     port: 5173,
