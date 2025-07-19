@@ -77,7 +77,9 @@ const props = defineProps({
   room: { type: Object, required: true },
 })
 const room = props.room
-const emit = emits(['close']) // Changed from 'emit' to 'emits' for consistency with Vue 3 setup script
+// ❌ 이 줄이 문제였습니다: const emit = emits(['close'])
+// ✅ 올바른 Vue 3 Composition API 방식입니다.
+const emit = defineEmits(['close'])
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.userId)
