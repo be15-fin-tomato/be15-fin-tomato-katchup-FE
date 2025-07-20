@@ -294,7 +294,7 @@ const fetchAll = async () => {
           console.log('CampaignDashboard: Naver search data transformed successfully.');
         } else {
           naverSearchDataRows.value = [];
-          console.warn('CampaignDashboard: No Naver search data in API response.');
+          console.warn('CampaignDashboard: No Naver search data in API response');
         }
 
         if (searchApiResponse.google) {
