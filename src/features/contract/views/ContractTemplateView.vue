@@ -40,21 +40,21 @@
               </template>
               <template v-else>
                 <label
-                  class="flex items-center gap-2 w-full cursor-pointer py-1 relative z-10 transition-colors duration-200 rounded overflow-hidden"
+                  class="flex items-center gap-2 w-full cursor-pointer py-1 relative transition-colors duration-200 rounded overflow-hidden"
                 >
                   <input
                     type="radio"
                     :value="item"
                     v-model="selectedBig"
                     :disabled="showBigInput"
-                    class="appearance-none hidden"
+                    class="absolute inset-0 z-20 cursor-pointer opacity-0"
                   />
                   <div class="flex items-center w-full relative">
                     <input
                       type="text"
                       :value="item.name"
                       readonly
-                      class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
+                      class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent"
                     />
                     <Icon
                       v-if="selectedBig?.id === item.id"
@@ -67,8 +67,8 @@
                   </div>
                 </label>
                 <div
-                  class="absolute right-0 top-1 hidden group-hover:flex gap-1"
-                  :style="selectedBig?.id === item.id ? 'right: 28px;' : ''"
+                  class="absolute top-1 hidden group-hover:flex gap-1 z-30"
+                  :style="selectedBig?.id === item.id ? 'right: 28px;' : 'right: 0;'"
                 >
                   <button @click="startEditBig(item)">
                     <Icon icon="ei:pencil" class="w-5 h-5" />
@@ -114,21 +114,21 @@
               class="group relative mb-2"
             >
               <label
-                class="flex items-center gap-2 w-full cursor-pointer py-1 relative z-10 transition-colors duration-200 rounded overflow-hidden"
+                class="flex items-center gap-2 w-full cursor-pointer py-1 relative transition-colors duration-200 rounded overflow-hidden"
               >
                 <input
                   type="radio"
                   :value="item"
                   :checked="selectedSmall?.id === item.id"
                   @change="selectSmallItem(item)"
-                  class="appearance-none hidden"
+                  class="absolute inset-0 z-20 cursor-pointer opacity-0"
                 />
                 <div class="flex items-center w-full relative">
                   <input
                     type="text"
                     :value="item.name"
                     readonly
-                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
+                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent"
                   />
                   <Icon
                     v-if="selectedSmall?.id === item.id"
@@ -141,8 +141,8 @@
                 </div>
               </label>
               <div
-                class="absolute right-0 top-1 hidden group-hover:flex gap-1"
-                :style="selectedSmall?.id === item.id ? 'right: 28px;' : ''"
+                class="absolute top-1 hidden group-hover:flex gap-1 z-30"
+                :style="selectedSmall?.id === item.id ? 'right: 28px;' : 'right: 0;'"
               >
                 <button @click="editItem(item)">
                   <Icon icon="ei:pencil" class="w-6 h-6" />
