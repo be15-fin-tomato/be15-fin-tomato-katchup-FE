@@ -142,5 +142,10 @@ export const fetchCampaignTraffic = async (pipelineInfluencerId) => {
   }
 };
 
+export const fetchInfluencerChannelThumbnail = async (pipelineInfluencerId) => {
+  const response = await api.get(`/dashboard/influencer-thumbnail/${pipelineInfluencerId}`);
+  return response.data.data;
+};
+
 
 

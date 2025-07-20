@@ -1,13 +1,15 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
+import { fetchInfluencerChannelThumbnail } from '@/features/dashboard/api';
 
 const props = defineProps({
   campaign: Object,
   influencer: Object,
+  pipelineInfluencerId: [String, Number], // 이 prop을 추가
 });
 
 const router = useRouter();
@@ -33,9 +35,35 @@ const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black';
 };
 
+const influencerChannelThumbnail = ref('/tomato.png');
+
+const loadInfluencerThumbnail = async (id) => {
+  if (!id) {
+    influencerChannelThumbnail.value = '/tomato.png';
+    return;
+  }
+  try {
+    const data = await fetchInfluencerChannelThumbnail(id);
+    if (data && data.channelThumbnail) {
+      influencerChannelThumbnail.value = data.channelThumbnail;
+    } else {
+      influencerChannelThumbnail.value = '/tomato.png';
+    }
+  } catch (error) {
+    influencerChannelThumbnail.value = '/tomato.png';
+  }
+};
+
+onMounted(() => {
+  loadInfluencerThumbnail(props.pipelineInfluencerId);
+});
+
+watch(() => props.pipelineInfluencerId, (newId) => {
+  loadInfluencerThumbnail(newId);
+}, { immediate: true });
+
 function goToDashboard(target) {
   if (!props.influencer || !props.influencer.id) {
-    console.warn(`Cannot navigate to ${target} dashboard: influencer ID is missing.`);
     toast.error('인플루언서 ID가 없어 대시보드로 이동할 수 없습니다.');
     return;
   }
@@ -48,7 +76,6 @@ function goToDashboard(target) {
       router.push(`/influencer/dashboard/instagram?id=${props.influencer.id}`);
       break;
     default:
-      console.warn(`Unknown dashboard target: ${target}`);
       break;
   }
 }
@@ -59,11 +86,7 @@ function goToDashboard(target) {
     <div class="flex items-center gap-6 w-[65%] border-r border-gray-light">
       <div class="w-[130px] h-[130px] rounded-full overflow-hidden bg-gray-100">
         <img
-          :src="
-                        influencer.youtube?.thumbnailUrl?.includes('ggpht')
-                            ? influencer.youtube?.thumbnailUrl
-                            : '/tomato.png'
-                    "
+          :src="influencerChannelThumbnail"
           alt="influencer"
           class="w-full h-full object-cover"
         />

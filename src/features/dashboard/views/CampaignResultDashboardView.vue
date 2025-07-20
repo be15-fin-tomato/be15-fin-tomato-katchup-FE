@@ -18,7 +18,6 @@ import {
   getCampaignResultList
 } from '@/features/dashboard/api';
 
-
 const route = useRoute();
 const campaignId = computed(() => route.params.id || '1');
 
@@ -61,7 +60,6 @@ const stopMessageCycle = () => {
     currentSpinnerMessageIndex.value = 0;
   }
 };
-
 
 const generateMockWeeklyData = (totalViews, publishedAt) => {
   if (!publishedAt || totalViews === undefined || totalViews === null || totalViews === 0) {
@@ -146,7 +144,6 @@ const generateMockWeeklyData = (totalViews, publishedAt) => {
   return rows;
 };
 
-
 const fetchAll = async () => {
   isLoading.value = true;
   isError.value = false;
@@ -211,9 +208,6 @@ const fetchAll = async () => {
           thumbnailUrl: null
         }
       };
-
-      console.log('1. Dashboard: campaign 및 influencer 초기화 후', { campaign: campaign.value, influencer: influencer.value });
-
     } else {
       isError.value = true;
       isLoading.value = false;
@@ -239,19 +233,13 @@ const fetchAll = async () => {
         };
 
         if (influencer.value) {
-          influencer.value.thumbnail = youtubeContentApiData.channelThumbnailUrl; // 채널 썸네일로 업데이트
-          influencer.value.youtube.thumbnailUrl = youtubeContentApiData.channelThumbnailUrl; // youtube 객체 내 썸네일도 업데이트
-          // influencer.value.youtube.subscriber는 CampaignContentResponse에 직접적으로 없으므로 여기선 업데이트 안함
+          influencer.value.thumbnail = youtubeContentApiData.channelThumbnailUrl;
+          influencer.value.youtube.thumbnailUrl = youtubeContentApiData.channelThumbnailUrl;
         }
-
-        console.log('2. Dashboard: youtubeMeta 값 설정 후', youtubeMeta.value);
-        console.log('3. Dashboard: influencer.youtube.thumbnailUrl 및 influencer.thumbnail 할당 후', { influencerThumbnail: influencer.value.thumbnail, youtubeThumbnailUrl: influencer.value.youtube.thumbnailUrl });
-
       } else {
         youtubeMeta.value = null;
       }
     } catch (contentError) {
-      console.error('Error fetching youtube content data:', contentError);
       youtubeMeta.value = null;
     }
 
@@ -263,7 +251,6 @@ const fetchAll = async () => {
         revenueSummaryData.value = null;
       }
     } catch (revenueError) {
-      console.error('Error fetching revenue data:', revenueError);
       revenueSummaryData.value = null;
     }
 
@@ -305,7 +292,6 @@ const fetchAll = async () => {
       }
 
     } catch (searchError) {
-      console.error('Error fetching search ratio data:', searchError);
       naverSearchDataRows.value = [];
       googleTrendsData.value = null;
     }
@@ -320,7 +306,6 @@ const fetchAll = async () => {
     }
 
   } catch (err) {
-    console.error('Error in fetchAll:', err);
     isError.value = true;
   } finally {
     isLoading.value = false;
@@ -386,7 +371,7 @@ const summary = computed(() => {
     </div>
 
     <div v-else>
-      <CampaignHeaderCard :campaign="campaign" :influencer="influencer" />
+      <CampaignHeaderCard :campaign="campaign" :influencer="influencer" :pipeline-influencer-id="campaignId" />
       <CampaignVideoSummary :meta="youtubeMeta" />
 
       <div class="dashboard-section p-6 bg-white rounded-xl shadow mt-6 mb-4">
