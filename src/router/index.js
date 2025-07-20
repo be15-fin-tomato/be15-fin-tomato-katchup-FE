@@ -37,8 +37,6 @@ router.beforeEach((to) => {
     const nonAuthRequirePages = ['login', 'findPassword', 'changePassword'];
 
     const isNonAuthPage = nonAuthRequirePages.includes(to.name);
-    console.log('isNoAuthPage : ', isNonAuthPage);
-    console.log('isAuthenticated : ', authStore.isAuthenticated);
 
     // 인증이 필요한 페이지인데 인증되지 않은 경우
     if (!isNonAuthPage && !authStore.isAuthenticated) {
