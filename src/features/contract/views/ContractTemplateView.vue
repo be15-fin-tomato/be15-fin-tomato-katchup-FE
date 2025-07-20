@@ -49,23 +49,26 @@
                     :disabled="showBigInput"
                     class="appearance-none hidden"
                   />
-                  <input
-                    type="text"
-                    :value="item.name"
-                    readonly
-                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
-                  />
-                  <Icon
-                    v-if="selectedBig?.id === item.id"
-                    icon="mdi:check-outline"
-                    width="24"
-                    height="24"
-                    style="color: #2e2193"
-                    class="absolute right-1 top-1/2 -translate-y-1/2"
-                  />
+                  <div class="flex items-center w-full relative">
+                    <input
+                      type="text"
+                      :value="item.name"
+                      readonly
+                      class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
+                    />
+                    <Icon
+                      v-if="selectedBig?.id === item.id"
+                      icon="mdi:check-outline"
+                      width="20"
+                      height="20"
+                      style="color: #2e2193"
+                      class="absolute right-1 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
                 </label>
                 <div
                   class="absolute right-0 top-1 hidden group-hover:flex gap-1"
+                  :style="selectedBig?.id === item.id ? 'right: 28px;' : ''"
                 >
                   <button @click="startEditBig(item)">
                     <Icon icon="ei:pencil" class="w-5 h-5" />
@@ -120,22 +123,27 @@
                   @change="selectSmallItem(item)"
                   class="appearance-none hidden"
                 />
-                <input
-                  type="text"
-                  :value="item.name"
-                  readonly
-                  class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
-                />
-                <Icon
-                  v-if="selectedSmall?.id === item.id"
-                  icon="mdi:check-outline"
-                  width="24"
-                  height="24"
-                  style="color: #2e2193"
-                  class="absolute right-1 top-1/2 -translate-y-1/2"
-                />
+                <div class="flex items-center w-full relative">
+                  <input
+                    type="text"
+                    :value="item.name"
+                    readonly
+                    class="w-full border border-gray-dark px-2 py-1 rounded text-sm cursor-pointer bg-transparent pointer-events-none"
+                  />
+                  <Icon
+                    v-if="selectedSmall?.id === item.id"
+                    icon="mdi:check-outline"
+                    width="20"
+                    height="20"
+                    style="color: #2e2193"
+                    class="absolute right-1 top-1/2 -translate-y-1/2"
+                  />
+                </div>
               </label>
-              <div class="absolute right-0 top-1 hidden group-hover:flex gap-1">
+              <div
+                class="absolute right-0 top-1 hidden group-hover:flex gap-1"
+                :style="selectedSmall?.id === item.id ? 'right: 28px;' : ''"
+              >
                 <button @click="editItem(item)">
                   <Icon icon="ei:pencil" class="w-6 h-6" />
                 </button>
@@ -274,8 +282,8 @@ async function fetchBigList() {
     console.error("큰 목록을 가져오는 데 실패했습니다:", error);
     toast.error('템플릿 종류 목록을 가져오는 데 실패했습니다.');
     bigList.value = [
-      { id: 1, name: '계약서 (API 로드 실패)' },
-      { id: 2, name: '이메일 (API 로드 실패)' },
+      { id: 1, name: '계약서' },
+      { id: 2, name: '이메일' },
     ];
     if (bigList.value.length > 0) {
       selectedBig.value = bigList.value [0];
