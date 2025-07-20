@@ -282,8 +282,8 @@ async function fetchBigList() {
     console.error("큰 목록을 가져오는 데 실패했습니다:", error);
     toast.error('템플릿 종류 목록을 가져오는 데 실패했습니다.');
     bigList.value = [
-      { id: 1, name: '계약서 (API 로드 실패)' },
-      { id: 2, name: '이메일 (API 로드 실패)' },
+      { id: 1, name: '계약서' },
+      { id: 2, name: '이메일' },
     ];
     if (bigList.value.length > 0) {
       selectedBig.value = bigList.value [0];
