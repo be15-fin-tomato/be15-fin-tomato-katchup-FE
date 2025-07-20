@@ -1,15 +1,14 @@
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
-import { fetchInfluencerChannelThumbnail } from '@/features/dashboard/api';
 
 const props = defineProps({
   campaign: Object,
   influencer: Object,
-  pipelineInfluencerId: [String, Number], // 이 prop을 추가
+  pipelineInfluencerId: [String, Number],
 });
 
 const router = useRouter();
@@ -35,32 +34,9 @@ const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black';
 };
 
-const influencerChannelThumbnail = ref('/tomato.png');
-
-const loadInfluencerThumbnail = async (id) => {
-  if (!id) {
-    influencerChannelThumbnail.value = '/tomato.png';
-    return;
-  }
-  try {
-    const data = await fetchInfluencerChannelThumbnail(id);
-    if (data && data.channelThumbnail) {
-      influencerChannelThumbnail.value = data.channelThumbnail;
-    } else {
-      influencerChannelThumbnail.value = '/tomato.png';
-    }
-  } catch (error) {
-    influencerChannelThumbnail.value = '/tomato.png';
-  }
-};
-
-onMounted(() => {
-  loadInfluencerThumbnail(props.pipelineInfluencerId);
+const influencerChannelThumbnail = computed(() => {
+  return props.influencer?.youtube?.thumbnailUrl || '/tomato.png';
 });
-
-watch(() => props.pipelineInfluencerId, (newId) => {
-  loadInfluencerThumbnail(newId);
-}, { immediate: true });
 
 function goToDashboard(target) {
   if (!props.influencer || !props.influencer.id) {

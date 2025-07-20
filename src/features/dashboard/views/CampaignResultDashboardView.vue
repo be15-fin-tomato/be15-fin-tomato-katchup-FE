@@ -205,7 +205,7 @@ const fetchAll = async () => {
           accountId: null,
           name: currentCampaign.influencerName,
           subscriber: null,
-          thumbnailUrl: null
+          thumbnailUrl: null // fetchCampaignContent에서 이 값을 채울 것임
         }
       };
     } else {
@@ -233,14 +233,21 @@ const fetchAll = async () => {
         };
 
         if (influencer.value) {
-          influencer.value.thumbnail = youtubeContentApiData.channelThumbnailUrl;
-          influencer.value.youtube.thumbnailUrl = youtubeContentApiData.channelThumbnailUrl;
+          // CampaignHeaderCard에서 사용할 썸네일 URL을 influencer 객체에 할당
+          influencer.value.thumbnail = youtubeContentApiData.channelThumbnailUrl; // 이 부분은 원래도 있었음.
+          influencer.value.youtube.thumbnailUrl = youtubeContentApiData.channelThumbnailUrl; // 이 부분을 명확하게 할당
         }
       } else {
         youtubeMeta.value = null;
       }
     } catch (contentError) {
+      console.error("Error fetching campaign content:", contentError);
       youtubeMeta.value = null;
+      // 썸네일 데이터를 가져오지 못했을 때 기본값으로 설정
+      if (influencer.value) {
+        influencer.value.thumbnail = '/tomato.png';
+        influencer.value.youtube.thumbnailUrl = '/tomato.png';
+      }
     }
 
     try {
@@ -251,6 +258,7 @@ const fetchAll = async () => {
         revenueSummaryData.value = null;
       }
     } catch (revenueError) {
+      console.error("Error fetching campaign revenue:", revenueError);
       revenueSummaryData.value = null;
     }
 
@@ -292,6 +300,7 @@ const fetchAll = async () => {
       }
 
     } catch (searchError) {
+      console.error("Error fetching search data:", searchError);
       naverSearchDataRows.value = [];
       googleTrendsData.value = null;
     }
@@ -306,6 +315,7 @@ const fetchAll = async () => {
     }
 
   } catch (err) {
+    console.error("Error in fetchAll:", err);
     isError.value = true;
   } finally {
     isLoading.value = false;
