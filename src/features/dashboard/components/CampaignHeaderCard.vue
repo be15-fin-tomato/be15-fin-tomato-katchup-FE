@@ -1,9 +1,10 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import { TAG_COLOR_MAP } from '@/constants/tags.js';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
+import { fetchInfluencerChannelThumbnail } from '@/features/dashboard/api';
 
 const props = defineProps({
   campaign: Object,
@@ -34,9 +35,39 @@ const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black';
 };
 
-const influencerChannelThumbnail = computed(() => {
-  return props.influencer?.youtube?.thumbnailUrl || '/tomato.png';
+const influencerChannelThumbnail = ref('/tomato.png');
+
+const loadInfluencerThumbnail = async (id) => {
+  if (!id) {
+    console.log('CampaignHeaderCard: No pipelineInfluencerId provided, setting default thumbnail.');
+    influencerChannelThumbnail.value = '/tomato.png';
+    return;
+  }
+  try {
+    console.log(`CampaignHeaderCard: Calling fetchInfluencerChannelThumbnail with ID: ${id}`);
+    const data = await fetchInfluencerChannelThumbnail(id);
+    console.log('CampaignHeaderCard: API response data:', data);
+
+    if (data && data.channelThumbnail) {
+      influencerChannelThumbnail.value = data.channelThumbnail;
+      console.log('CampaignHeaderCard: Thumbnail successfully loaded:', data.channelThumbnail);
+    } else {
+      influencerChannelThumbnail.value = '/tomato.png';
+      console.warn('CampaignHeaderCard: channelThumbnail is missing in API response or data is null, setting default thumbnail.');
+    }
+  } catch (error) {
+    influencerChannelThumbnail.value = '/tomato.png';
+    console.error('CampaignHeaderCard: Error fetching influencer channel thumbnail:', error);
+  }
+};
+
+onMounted(() => {
+  loadInfluencerThumbnail(props.pipelineInfluencerId);
 });
+
+watch(() => props.pipelineInfluencerId, (newId) => {
+  loadInfluencerThumbnail(newId);
+}, { immediate: true });
 
 function goToDashboard(target) {
   if (!props.influencer || !props.influencer.id) {
