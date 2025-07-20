@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { onMounted, reactive, ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import {
     createContract,
     getQuotationDetail,
@@ -127,8 +127,8 @@ const groups = [
     },
 ];
 
-const fetchQuotationReferences = async () => {
-    const res = await getQuotationReference();
+const fetchQuotationReferences = async (param) => {
+    const res = await getQuotationReference(param);
     quotationReferences.value = res.data.data.referenceList;
 };
 
@@ -248,7 +248,7 @@ watch(
     () => form.campaign?.id,
     async (newVal) => {
         if (newVal) {
-            const res = await getQuotationReference(newVal);
+            const res = await fetchQuotationReferences(newVal);
             quotationReferences.value = res.data.data.referenceList;
         } else {
             quotationReferences.value = []; // campaignId 없으면 초기화
@@ -256,9 +256,9 @@ watch(
     },
 );
 
-onMounted(async () => {
-    await Promise.all([fetchQuotationReferences()]);
-});
+// onMounted(async () => {
+//     await Promise.all([fetchQuotationReferences()]);
+// });
 </script>
 
 <template>
