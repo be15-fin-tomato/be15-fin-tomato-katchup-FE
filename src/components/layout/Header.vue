@@ -39,15 +39,15 @@ const menuMap = {
     label: '고객사',
     routes: {
       '고객사 목록': '/management/client',
-      '이메일 시스템': '/management/email',
-      '만족도 조사': '/management/survey'
+      '만족도': '/management/email',
+      '만족도 현황': '/management/survey'
     }
   },
   contract: {
-    label: '전자계약',
+    label: '계약관리',
     routes: {
       '계약서 목록': '/contract/list',
-      '템플릿 목록': '/contract/template'
+      '이메일 시스템': '/contract/template'
     }
   },
 }
