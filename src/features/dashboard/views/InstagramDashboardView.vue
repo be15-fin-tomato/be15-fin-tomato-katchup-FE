@@ -32,7 +32,6 @@ onMounted(async () => {
       fetchInfluencerDetail(influencerId),
       fetchSatisfaction(influencerId),
     ])
-    console.log(instagramRes)
 
     const instagramData = instagramRes?.data?.data;
     const youtubeData = youtubeRes?.data?.data;

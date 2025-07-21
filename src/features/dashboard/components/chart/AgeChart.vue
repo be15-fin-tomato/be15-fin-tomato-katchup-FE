@@ -13,8 +13,6 @@ const props = defineProps({
   }
 });
 
-console.log('AgeChart 초기 로드 - 받은 props.data:', props.data);
-
 const chartSeries = ref([]);
 const chartCategories = ref([]);
 
@@ -76,7 +74,6 @@ const chartOptions = reactive({
 const chartTitle = computed(() => props.platform === 'instagram' ? '팔로워 연령대' : '구독자 연령대');
 
 watch(() => props.data, async (newData) => {
-  console.log('AgeChart - watch 훅 트리거됨 (새 데이터):', newData);
   if (newData) {
     const ageGroups = [
       { ageRange: '13-17', value: newData.age1317 ?? 0 },

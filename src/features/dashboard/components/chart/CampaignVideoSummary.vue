@@ -57,11 +57,8 @@ const props = defineProps({
   meta: Object
 });
 
-console.log('CampaignVideoSummary에서 받은 meta prop:', props.meta);
-
 const statistics = computed(() => {
   const stats = props.meta?.statistics ?? {};
-  console.log('CampaignVideoSummary에서 계산된 statistics:', stats);
   return stats;
 });
 

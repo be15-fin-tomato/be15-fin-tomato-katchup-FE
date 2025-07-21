@@ -29,7 +29,6 @@ const filters = ref({
 const fetchClients = async () => {
   try {
     const res = await getClientCompanyList(currentPage.value, pageSize, filters.value)
-    console.log('🔥 응답:', res)
 
     // 응답 구조 반영 (items + pagination)
     clientList.value = res.data.data.items

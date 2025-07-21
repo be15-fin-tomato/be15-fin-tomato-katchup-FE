@@ -1945,8 +1945,6 @@ const CampaignHandler = [
     http.post('/api/v1/influencer/detail', async (req) => {
         const ids = await req.request.json();
 
-        console.log('받은 ids:', ids);
-
         const result = influencerDetail.filter((item) => ids.includes(item.id));
 
         return HttpResponse.json(

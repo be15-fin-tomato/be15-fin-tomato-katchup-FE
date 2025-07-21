@@ -52,8 +52,6 @@ async function loadInfluencers() {
         delete params.categoryIds;
     }
 
-    console.log('[loadInfluencers] 호출 파라미터:', params);
-
     try {
         isLoading.value = true;
         const res = await fetchInfluencerList(params);
@@ -68,7 +66,6 @@ async function loadInfluencers() {
 }
 
 function handleApplyFilters(newFilters) {
-    console.log('[handleApplyFilters] 전달된 필터:', newFilters);
 
     let updatedFilters = { ...filters.value };
 
@@ -94,8 +91,6 @@ function handleApplyFilters(newFilters) {
         selectedCategoryName.value = '전체';
     }
 
-    console.log('[handleApplyFilters] filters.value 상태:', filters.value);
-    console.log('[handleApplyFilters] selectedCategoryName 상태:', selectedCategoryName.value);
 }
 
 onMounted(async () => {

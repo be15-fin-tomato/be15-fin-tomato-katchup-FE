@@ -94,7 +94,6 @@ const save = async () => {
 
   try {
     const payload = buildRequestPayload();
-    console.log('📦 최종 전송 페이로드:', payload);
     await createCampaign(payload);
     toast.success('캠페인이 생성되었습니다!');
     router.push('/campaign');

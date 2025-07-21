@@ -59,7 +59,6 @@ const handleInstagramConnect = async () => {
     const authUrl = await requestInstagramAuthUrl(props.influencer.influencerId);
 
     if (authUrl) {
-      console.log('인스타그램 인증 URL:', authUrl);
       window.location.href = authUrl;
     } else {
       toast.error('인스타그램 인증 URL을 가져오지 못했습니다.');
@@ -75,7 +74,6 @@ const handleYoutubeConnect = async () => {
     const authUrl = await requestYoutubeAuthUrl(props.influencer.influencerId);
 
     if (authUrl) {
-      console.log('유튜브 인증 URL:', authUrl);
       window.location.href = authUrl;
     } else {
       toast.error('유튜브 인증 URL을 가져오지 못했습니다.');
