@@ -382,7 +382,7 @@ const summary = computed(() => {
     <div v-if="isLoading" class="flex flex-col justify-center items-center w-full h-full text-lg text-blue-600 py-20">
       <div class="ai-spinner mb-4"></div>
       <p class="text-xl font-semibold mb-2 text-gray-800">{{ aiSpinnerMessages[currentSpinnerMessageIndex] }}</p>
-      <p class="text-gray-600 text-base">최적의 성과 분석을 위해 데이터를 꼼꼼히 살피고 있어요.</p>
+      <p class="text-gray-600 text-base">최적의 성과 분석을 위해 데이터를 꼼꼼히 살피고 있습니다.</p>
     </div>
 
     <div v-else-if="isError" class="flex justify-center items-center w-full h-full text-lg text-red-500 py-20">

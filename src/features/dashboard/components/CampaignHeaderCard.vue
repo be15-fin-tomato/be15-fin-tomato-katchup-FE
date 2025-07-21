@@ -35,7 +35,11 @@ const tagStyle = (tag) => {
   return TAG_COLOR_MAP[tag] ?? 'bg-gray-200 text-black';
 };
 
-const influencerChannelThumbnail = ref('/tomato.png');
+const influencerChannelThumbnail = ref(
+  props.influencer?.youtube?.thumbnailUrl ||
+  props.influencer?.thumbnail ||
+  '/tomato.png'
+);
 
 const loadInfluencerThumbnail = async (id) => {
   if (!id) {
@@ -53,12 +57,10 @@ const loadInfluencerThumbnail = async (id) => {
   } catch (error) {
     influencerChannelThumbnail.value = '/tomato.png';
     console.error('CampaignHeaderCard: Error fetching influencer channel thumbnail:', error);
+    const errorMessage = error.response?.data?.message || '썸네일을 불러오는데 실패했습니다.';
+    toast.error(errorMessage);
   }
 };
-
-onMounted(() => {
-  loadInfluencerThumbnail(props.pipelineInfluencerId);
-});
 
 watch(() => props.pipelineInfluencerId, (newId) => {
   loadInfluencerThumbnail(newId);
