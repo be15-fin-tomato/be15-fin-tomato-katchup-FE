@@ -97,14 +97,12 @@ onMounted(() => {
 });
 
 const save = async () => {
-  console.log('[save] 저장 시도');
   if (!campaignFormRef.value) {
     console.error('폼이 없습니다.');
     return;
   }
 
   const validatedForm = campaignFormRef.value.submit();
-  console.log('[save] submit 반환값:', validatedForm); // null이면 유효성 실패
 
   if (!validatedForm) {
     console.warn('[save] 유효성 검사 실패');

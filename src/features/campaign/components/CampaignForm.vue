@@ -27,7 +27,6 @@ const toggleCategory = (id) => {
 // 제출
 const submit = () => {
     if (!validateRequiredFields()) return null;
-    console.log('보내는 categoryList:', form.categoryList); // 로그 안 찍히면 여기서 막힘
     emit('submit', form); // 이게 부모의 save()에서 받는 값
     return form;
 };

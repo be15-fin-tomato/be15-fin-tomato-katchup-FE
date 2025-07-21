@@ -165,12 +165,6 @@ watch(() => props.initialFile, async (newFile) => {
       );
 
       if (!isS3FileAlreadyAttached) {
-        // S3 파일 추가 시, 어떤 데이터가 들어오는지 콘솔에 찍어봅니다.
-        console.log('--- S3 File Watch Triggered ---');
-        console.log('newFile:', newFile);
-        console.log('newFile.size:', newFile.size, typeof newFile.size);
-        console.log('------------------------------');
-
         attachedFiles.value.push({
           name: newFile.originalName,
           originalName: newFile.originalName,
@@ -218,13 +212,6 @@ const triggerFileInput = () => {
 const handleFilesChange = (event) => {
   const files = event.target.files;
   if (files && files.length > 0) {
-    Array.from(files).forEach(file => {
-      console.log('--- Local File Added ---');
-      console.log('File Name:', file.name);
-      console.log('File Size (bytes):', file.size);
-      console.log('File Type:', file.type);
-      console.log('------------------------');
-    });
     attachedFiles.value = [...attachedFiles.value, ...Array.from(files)];
   }
   if (fileInput.value) {
@@ -252,18 +239,8 @@ const isQuillContentEffectivelyEmpty = (htmlContent) => {
   return !hasMeaningfulEmbeds;
 };
 
-watch(editorContent, (newValue) => {
-  console.log('editorContent changed in SendEmail.vue:', newValue);
-});
 
 const sendEmail = async () => {
-  console.log("--- 전송 버튼 클릭됨 ---");
-  console.log("수신자 이름:", form.value.email?.name);
-  console.log("수신자 이메일:", form.value.email?.email);
-  console.log("제목:", emailTitle.value);
-  console.log("Quill Editor 내용 (HTML):", editorContent.value);
-  console.log("첨부 파일들 (attachedFiles.value):", attachedFiles.value);
-  console.log("-----------------------");
 
   if (!form.value.email?.email.trim()) {
     toast.error('수신자 이메일을 선택하거나 입력해주세요.');

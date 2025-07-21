@@ -58,7 +58,6 @@ onMounted(async () => {
   try {
     const { data } = await fetchSatisfactionResponseRate();
     const rate = data.data.campaignResponseRate;
-    console.log('rate :', rate);
     chartData.value.datasets[0].data = [rate, 100 - rate];
     chartKey.value++;
   } catch (err) {

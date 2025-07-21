@@ -1,5 +1,4 @@
 export const structuredForm = (rawForm, fileList = []) => {
-    console.log(rawForm);
     return {
         name: rawForm.name,
         requestAt: rawForm.requestAt,

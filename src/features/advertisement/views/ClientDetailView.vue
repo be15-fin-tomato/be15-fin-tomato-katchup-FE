@@ -33,8 +33,6 @@ const fetchClientCompanyData = async () => {
   try {
     const res = await getClientCompanyDetail(id);
     clientData.value = res.data.data;
-    console.log('📦 고객사 데이터 다시 로드됨:', clientData.value);
-
     // 사용자 데이터 다시 불러오기
     const userRes = await getClientCompanyUsers(id);
     users.value = userRes.data.data;
@@ -146,7 +144,6 @@ const save = async () => {
   const payload = clientFormRef.value.getFormData();
   if (!payload) return;
 
-  console.log('[저장 요청]:', payload);
   try {
     await updateClientCompany(id, payload);
     isEditing.value = false;
