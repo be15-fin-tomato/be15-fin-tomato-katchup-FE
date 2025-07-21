@@ -1,7 +1,7 @@
 <template>
   <div class="container" v-bind="$attrs">
     <div class="page-header">
-      <div class="page-title">템플릿 목록</div>
+      <div class="page-title">메일 시스템</div>
     </div>
     <div class="blue-line mb-6"></div>
 

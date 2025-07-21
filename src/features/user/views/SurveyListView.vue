@@ -78,7 +78,7 @@ onMounted(() => {
     <div class="flex flex-col flex-1 container bg-white">
       <div class="page-header">
         <div class="page-title">
-          만족도 조사 목록
+          만족도 현황
           <span class="text-sm text-gray-400 ml-1">
             (검색 결과: {{ totalCount }}건)
           </span>

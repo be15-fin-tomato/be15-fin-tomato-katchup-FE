@@ -73,10 +73,10 @@ function goToDashboard(target) {
 
   switch (target) {
     case 'youtube':
-      router.replace(`/influencer/dashboard/youtube?id=${props.influencer.id}`);
+      router.push(`/influencer/dashboard/youtube?id=${props.influencer.id}`);
       break;
     case 'instagram':
-      router.replace(`/influencer/dashboard/instagram?id=${props.influencer.id}`);
+      router.push(`/influencer/dashboard/instagram?id=${props.influencer.id}`);
       break;
     default:
       break;
