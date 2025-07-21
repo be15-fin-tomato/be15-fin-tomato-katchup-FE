@@ -92,7 +92,6 @@ const goDetail = (pipelineInfluencerId) => {
 
 const handleDelete = (pipelineId) => {
   if (confirm('정말로 이 항목을 삭제하시겠습니까?')) {
-    console.log('삭제 요청:', pipelineId);
     campaignResultList.value = campaignResultList.value.filter(
       (item) => item.pipelineId !== pipelineId,
     );

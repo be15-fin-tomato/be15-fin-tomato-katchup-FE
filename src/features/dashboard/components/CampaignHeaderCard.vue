@@ -43,18 +43,13 @@ const influencerChannelThumbnail = ref(
 
 const loadInfluencerThumbnail = async (id) => {
   if (!id) {
-    console.log('CampaignHeaderCard: No pipelineInfluencerId provided, setting default thumbnail.');
     influencerChannelThumbnail.value = '/tomato.png';
     return;
   }
   try {
-    console.log(`CampaignHeaderCard: Calling fetchInfluencerChannelThumbnail with ID: ${id}`);
     const data = await fetchInfluencerChannelThumbnail(id);
-    console.log('CampaignHeaderCard: API response data:', data);
-
     if (data && data.channelThumbnail) {
       influencerChannelThumbnail.value = data.channelThumbnail;
-      console.log('CampaignHeaderCard: Thumbnail successfully loaded:', data.channelThumbnail);
     } else {
       influencerChannelThumbnail.value = '/tomato.png';
       console.warn('CampaignHeaderCard: channelThumbnail is missing in API response or data is null, setting default thumbnail.');

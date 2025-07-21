@@ -292,10 +292,6 @@ watch(
     () => props.initialData,
     (data) => {
         if (data) {
-            console.log('📦 초기 데이터:', data);
-            console.log('📦 data.userIds:', data.userIds);
-            console.log('📦 props.users:', props.users);
-
             form.name = data.clientCompanyName || '';
             form.status =
                 Object.entries(companyStatusMap).find(

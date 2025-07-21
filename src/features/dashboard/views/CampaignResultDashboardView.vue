@@ -151,7 +151,6 @@ const fetchAll = async () => {
 
   try {
     const currentId = campaignId.value;
-    console.log('CampaignDashboard: Fetching data for campaignId:', currentId);
 
     if (!currentId) {
       isError.value = true;
@@ -168,21 +167,18 @@ const fetchAll = async () => {
 
     do {
       const responseData = await getCampaignResultList({ page: currentPage, size: pageSize });
-      console.log(`CampaignDashboard: getCampaignResultList page ${currentPage} response:`, responseData);
 
       if (responseData && responseData.campaignList && responseData.campaignList.length > 0) {
         allCampaigns = allCampaigns.concat(responseData.campaignList);
         totalCount = responseData.pagination.totalCount;
         currentPage++;
       } else {
-        console.log(`CampaignDashboard: No more campaign lists to fetch or empty response on page ${currentPage}.`);
         break;
       }
     } while (allCampaigns.length < totalCount);
 
     const idToFind = parseInt(currentId);
     const currentCampaign = allCampaigns.find(c => c.pipelineInfluencerId === idToFind);
-    console.log('CampaignDashboard: Found currentCampaign:', currentCampaign);
 
     if (currentCampaign) {
       campaign.value = {
@@ -213,7 +209,6 @@ const fetchAll = async () => {
           thumbnailUrl: null
         }
       };
-      console.log('CampaignDashboard: Initial influencer object state:', influencer.value);
     } else {
       isError.value = true;
       isLoading.value = false;
@@ -223,9 +218,7 @@ const fetchAll = async () => {
     }
 
     try {
-      console.log('CampaignDashboard: Calling fetchCampaignContent with ID:', currentId);
       const youtubeContentApiData = await fetchCampaignContent(currentId);
-      console.log('CampaignDashboard: fetchCampaignContent response:', youtubeContentApiData);
 
       if (youtubeContentApiData) {
         youtubeMeta.value = {
@@ -245,7 +238,6 @@ const fetchAll = async () => {
         if (influencer.value) {
           influencer.value.thumbnail = youtubeContentApiData.channelThumbnailUrl;
           influencer.value.youtube.thumbnailUrl = youtubeContentApiData.channelThumbnailUrl;
-          console.log('CampaignDashboard: Influencer thumbnail updated from fetchCampaignContent to:', influencer.value.youtube.thumbnailUrl);
         } else {
           console.warn('CampaignDashboard: Influencer object not initialized when trying to update thumbnail.');
         }
@@ -259,14 +251,11 @@ const fetchAll = async () => {
       if (influencer.value) {
         influencer.value.thumbnail = '/tomato.png';
         influencer.value.youtube.thumbnailUrl = '/tomato.png';
-        console.log('CampaignDashboard: Error in fetchCampaignContent, setting influencer thumbnail to default.');
       }
     }
 
     try {
-      console.log('CampaignDashboard: Calling getCampaignRevenue with ID:', currentId);
       const revenueApiResponse = await getCampaignRevenue(currentId);
-      console.log('CampaignDashboard: getCampaignRevenue response:', revenueApiResponse);
       if (revenueApiResponse && revenueApiResponse.success && revenueApiResponse.data && revenueApiResponse.data.campaignGetRevenue && revenueApiResponse.data.campaignGetRevenue.length > 0) {
         revenueSummaryData.value = revenueApiResponse.data.campaignGetRevenue[0];
       } else {
@@ -279,9 +268,7 @@ const fetchAll = async () => {
     }
 
     try {
-      console.log('CampaignDashboard: Calling fetchNaverSearchRatio with ID:', currentId);
       const searchApiResponse = await fetchNaverSearchRatio(currentId);
-      console.log('CampaignDashboard: fetchNaverSearchRatio response:', searchApiResponse);
       if (searchApiResponse) {
         if (searchApiResponse.naver) {
           const naverRawData = searchApiResponse.naver;
@@ -291,7 +278,6 @@ const fetchAll = async () => {
           }));
           transformedNaverData.sort((a, b) => new Date(a.period) - new Date(b.period));
           naverSearchDataRows.value = transformedNaverData;
-          console.log('CampaignDashboard: Naver search data transformed successfully.');
         } else {
           naverSearchDataRows.value = [];
           console.warn('CampaignDashboard: No Naver search data in API response');
@@ -311,7 +297,6 @@ const fetchAll = async () => {
               timelineData: transformedGoogleTimelineData,
             },
           };
-          console.log('CampaignDashboard: Google Trends data transformed successfully.');
         } else {
           googleTrendsData.value = null;
           console.warn('CampaignDashboard: No Google search data in API response.');
@@ -333,7 +318,6 @@ const fetchAll = async () => {
         youtubeMeta.value.statistics.viewCount,
         youtubeMeta.value.publishedAt
       );
-      console.log('CampaignDashboard: YouTube analytics mock data generated.');
     } else {
       youtubeAnalyticsRows.value = [];
       console.warn('CampaignDashboard: youtubeMeta or viewCount missing for analytics generation.');
@@ -345,7 +329,6 @@ const fetchAll = async () => {
   } finally {
     isLoading.value = false;
     stopMessageCycle();
-    console.log('CampaignDashboard: fetchAll process finished. isLoading set to false.');
   }
 };
 
@@ -354,7 +337,6 @@ onUnmounted(stopMessageCycle);
 
 watch(campaignId, (newId, oldId) => {
   if (newId !== oldId) {
-    console.log('CampaignDashboard: campaignId changed from', oldId, 'to', newId, '. Re-fetching all data.');
     fetchAll();
   }
 });

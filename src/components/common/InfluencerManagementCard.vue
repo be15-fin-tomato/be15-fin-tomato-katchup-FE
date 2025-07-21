@@ -44,7 +44,6 @@ const handleYoutubeConnect = async () => {
     const authUrl = await requestYoutubeAuthUrl(props.id);
 
     if (authUrl) {
-      console.log('유튜브 인증 URL:', authUrl);
       window.location.href = authUrl;
     } else {
       toast.error('유튜브 인증 URL을 가져오지 못했습니다.');
@@ -60,7 +59,6 @@ const handleYoutubeDisconnect = async () => {
         try {
             await disconnectYoutube(props.id);
             toast.success('유튜브 연동이 성공적으로 해제되었습니다!');
-            console.log('YouTube 연동 해제 성공');
             window.location.reload();
         } catch (error) {
             toast.error('유튜브 연동 해제에 실패했습니다. 다시 시도해주세요.');
@@ -74,7 +72,6 @@ const handleInstagramConnect = async () => {
     const authUrl = await requestInstagramAuthUrl(props.id);
 
     if (authUrl) {
-      console.log('인스타그램 인증 URL:', authUrl);
       window.location.href = authUrl;
     } else {
       toast.error('인스타그램 인증 URL을 가져오지 못했습니다.');
@@ -90,7 +87,6 @@ const handleInstagramDisconnect = async () => {
         try {
             await disconnectInstagram(props.id);
             toast.success('인스타그램 연동이 성공적으로 해제되었습니다!');
-            console.log('인스타그램 연동 해제 성공');
         } catch (error) {
             toast.error('인스타그램 연동 해제에 실패했습니다. 다시 시도해주세요.');
             console.error('인스타그램 연동 해제 중 오류 발생:', error);

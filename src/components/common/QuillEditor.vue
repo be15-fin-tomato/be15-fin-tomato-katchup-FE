@@ -70,7 +70,6 @@ onMounted(() => {
 
   quill.on('text-change', () => {
     const htmlContent = quill.root.innerHTML;
-    console.log('QuillEditor emitting:', htmlContent);
     emit('update:content', htmlContent);
   });
 });

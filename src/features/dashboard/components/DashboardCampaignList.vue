@@ -77,7 +77,6 @@ const getPermalink = (item) => {
 
 const handlePostLinkClick = (campaign) => {
   const url = getPermalink(campaign);
-  console.log('게시물 바로가기 버튼 클릭됨. URL:', url);
   if (url && url !== '#') {
     window.open(url, '_blank');
   } else {
