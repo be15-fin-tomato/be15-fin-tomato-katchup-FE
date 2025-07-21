@@ -57,8 +57,7 @@ const loadInfluencerThumbnail = async (id) => {
   } catch (error) {
     influencerChannelThumbnail.value = '/tomato.png';
     console.error('CampaignHeaderCard: Error fetching influencer channel thumbnail:', error);
-    const errorMessage = error.response?.data?.message || '썸네일을 불러오는데 실패했습니다.';
-    toast.error(errorMessage);
+    // 이전에 있던 toast.error(errorMessage); 줄을 제거합니다.
   }
 };
 
