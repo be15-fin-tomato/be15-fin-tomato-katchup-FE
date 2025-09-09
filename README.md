@@ -1,3 +1,10 @@
+# 🍀 백엔드 리드미 바로가기 
+> KATCHUP 프로젝트에 대해 더 잘 이해하시려면, 백엔드 레포지토리의 README를 먼저 확인해보시길 권장드립니다.
+  
+[![백엔드](https://img.shields.io/badge/Backend-바로가기-pink?style=for-the-badge)](https://github.com/be15-fin-tomato/be15-fin-tomato-katchup-BE)
+
+---
+
 <table>
   <tr>
     <td align="center"><img src="https://github.com/user-attachments/assets/16718841-7a79-4187-86f9-4134cd4aae6c" width="1300" /></td>
